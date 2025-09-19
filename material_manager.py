@@ -1,49 +1,56 @@
-import xml.etree.ElementTree as ET
+import csv
+import os
 
-class MaterialManager:
-    def __init__(self, filepath=None):
-        self.filepath = filepath
-        self.tree = None
-        self.root = None
-        if filepath:
-            self.load_file(filepath)
+CSV_FILE = "materials.csv"
+FIELDNAMES = ["Name", "Lambda", "Mu"]
 
-    def load_file(self, filepath):
-        """Load an XML material file."""
-        self.tree = ET.parse(filepath)
-        self.root = self.tree.getroot()
-        self.filepath = filepath
 
-    def save_file(self, filepath=None):
-        """Save the XML material file."""
-        if filepath is None:
-            filepath = self.filepath
-        if self.tree:
-            self.tree.write(filepath, encoding="UTF-8", xml_declaration=True)
-
-    def get_materials(self):
-        """Return a list of material elements."""
-        if self.root is not None:
-            return self.root.findall("Material")
+def load_materials():
+    """Load all materials from CSV into a list of dicts"""
+    if not os.path.exists(CSV_FILE):
         return []
+    with open(CSV_FILE, newline="") as f:
+        reader = csv.DictReader(f)
+        return list(reader)
 
-    def get_material_coeffs(self, material_index):
-        """Get all Coeff elements for a material by index (1-based)."""
-        materials = self.get_materials()
-        if 0 < material_index <= len(materials):
-            return materials[material_index-1].findall("Coeff")
-        return []
 
-    def set_coeff_value(self, material_index, coeff_index, value):
-        """Set the value of a specific Coeff by indices (both 1-based)."""
-        coeffs = self.get_material_coeffs(material_index)
-        if 0 < coeff_index <= len(coeffs):
-            coeffs[coeff_index-1].set("Value", str(value))
+def get_material(name):
+    """Get a single material dict by name"""
+    materials = load_materials()
+    for mat in materials:
+        if mat["Name"] == name:
+            return mat
+    return None
 
-    def pretty_print(self):
-        """Print XML tree nicely for debugging."""
-        for mat in self.get_materials():
-            print(f"Material numM={mat.get('numM')}")
-            for coeff in mat.findall("Coeff"):
-                print(f"  Coeff {coeff.get('Index')} = {coeff.get('Value')}")
+
+def create_material(new_data):
+    """Add new material to CSV"""
+    file_exists = os.path.exists(CSV_FILE)
+    with open(CSV_FILE, "a", newline="") as f:
+        writer = csv.DictWriter(f, fieldnames=FIELDNAMES)
+        if not file_exists:
+            writer.writeheader()
+        writer.writerow(new_data)
+
+
+def edit_material(updated_data):
+    """Edit an existing material in CSV"""
+    materials = load_materials()
+    for mat in materials:
+        if mat["Name"] == updated_data["Name"]:
+            mat.update(updated_data)
+            break
+    with open(CSV_FILE, "w", newline="") as f:
+        writer = csv.DictWriter(f, fieldnames=FIELDNAMES)
+        writer.writeheader()
+        writer.writerows(materials)
+
+
+def delete_material(name_to_delete):
+    """Delete material from CSV by name"""
+    materials = [m for m in load_materials() if m["Name"] != name_to_delete]
+    with open(CSV_FILE, "w", newline="") as f:
+        writer = csv.DictWriter(f, fieldnames=FIELDNAMES)
+        writer.writeheader()
+        writer.writerows(materials)
 

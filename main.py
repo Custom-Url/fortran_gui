@@ -2,11 +2,11 @@ import sys
 import json
 import os
 from PyQt6.QtWidgets import (
-    QApplication, QMainWindow, QFileDialog, QMenu, QTextEdit, QMessageBox, QTabWidget, QWidget, QVBoxLayout, QLabel, QPushButton
+    QApplication, QMainWindow, QFileDialog, QMenu, QTextEdit, QMessageBox, QTabWidget, QWidget, QVBoxLayout, QLabel, QPushButton, QListWidget, QComboBox, QGroupBox, QFormLayout, QLineEdit
 )
 from PyQt6.QtGui import QAction
 
-from material_manager import MaterialManager
+import material_manager as mm
 
 class FileManagerApp(QMainWindow):
     def __init__(self):
@@ -24,7 +24,7 @@ class FileManagerApp(QMainWindow):
         # Add tabs
         self.tabs.addTab(self.material_tab(), "Material Properties")
         self.tabs.addTab(self.loading_tab(), "Loading Conditions")
-        self.tabs.addTab(self.make_output_tab(), "Results")
+        self.tabs.addTab(self.simulation_tab(), "Simulation")
 
         # Build menu
         self.menu = self.menuBar()
@@ -52,31 +52,52 @@ class FileManagerApp(QMainWindow):
     # Tab Layouts
     # ------------------------
     def material_tab(self):
-        """Tab for file operations"""
+        """Tab for selecting up to three materials"""
         tab = QWidget()
         layout = QVBoxLayout()
 
-        layout.addWidget(QLabel("File operations here"))
-        layout.addWidget(QPushButton("New Material File"))
+        def create_material_section(title):
+            group = QGroupBox(title)
+            group_layout = QVBoxLayout()
 
-        btn_open_mat = QPushButton("Open Material File")
-        btn_open_mat.clicked.connect(self.open_material_file)
-        layout.addWidget(btn_open_mat)
+            combo = QComboBox()
+            group_layout.addWidget(combo)
 
-        btn_save_mat = QPushButton("Save Material File")
-        btn_save_mat.clicked.connect(self.save_material_file)
-        layout.addWidget(btn_save_mat)
+            form_layout = QFormLayout()
+            name_field = QLineEdit()
+            lambda_field = QLineEdit()
+            mu_field = QLineEdit()
+            form_layout.addRow("Name:", name_field)
+            form_layout.addRow("Lambda:", lambda_field)
+            form_layout.addRow("Mu:", mu_field)
+            group_layout.addLayout(form_layout)
 
-        self.text_area = QTextEdit()
-        self.text_area.setReadOnly(True)
-        self.text_area.setPlaceholderText("Material file contents will appear here...")
-        layout.addWidget(self.text_area)
+            btn_create = QPushButton("Create New")
+            btn_edit = QPushButton("Save Edit")
+            btn_delete = QPushButton("Delete")
+            group_layout.addWidget(btn_create)
+            group_layout.addWidget(btn_edit)
+            group_layout.addWidget(btn_delete)
+
+            group.setLayout(group_layout)
+
+            return group, combo, {"name": name_field, "lambda": lambda_field, "mu": mu_field}, btn_create, btn_edit, btn_delete
+
+
+        # Build 3 sections
+        self.material_sections = []
+        for i in range(1, 4):
+            section, combo, fields, btn_create, btn_edit, btn_delete = create_material_section(f"Material {i}")
+            layout.addWidget(section)
+            self.material_sections.append((combo, fields, btn_create, btn_edit, btn_delete))
+
+        # Load materials into dropdowns
+        self.refresh_materials()
 
         tab.setLayout(layout)
         return tab
 
     def loading_tab(self):
-        """Tab for project settings"""
         tab = QWidget()
         layout = QVBoxLayout()
 
@@ -86,13 +107,16 @@ class FileManagerApp(QMainWindow):
         tab.setLayout(layout)
         return tab
 
-    def make_output_tab(self):
-        """Tab for output/logging"""
+    def simulation_tab(self):
         tab = QWidget()
         layout = QVBoxLayout()
 
         layout.addWidget(QLabel("Output log"))
         layout.addWidget(QTextEdit())
+
+        btn_open_mat = QPushButton("Execute")
+        btn_open_mat.clicked.connect(self.open_material_file)
+        layout.addWidget(btn_open_mat)
 
         tab.setLayout(layout)
         return tab
@@ -168,6 +192,73 @@ class FileManagerApp(QMainWindow):
                 return json.load(f)
         return []
 
+    # -------------------------
+    # GUI Helper Functions
+    # -------------------------
+
+    def refresh_materials(self):
+        """Reload all dropdowns from CSV"""
+        materials = mm.load_materials()
+
+        for combo, fields, btn_create, btn_edit, btn_delete in self.material_sections:
+            combo.blockSignals(True)
+            combo.clear()
+            combo.addItem("Select material...")
+            for mat in materials:
+                combo.addItem(mat["Name"])
+            combo.blockSignals(False)
+
+            combo.currentIndexChanged.connect(
+                lambda idx, c=combo, f=fields: self.fill_fields_from_selection(c, f)
+            )
+            btn_create.clicked.connect(lambda _, f=fields: self.gui_create_material(f))
+            btn_edit.clicked.connect(lambda _, f=fields: self.gui_edit_material(f))
+            btn_delete.clicked.connect(lambda _, c=combo: self.gui_delete_material(c))
+
+
+    def fill_fields_from_selection(self, combo, fields):
+        name = combo.currentText()
+        if name == "Select material...":
+            for field in fields.values():
+                field.clear()
+            return
+
+        mat = mm.get_material(name)
+        if mat:
+            fields["name"].setText(mat["Name"])
+            fields["lambda"].setText(mat["Lambda"])
+            fields["mu"].setText(mat["Mu"])
+
+
+    def gui_create_material(self, fields):
+        new_data = {
+            "Name": fields["name"].text(),
+            "Lambda": fields["lambda"].text(),
+            "Mu": fields["mu"].text(),
+        }
+        mm.create_material(new_data)
+        QMessageBox.information(None, "Material Added", f"Material '{new_data['Name']}' added.")
+        self.refresh_materials()
+
+
+    def gui_edit_material(self, fields):
+        updated_data = {
+            "Name": fields["name"].text(),
+            "Lambda": fields["lambda"].text(),
+            "Mu": fields["mu"].text(),
+        }
+        mm.edit_material(updated_data)
+        QMessageBox.information(None, "Material Updated", f"Material '{updated_data['Name']}' updated.")
+        self.refresh_materials()
+
+
+    def gui_delete_material(self, combo):
+        name_to_delete = combo.currentText()
+        if name_to_delete == "Select material...":
+            return
+        mm.delete_material(name_to_delete)
+        QMessageBox.information(None, "Material Deleted", f"Material '{name_to_delete}' deleted.")
+        self.refresh_materials()
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
