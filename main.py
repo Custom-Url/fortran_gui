@@ -65,37 +65,43 @@ class FileManagerApp(QMainWindow):
 
             form_layout = QFormLayout()
             name_field = QLineEdit()
+            name_field.setReadOnly(True)
             lambda_field = QLineEdit()
+            lambda_field.setReadOnly(True)
             mu_field = QLineEdit()
+            mu_field.setReadOnly(True)
             form_layout.addRow("Name:", name_field)
             form_layout.addRow("Lambda:", lambda_field)
             form_layout.addRow("Mu:", mu_field)
             group_layout.addLayout(form_layout)
 
-            btn_create = QPushButton("Create New")
-            btn_edit = QPushButton("Save Edit")
-            btn_delete = QPushButton("Delete")
-            group_layout.addWidget(btn_create)
-            group_layout.addWidget(btn_edit)
-            group_layout.addWidget(btn_delete)
-
             group.setLayout(group_layout)
-
-            return group, combo, {"name": name_field, "lambda": lambda_field, "mu": mu_field}, btn_create, btn_edit, btn_delete
-
+            return group, combo, {"name": name_field, "lambda": lambda_field, "mu": mu_field}
 
         # Build 3 sections
         self.material_sections = []
         for i in range(1, 4):
-            section, combo, fields, btn_create, btn_edit, btn_delete = create_material_section(f"Material {i}")
+            section, combo, fields = create_material_section(f"Material {i}")
             layout.addWidget(section)
-            self.material_sections.append((combo, fields, btn_create, btn_edit, btn_delete))
+            self.material_sections.append((combo, fields))
+
+        # Button to open Material Manager window
+        btn_manage = QPushButton("Manage Materials")
+        btn_manage.clicked.connect(self.open_material_manager)
+        layout.addWidget(btn_manage)
 
         # Load materials into dropdowns
         self.refresh_materials()
 
         tab.setLayout(layout)
         return tab
+
+
+    def open_material_manager(self):
+        dialog = mm.MaterialManager(self)   # open the dialog
+        dialog.exec()                       # wait until user closes it
+        self.refresh_materials()            # reload list after closing
+
 
     def loading_tab(self):
         tab = QWidget()
@@ -195,12 +201,11 @@ class FileManagerApp(QMainWindow):
     # -------------------------
     # GUI Helper Functions
     # -------------------------
-
     def refresh_materials(self):
-        """Reload all dropdowns from CSV"""
+        """Reload all dropdowns from material_manager"""
         materials = mm.load_materials()
 
-        for combo, fields, btn_create, btn_edit, btn_delete in self.material_sections:
+        for combo, fields in self.material_sections:
             combo.blockSignals(True)
             combo.clear()
             combo.addItem("Select material...")
@@ -211,10 +216,6 @@ class FileManagerApp(QMainWindow):
             combo.currentIndexChanged.connect(
                 lambda idx, c=combo, f=fields: self.fill_fields_from_selection(c, f)
             )
-            btn_create.clicked.connect(lambda _, f=fields: self.gui_create_material(f))
-            btn_edit.clicked.connect(lambda _, f=fields: self.gui_edit_material(f))
-            btn_delete.clicked.connect(lambda _, c=combo: self.gui_delete_material(c))
-
 
     def fill_fields_from_selection(self, combo, fields):
         name = combo.currentText()
