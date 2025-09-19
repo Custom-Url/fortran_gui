@@ -67,6 +67,11 @@ class FileManagerApp(QMainWindow):
         btn_save_mat.clicked.connect(self.save_material_file)
         layout.addWidget(btn_save_mat)
 
+        self.text_area = QTextEdit()
+        self.text_area.setReadOnly(True)
+        self.text_area.setPlaceholderText("Material file contents will appear here...")
+        layout.addWidget(self.text_area)
+
         tab.setLayout(layout)
         return tab
 
@@ -124,12 +129,12 @@ class FileManagerApp(QMainWindow):
         if filepath:
             self.material_manager = MaterialManager(filepath)
             self.material_manager.pretty_print()  # just for testing
-            #self.text_area.append(f"Loaded material file: {filepath}")
+            self.text_area.append(f"Loaded material file: {filepath}")
 
     def save_material_file(self):
         if hasattr(self, "material_manager"):
             self.material_manager.save_file()
-            #self.text_area.append(f"Saved material file: {self.material_manager.filepath}")
+            self.text_area.append(f"Saved material file: {self.material_manager.filepath}")
     # ------------------------
     # Recent files logic
     # ------------------------
