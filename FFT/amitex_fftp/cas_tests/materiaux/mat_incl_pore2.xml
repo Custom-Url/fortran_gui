@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Materials>
+
+<!-- REFERENCE MATERIAL -->
+<Reference_Material Lambda0="2.02e+10" Mu0="1.35e+10"/>
+
+<!-- MATERIAL 1 : MATRICE -->
+<!--<Material numM="1" Lib="/home/lgelebart/amitex_fftp/libAmitex/src/materiaux/libUmatAmitex.so" Law="elasiso" >-->
+<Material numM="1" Lib="/home/lgelebart/amitex_fftp/libAmitex/src/materiaux/libUmatAmitex.so" Law="elasiso" >
+                <Coeff Index="1" Type="Constant" Value="4.0385e+10"/>
+                <Coeff Index="2" Type="Constant" Value="2.6923e+10"/>
+</Material>
+
+<!-- MATERIAL 2 : INCLUSIONS -->
+<!--<Material numM="2" Lib="/home/lgelebart/amitex_fftp/libAmitex/src/materiaux/libUmatAmitex.so" Law="contrainte_imposee">-->
+<Material numM="2" Lib="" Law="contrainte_imposee">
+               <Coeff Index="1" Type="Constant" Value="0."/>
+               <Coeff Index="2" Type="Constant" Value="0."/>
+               <Coeff Index="3" Type="Constant" Value="0."/>
+               <Coeff Index="4" Type="Constant" Value="0."/>
+               <Coeff Index="5" Type="Constant" Value="0."/>
+               <Coeff Index="6" Type="Constant" Value="0."/>
+</Material>
+
+
+</Materials>
+

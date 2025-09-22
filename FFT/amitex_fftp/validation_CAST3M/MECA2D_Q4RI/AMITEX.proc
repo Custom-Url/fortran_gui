@@ -1,0 +1,3650 @@
+$$$$ @CLPC
+*23456789123456789123456789123456789123456789123456789123456789123456789
+****************************************************
+****************************************************
+*
+*  PROCEDURE POUR CONDITIONS AUX LIMITES 
+*
+*    PERIODIQUE EN CONTRAINTE IMPOSE
+*
+*  L.GELEBART, G. TREGO                        10/06
+****************************************************
+*****************************************************
+DEBPROC @CLPC MAIL0*MAILLAGE CONT0*TABLE;
+SXX = CONT0 . 1; SYY = CONT0 . 2; SZZ = CONT0 . 3;
+SXY = CONT0 . 4; SXZ = CONT0 . 5; SYZ = CONT0 . 6;
+MOD0 = MODE MAIL0 MECANIQUE ELASTIQUE;
+*
+*  Identification des points et surfaces exterieures
+*    pour application des CL
+*=====================================================
+ENVE0 = ENVE MAIL0;
+elim0 = 1.e-4;
+ENVE_PT0 = CHANGE ENVE0 POI1;
+XMAX = MAXI (COOR 1 ENVE0);XMIN = MINI (COOR 1 ENVE0);
+YMAX = MAXI (COOR 2 ENVE0);YMIN = MINI (COOR 2 ENVE0);
+ZMAX = MAXI (COOR 3 ENVE0);ZMIN = MINI (COOR 3 ENVE0);
+LX0 = XMAX - XMIN; LY0 = YMAX - YMIN; LZ0 = ZMAX - ZMIN;
+PXMIN = ENVE_PT0 POIN 'PLAN'
+ (XMIN 0. 0.) (XMIN 1. 0.) (XMIN 0. 1.) (LX0 * elim0);
+PYMIN = ENVE_PT0 POIN 'PLAN'
+ (0. YMIN 0.) (1. YMIN 0.) (0. YMIN 1.) (LY0 * elim0);
+PZMIN = ENVE_PT0 POIN 'PLAN'
+ (0. 0. ZMIN) (1. 0. ZMIN) (0. 1. ZMIN) (LZ0 * elim0);
+*
+SURFX0 = ENVE0 ELEM APPUYE STRICTEMENT PXMIN;
+SURFY0 = ENVE0 ELEM APPUYE STRICTEMENT PYMIN;
+SURFZ0 = ENVE0 ELEM APPUYE STRICTEMENT PZMIN;
+SURFX1 = SURFX0 PLUS (LX0 0. 0.); 
+SURFY1 = SURFY0 PLUS (0. LY0 0.); 
+SURFZ1 = SURFZ0 PLUS (0. 0. LZ0); 
+elim SURFX1 MAIL0 (LX0 * elim0);
+elim SURFY1 MAIL0 (LX0 * elim0);
+elim SURFZ1 MAIL0 (LX0 * elim0);
+*
+A1 = ENVE_PT0 POIN PROC (XMIN YMIN ZMIN);
+A2 = ENVE_PT0 POIN PROC (XMAX YMIN ZMIN);
+A4 = ENVE_PT0 POIN PROC (XMIN YMAX ZMIN);
+*
+SX00 = LY0 * LZ0;
+SX0 = MESU SURFX0; 
+SX1 = MESU SURFX1; 
+SY00 = LX0 * LZ0;
+SY0 = MESU SURFY0; 
+SY1 = MESU SURFY1; 
+SZ00 = LX0 * LY0;
+SZ0 = MESU SURFZ0; 
+SZ1 = MESU SURFZ1; 
+*
+*  Application des contraintes
+*================================
+test = 0;
+SI ((SXZ NEG 0.) OU (SYZ NEG 0.) OU (SZZ NEG 0.));
+FZ1 = FSUR MASS MOD0 SURFZ1 (SXZ SYZ SZZ);
+FZ0 = FSUR MASS MOD0 SURFZ0 
+         ((0. - SXZ) (0. - SYZ) (0. - SZZ));
+FZ0 = FZ0 * (SZ00 / SZ0);
+FZ1 = FZ1 * (SZ00 / SZ1);
+FCLP0 = FZ0 ET FZ1;
+test=1;
+FINSI;
+*
+SI ((SXY NEG 0.) OU (SYY NEG 0.) OU (SYZ NEG 0.));
+FY1 = FSUR MASS MOD0 SURFY1 (SXY SYY SYZ);
+FY0 = FSUR MASS MOD0 SURFY0 
+         ((0. - SXY) (0. - SYY) (0. - SYZ));
+FY0 = FY0 * (SY00 / SY0);
+FY1 = FY1 * (SY00 / SY1);
+SI (test EGA 1); 
+FCLP0 = FCLP0 ET (FY0 ET FY1);
+SINON;
+FCLP0 = FY0 ET FY1;
+test=1;
+FINSI;
+FINSI;
+*
+SI ((SXX NEG 0.) OU (SXY NEG 0.) OU (SXZ NEG 0.));
+FX1 = FSUR MASS MOD0 SURFX1 (SXX SXY SXZ);
+FX0 = FSUR MASS MOD0 SURFX0 
+         ((0. - SXX) (0. - SXY) (0. - SXZ));
+FX0 = FX0 * (SX00 / SX0);
+FX1 = FX1 * (SX00 / SX1);
+SI (test EGA 1); 
+FCLP0 = FCLP0 ET (FX0 ET FX1);
+SINON;
+FCLP0 = FX0 ET FX1;
+FINSI;
+FINSI;
+*
+*  Blocage du mvt de corps rigide
+*===========================================
+BL1 = BLOQUE UX UY UZ A1;
+BL2 = BLOQUE UY UZ A2;
+BL3 = BLOQUE UZ A4;
+BL0 = BL1 ET (BL2 ET BL3); 
+*BL0 = @CORIGI ENVE0;
+*
+*  Application des conditions de periodicite
+*===========================================
+RIGCLP = BL0;
+*surfaces z=cte
+SURFZ0P = SURFZ0 CHAN POI1;
+SURFZ1P = SURFZ1 CHAN POI1;
+N0 = NBNO SURFZ0P;
+i = 0;
+M0 = SURFZ0P POIN 1; M1 = SURFZ1P POIN 1;
+REPETE BOU0 (N0 - 1);
+i = i + 1; 
+P0 = SURFZ0P POIN (i + 1); P1 = SURFZ1P POIN (i + 1); 
+RIGIX = RELA UX M0 - UX M1 - UX P0 +UX P1;
+RIGIY = RELA UY M0 - UY M1 - UY P0 +UY P1;
+RIGIZ = RELA UZ M0 - UZ M1 - UZ P0 +UZ P1;
+RIGCLP = RIGCLP ET (RIGIX ET RIGIY ET RIGIZ);
+FIN BOU0;
+
+*surfaces x=cte
+SURFX0P = SURFX0 CHAN POI1;
+SURFX1P = SURFX1 CHAN POI1;
+N0 = NBNO SURFX0P;
+i = 0;
+M0 = SURFX0P POIN 1; M1 = SURFX1P POIN 1;
+REPETE BOU1 (N0 - 1);
+i = i + 1;
+P0 = SURFX0P POIN (i + 1); P1 = SURFX1P POIN (i + 1); 
+RIGIX = RELA UX M0 - UX M1 - UX P0 +UX P1;
+RIGIY = RELA UY M0 - UY M1 - UY P0 +UY P1;
+RIGIZ = RELA UZ M0 - UZ M1 - UZ P0 +UZ P1;
+RIGCLP = RIGCLP ET (RIGIX ET RIGIY ET RIGIZ);
+FIN BOU1;
+
+*surfaces y=cte
+SURFY0P = SURFY0 CHAN POI1;
+SURFY1P = SURFY1 CHAN POI1;
+N0 = NBNO SURFY0P;
+i = 0;
+M0 = SURFY0P POIN 1; M1 = SURFY1P POIN 1;
+REPETE BOU2 (N0 - 1);
+i = i + 1;
+P0 = SURFY0P POIN (i + 1); P1 = SURFY1P POIN (i + 1); 
+RIGIX = RELA UX M0 - UX M1 - UX P0 +UX P1;
+RIGIY = RELA UY M0 - UY M1 - UY P0 +UY P1;
+RIGIZ = RELA UZ M0 - UZ M1 - UZ P0 +UZ P1;
+RIGCLP = RIGCLP ET (RIGIX ET RIGIY ET RIGIZ);
+FIN BOU2;
+ 
+FINPROC RIGCLP FCLP0;
+*********************************************
+* FIN DE LA PROCEDURE CLPC
+*********************************************
+$$$$
+
+
+
+
+$$$$ @CLDHC
+****************************************************
+****************************************************
+*
+*  PROCEDURE POUR APPLICATION DE DEF HOMOGENES
+*  AU CONTOUR AVEC PILOTAGE EN CONTRAINTE
+*
+* L.GELEBART, G.TREGO                         09/06
+****************************************************
+****************************************************
+DEBPROC @CLDHC MAIL0*MAILLAGE CONT0*TABLE;
+SXX = CONT0 . 1; SYY = CONT0 . 2; SZZ = CONT0 . 3;
+SXY = CONT0 . 4; SXZ = CONT0 . 5; SYZ = CONT0 . 6;
+MOD0 = MODE MAIL0 MECANIQUE ELASTIQUE;
+*  Identification des points et surfaces exterieures
+*    pour application des CL
+*=====================================================
+ENVE0 = ENVE MAIL0;
+elim0 = 1.e-4;
+ENVE_PT0 = CHANGE ENVE0 POI1;
+XMAX = MAXI (COOR 1 ENVE0);XMIN = MINI (COOR 1 ENVE0);
+YMAX = MAXI (COOR 2 ENVE0);YMIN = MINI (COOR 2 ENVE0);
+ZMAX = MAXI (COOR 3 ENVE0);ZMIN = MINI (COOR 3 ENVE0);
+LX0 = XMAX - XMIN; LY0 = YMAX - YMIN; LZ0 = ZMAX - ZMIN;
+PXMIN = ENVE_PT0 POIN 'PLAN'
+ (XMIN 0. 0.) (XMIN 1. 0.) (XMIN 0. 1.) (LX0 * elim0);
+PYMIN = ENVE_PT0 POIN 'PLAN'
+ (0. YMIN 0.) (1. YMIN 0.) (0. YMIN 1.) (LY0 * elim0);
+PZMIN = ENVE_PT0 POIN 'PLAN'
+ (0. 0. ZMIN) (1. 0. ZMIN) (0. 1. ZMIN) (LZ0 * elim0);
+PXMAX = ENVE_PT0 POIN 'PLAN'
+ (XMAX 0. 0.) (XMAX 1. 0.) (XMAX 0. 1.) (LX0 * elim0);
+PYMAX = ENVE_PT0 POIN 'PLAN'
+ (0. YMAX 0.) (1. YMAX 0.) (0. YMAX 1.) (LY0 * elim0);
+PZMAX = ENVE_PT0 POIN 'PLAN'
+ (0. 0. ZMAX) (1. 0. ZMAX) (0. 1. ZMAX) (LZ0 * elim0);
+*
+SURFX0 = ENVE0 ELEM APPUYE STRICTEMENT PXMIN;
+SURFY0 = ENVE0 ELEM APPUYE STRICTEMENT PYMIN;
+SURFZ0 = ENVE0 ELEM APPUYE STRICTEMENT PZMIN;
+SURFX1 = ENVE0 ELEM APPUYE STRICTEMENT PXMAX;
+SURFY1 = ENVE0 ELEM APPUYE STRICTEMENT PYMAX;
+SURFZ1 = ENVE0 ELEM APPUYE STRICTEMENT PZMAX;
+*
+A1 = ENVE_PT0 POIN PROC (XMIN YMIN ZMIN);
+A2 = ENVE_PT0 POIN PROC (XMAX YMIN ZMIN);
+A4 = ENVE_PT0 POIN PROC (XMIN YMAX ZMIN);
+*
+SX00 = LY0 * LZ0;
+SX0 = MESU SURFX0; 
+SX1 = MESU SURFX1; 
+SY00 = LX0 * LZ0;
+SY0 = MESU SURFY0; 
+SY1 = MESU SURFY1; 
+SZ00 = LX0 * LY0;
+SZ0 = MESU SURFZ0; 
+SZ1 = MESU SURFZ1; 
+*
+MESSAGE 'SX00 = ' SX00;
+MESSAGE 'SX0 = ' SX0;
+MESSAGE 'SX1 = ' SX1;
+MESSAGE 'SY00 = ' SY00;
+MESSAGE 'SY0 = ' SY0;
+MESSAGE 'SY1 = ' SY1;
+MESSAGE 'SZ00 = ' SZ00;
+MESSAGE 'SZ0 = ' SZ0;
+MESSAGE 'SZ1 = ' SZ1;
+*
+*  Application des contraintes
+*================================
+test = 0;
+SI ((SXZ NEG 0.) OU (SYZ NEG 0.) OU (SZZ NEG 0.));
+FZ1 = FSUR MASS MOD0 SURFZ1 (SXZ SYZ SZZ);
+FZ0 = FSUR MASS MOD0 SURFZ0 
+         ((0. - SXZ) (0. - SYZ) (0. - SZZ));
+FZ0 = FZ0 * (SZ00 / SZ0);
+FZ1 = FZ1 * (SZ00 / SZ1);
+FCLP0 = FZ0 ET FZ1;
+test=1;
+FINSI;
+*
+SI ((SXY NEG 0.) OU (SYY NEG 0.) OU (SYZ NEG 0.));
+FY1 = FSUR MASS MOD0 SURFY1 (SXY SYY SYZ);
+FY0 = FSUR MASS MOD0 SURFY0 
+         ((0. - SXY) (0. - SYY) (0. - SYZ));
+FY0 = FY0 * (SY00 / SY0);
+FY1 = FY1 * (SY00 / SY1);
+SI (test EGA 1); 
+FCLP0 = FCLP0 ET (FY0 ET FY1);
+SINON;
+FCLP0 = FY0 ET FY1;
+test=1;
+FINSI;
+FINSI;
+*
+SI ((SXX NEG 0.) OU (SXY NEG 0.) OU (SXZ NEG 0.));
+FX1 = FSUR MASS MOD0 SURFX1 (SXX SXY SXZ);
+FX0 = FSUR MASS MOD0 SURFX0 
+         ((0. - SXX) (0. - SXY) (0. - SXZ));
+FX0 = FX0 * (SX00 / SX0);
+FX1 = FX1 * (SX00 / SX1);
+SI (test EGA 1); 
+FCLP0 = FCLP0 ET (FX0 ET FX1);
+SINON;
+FCLP0 = FX0 ET FX1;
+FINSI;
+FINSI;
+*
+*  Blocage du mvt de corps rigide
+*===========================================
+BL1 = BLOQUE UX UY UZ A1;
+BL2 = BLOQUE UY UZ A2;
+BL3 = BLOQUE UZ A4;
+BL0 = BL1 ET (BL2 ET BL3); 
+*BL0 = @CORIGI ENVE0;
+*
+*  Application des conditions de deformation homogene
+*====================================================
+ENVE1 = (SURFX0 ET SURFX1 ET SURFY0 ET SURFY1 ET SURFZ0 ET SURFZ1);
+elim 1.e-4  ENVE1;
+ENVE_PT1 = CHANGE ENVE1 POI1;
+B1 = ENVE_PT1 POIN PRoC (XMAX YMIN ZMIN);
+B2 = ENVE_PT1 POIN PRoC (XMIN YMAX ZMIN);
+B3 = ENVE_PT1 POIN PRoC (XMIN YMIN ZMAX);
+N0 = NBNO ENVE_PT1;
+*trac ENVE1 CACH;
+RIGCLP = BL0;
+i = 0;
+REPETE BOU0 (N0);
+i = i + 1;
+M0 = ENVE_PT1 POIN i;
+SI ((M0 NEG B1) ET (M0 NEG B2) ET (M0 NEG B3));
+RIGIX = RELA 1. UX M0 - (((coor 1 M0)-XMIN)/LX0) UX B1 
+-(((coor 2 M0)-YMIN)/LY0) UX B2 - (((coor 3 M0)-ZMIN)/LZ0) UX B3;
+RIGIY = RELA 1. UY M0 - (((coor 1 M0)-XMIN)/LX0) UY B1 
+-(((coor 2 M0)-YMIN)/LY0) UY B2 - (((coor 3 M0)-ZMIN)/LZ0) UY B3;
+RIGIZ = RELA 1. UZ M0 - (((coor 1 M0)-XMIN)/LX0) UZ B1 
+-(((coor 2 M0)-YMIN)/LY0) UZ B2 - (((coor 3 M0)-ZMIN)/LZ0) UZ B3;
+RIGCLP = RIGCLP ET (RIGIX ET RIGIY ET RIGIZ);
+FINSI;
+FIN BOU0;
+FINPROC RIGCLP FCLP0;
+*******************************************************
+* FIN DE LA PROCEDURE CLDHC
+*******************************************************
+$$$$
+
+
+$$$$ @CORIGI
+***************************************
+*
+*   PROCEDURE PERMETTANT  
+* 
+*   DE BLOQUER LE MOUVEMENT DE CORPS RIGIDE
+*
+*
+* 04/10/06 L. GELEBART
+*
+***************************************
+DEBPROC @CORIGI MAIL0*MAILLAGE ;
+
+* Préliminaire pour ne pas bloquer le mvt de CR sur de
+* sur des pts de la surface (où sont appliquer les CL)
+*-----------------------------------------------------
+*MAIL_PT1 = CHANGE MAIL0 POI1;
+*ENVE_PT1 = CHANGE (ENVE MAIL0) POI1;
+*MAIL_PT0 = DIFF MAIL_PT1 ENVE_PT1;
+*MAIL1 = MAIL0 ELEM APPUYE STRICTEMENT MAIL_PT0;
+
+*
+* Blocage du mouvement de corps rigide
+*-------------------------------------
+*
+ENVE0 = ENVE MAIL0;
+ENVE_PT0 = CHANGE ENVE0 POI1;
+XMAX = MAXI (COOR 1 ENVE0);XMIN = MINI (COOR 1 ENVE0);
+YMAX = MAXI (COOR 2 ENVE0);YMIN = MINI (COOR 2 ENVE0);
+ZMAX = MAXI (COOR 3 ENVE0);ZMIN = MINI (COOR 3 ENVE0);
+*
+M0 = ENVE_PT0 POIN PROC (XMIN YMIN ZMIN);
+M1 = ENVE_PT0 POIN PROC (XMAX YMIN ZMIN);
+M2 = ENVE_PT0 POIN PROC (XMIN YMAX ZMIN);
+*
+M0M1 = M1 MOINS M0; M0M2 = M2 MOINS M0;
+N0 = M0M1 PVEC M0M2;
+NN0 = M0M1 PVEC N0;
+XNN0 = COOR 1 NN0;YNN0 = COOR 2 NN0; ZNN0 = COOR 3 NN0;
+XN0 = COOR 1 N0;YN0 = COOR 2 N0; ZN0 = COOR 3 N0;
+*
+BL0 = BLOQUE UX UY UZ M0;
+BL1a = RELA XNN0 UX M1 + YNN0 UY M1 + ZNN0 UZ M1;
+BL1b = RELA XN0 UX M1 + YN0 UY M1 + ZN0 UZ M1;
+BL2 = RELA XN0 UX M2 + YN0 UY M2 + ZN0 UZ M2;
+*
+RIG0 = BL0 ET BL1a ET BL1b ET BL2;
+*
+FINPROC RIG0;
+*****************************************
+* FIN DE LA PROCEDURE @CORIGI
+*****************************************
+$$$$
+
+
+$$$$ @CONTH
+*********************************************************
+*
+*   APPLICATION DE CL EN CONT. HOMOGENE SUR UNE SURFACE 
+*
+*              QUELCONQUE
+*
+*        L. GELEBART 04/10/2006
+*
+*********************************************************
+DEBPROC @CONTH SURF0*MAILLAGE MOD0*MMODEL CONT*TABLE;
+NEL1 = NBEL SURF0;
+CDG0 = BARY SURF0;
+SXX = CONT . 1; SYY = CONT . 2; SZZ = CONT . 3;
+SXY = CONT . 4; SXZ = CONT . 5; SYZ = CONT . 6;
+I=0;
+*
+REPETE BOU1 (NEL1);
+*
+I=I+1;
+ELEMI0 = SURF0 ELEM I;
+SI0 = MESURE ELEMI0;
+ELEMIP0 = CHAN POI1 ELEMI0;
+PT1 = ELEMIP0 POIN 1; 
+PT2 = ELEMIP0 POIN 2;
+*PT3 = ELEMIP0 POIN 4;
+PT3 = ELEMIP0 POIN 3;
+VEC12 = PT2 MOIN PT1; VEC13 = PT3 MOIN  PT1;
+VECCENTR = PT1 MOIN CDG0;
+*
+*  Determination de la normale exterieure
+*-----------------------------------------
+NOR0a = VEC12 PVEC VEC13; 
+PZ = 0 0 0;
+SI ((PSCA NOR0a VECCENTR) < 0 );
+     NOR0 = PZ MOIN NOR0a;
+SINON;
+     NOR0 = NOR0a;
+FINSI;
+NOR1 = NOR0 / (NORME NOR0);
+*
+*  Determination des forces Â… appliquer
+*-----------------------------------------
+FX0 = ( (SXX * (COOR 1 NOR1))
+    + (SXY * (COOR 2 NOR1))
+    + (SXZ * (COOR 3 NOR1)) );
+FY0 = ( (SXY * (COOR 1 NOR1))
+    + (SYY * (COOR 2 NOR1))
+    + (SYZ * (COOR 3 NOR1)) );
+FZ0 = ( (SXZ * (COOR 1 NOR1))
+         + (SYZ * (COOR 2 NOR1))
+         + (SZZ * (COOR 3 NOR1)) );
+FDENS0 = FX0 FY0 FZ0;
+FJ0 = FSUR 'MASS' MOD0 ELEMI0 FDENS0 ;
+SI (EGA i 1);
+       FJTOT = FJ0;
+SINON;
+       FJTOT = FJTOT ET FJ0;
+FINSI;
+FIN BOU1;
+FINPROC FJTOT;
+*****************************************************
+* FIN DE @CONTH
+*****************************************************
+$$$$
+
+$$$$ @GTM
+****************************************
+*
+*
+*  PROCEDURE POUR CALCULER LE GRADIENT DE  
+*
+*    LA TRANSFORMATION MOYEN
+*
+*    L. GELEBART   02/10/06
+*
+****************************************
+*
+* ATTENTION : contour (en dime 3) defini dans le plan (X,Y)
+*
+DEBPROC @GTM MAIL0*MAILLAGE DEP0*CHPOINT;
+MAIL1 = SURF MAIL0 'PLANE';
+STOT0 = MESU MAIL1;
+C0 = BARY MAIL0;
+N1 = NBEL MAIL0;
+GTM0 = TABLE;
+LTOT0 = 1;
+*
+i = 0;
+*
+REPETE BOU0 (N1);
+*
+i = i + 1;
+EL0 = MAIL0 ELEM i;
+M1 = EL0 POIN 1; M2 = EL0 POIN 2; 
+*
+* calcul de la norme et de la normale au segment
+*-----------------------------------------------
+X12 = (COOR 1 M2) - (COOR 1 M1);
+Y12 = (COOR 2 M2) - (COOR 2 M1);
+NOR12 = ((X12 ** 2) + (Y12 ** 2)) ** 0.5;
+NX0 = (0. - Y12) / NOR12;
+NY0 = X12 / NOR12;
+* orientation de la normale
+XC0M1 = (((COOR 1 M1) + (COOR 1 M1)) / 2.)
+      - (COOR 1 C0);
+YC0M1 = (((COOR 2 M1) + (COOR 2 M1)) / 2.)
+      - (COOR 2 C0);
+PS0 = (XC0M1 * NX0) + (YC0M1 * NY0);
+SI (PS0 < 0);
+NX0 = 0. - NX0;
+NY0 = 0. - NY0;
+FINSI;
+*
+* calcul de Somme (U.dl)
+*------------------------
+U1X = EXTR DEP0 M1 UX; U2X = EXTR DEP0 M2 UX;
+U1Y = EXTR DEP0 M1 UY; U2Y = EXTR DEP0 M2 UY;
+U0X = (NOR12 * (U2X + U1X) / 2.) ;
+U0Y = (NOR12 * (U2Y + U1Y) / 2.) ;
+*
+* calcul du gradient moyen
+*---------------------------
+GTMXX = (U0X * NX0) / STOT0;
+GTMYY = (U0Y * NY0) / STOT0;
+GTMXY = (U0X * NY0) / STOT0;
+GTMYX = (U0Y * NX0) / STOT0;
+SI (i EGA 1);
+GTM0 . 1 = GTMXX;
+GTM0 . 2 = GTMYY;
+GTM0 . 3 = GTMXY;
+GTM0 . 4 = GTMYX;
+SINON;
+GTM0 . 1 = (GTM0 . 1) + GTMXX;
+GTM0 . 2 = (GTM0 . 2) + GTMYY;
+GTM0 . 3 = (GTM0 . 3) + GTMXY;
+GTM0 . 4 = (GTM0 . 4) + GTMYX;
+FINSI;
+FIN BOU0;
+*
+GTM0 . 1 = (GTM0 . 1) + 1.;
+GTM0 . 2 = (GTM0 . 2) + 1.;
+*
+FINPROC GTM0;
+*********************************************
+* FIN DE LA PROCEDURE GTM
+*********************************************
+$$$$
+
+$$$$ @MENDOS
+*************************************************
+*
+*       PROCEDURE D'EVOLUTION PAR 
+*        ENDOMMAGEMENT SUCCESSIF
+*            DES ELEMENTS
+*
+*  L. GELEBART                Octobre 2006
+*
+*************************************************
+*
+DEBPROC @MENDOS MOD0*MMODEL MAT0*MCHAML CRIT0*MCHAML
+        RIGMAT*RIGIDITE RIGCL*RIGIDITE DEPTOT0*CHPOINT
+        KRED0*FLOTTANT FTOL0*FLOTTANT DSAUV*FLOTTANT;
+*
+UN0 = MANU CHML MOD0 SCAL 1. GRAVITE; 
+UN_INTG0 = INTG ELEM MOD0 UN0 SCAL;
+YOUN0 = EXCO MAT0 YOUN SCAL;
+*
+* INITIALISATIONS
+*=================
+i = 1;
+DEFOT = TABLE;
+CONTT = TABLE;
+RUPTT = TABLE;
+DEFOT . 0 = MANU CHML MOD0 EPXX 0. EPYY 0. EPZZ 0.
+                           GAXY 0. GAXZ 0. GAYZ 0.;
+CONTT . 0 = MANU CHML MOD0 SMXX 0. SMYY 0. SMZZ 0.
+                           SMXY 0. SMXZ 0. SMYZ 0.;
+RUPTT . 0 = CRIT0;
+CMACRO = TABLE;
+CMACRO . EPXX = prog 0.;
+CMACRO . EPYY = prog 0.;
+CMACRO . EPZZ = prog 0.;
+CMACRO . GAXY = prog 0.;
+CMACRO . GAXZ = prog 0.;
+CMACRO . GAYZ = prog 0.;
+CMACRO . SMXX = prog 0.;
+CMACRO . SMYY = prog 0.;
+CMACRO . SMZZ = prog 0.;
+CMACRO . SMXY = prog 0.;
+CMACRO . SMXZ = prog 0.;
+CMACRO . SMYZ = prog 0.;
+*
+ALPHAT = 0.;
+ALPHSAUV = 0.;
+*
+* BOUCLE D ENDOMMAGEMENT SUCCESSIF
+*===================================
+REPETE BOU0;
+*
+* Actualisation de la matrice de rigidite
+*-----------------------------------------
+RIGTOT = RIGMAT ET RIGCL;
+*
+* Actualisation des CL en dÂ‚but du pas de temps
+*----------------------------------------------
+DEPTOT0i = ALPHAT * DEPTOT0;
+*
+* 1 / RELAXATION DES CONTRAINTES INITIALES
+*     ET EVENTUELLE RUPTURE EN CHAINE
+*----------------------------------------------
+REPETE RELAX0;
+*
+DEP1 = RESOU RIGTOT (DEPTOT0i);
+DEF1 = EPSI MOD0 DEP1;
+SIG1 = SIGMA MOD0 MAT0 DEP1;
+*
+*    calcul du critere apres relax
+*
+SIGP01 = PRIN SIG1 MOD0;
+SIGPMAX1 = EXCO SI11 SIGP01 SCAL;
+SIGPMAX1 = INTG ELEM MOD0 SIGPMAX1 SCAL;
+SIGPMAX1 = SIGPMAX1 * (UN_INTG0 ** -1);
+*trac SIGPMAX1 MOD0;
+DELTA1 = CRIT0 - SIGPMAX1;
+F01 = MINI DELTA1;
+MESSAGE 'F01' F01;
+*
+*    modification des proprietes elements
+*           (CRIT0 et YOUN0)
+SI (F01 > FTOL0);
+QUITTER RELAX0;
+SINON;
+IND0 = (DELTA1 - (F01 * UN0)) MASQUE INFERIEUR FTOL0;
+CRIT0 = CRIT0 + (1.e100 * IND0);
+IND0 = UN0 - (IND0 * (1 - KRED0));
+IND0 = CHAN RIGIDITE MOD0 IND0;
+YOUN0 = IND0 * YOUN0;
+*trac YOUN0 MOD0;
+MAT0 = MATE MOD0 'YOUN' YOUN0 'NU' NU0;
+RIGMAT = RIGI MOD0 MAT0;
+RIGTOT = RIGMAT ET RIGCL;
+FINSI;
+FIN RELAX0;
+*
+* sauvegarde du comportement macro
+*
+SMXX1 = (INTG MOD0 (EXCO SIG1 SMXX)) / (INTG MOD0 UN0 SCAL);
+SMYY1 = (INTG MOD0 (EXCO SIG1 SMYY)) / (INTG MOD0 UN0 SCAL);
+SMZZ1 = (INTG MOD0 (EXCO SIG1 SMZZ)) / (INTG MOD0 UN0 SCAL);
+SMXY1 = (INTG MOD0 (EXCO SIG1 SMXY)) / (INTG MOD0 UN0 SCAL);
+SMXZ1 = (INTG MOD0 (EXCO SIG1 SMXZ)) / (INTG MOD0 UN0 SCAL);
+SMYZ1 = (INTG MOD0 (EXCO SIG1 SMYZ)) / (INTG MOD0 UN0 SCAL);
+EPXX1 = (INTG MOD0 (EXCO DEF1 EPXX)) / (INTG MOD0 UN0 SCAL);
+EPYY1 = (INTG MOD0 (EXCO DEF1 EPYY)) / (INTG MOD0 UN0 SCAL);
+EPZZ1 = (INTG MOD0 (EXCO DEF1 EPZZ)) / (INTG MOD0 UN0 SCAL);
+GAXY1 = (INTG MOD0 (EXCO DEF1 GAXY)) / (INTG MOD0 UN0 SCAL);
+GAXZ1 = (INTG MOD0 (EXCO DEF1 GAXZ)) / (INTG MOD0 UN0 SCAL);
+GAYZ1 = (INTG MOD0 (EXCO DEF1 GAYZ)) / (INTG MOD0 UN0 SCAL);
+*
+CMACRO . SMXX = (CMACRO . SMXX) ET (PROG SMXX1);
+CMACRO . SMYY = (CMACRO . SMYY) ET (PROG SMYY1);
+CMACRO . SMZZ = (CMACRO . SMZZ) ET (PROG SMZZ1);
+CMACRO . SMXY = (CMACRO . SMXY) ET (PROG SMXY1);
+CMACRO . SMXZ = (CMACRO . SMXZ) ET (PROG SMXZ1);
+CMACRO . SMYZ = (CMACRO . SMYZ) ET (PROG SMYZ1);
+CMACRO . EPXX = (CMACRO . EPXX) ET (PROG EPXX1);
+CMACRO . EPYY = (CMACRO . EPYY) ET (PROG EPYY1);
+CMACRO . EPZZ = (CMACRO . EPZZ) ET (PROG EPZZ1);
+CMACRO . GAXY = (CMACRO . GAXY) ET (PROG GAXY1);
+CMACRO . GAXZ = (CMACRO . GAXZ) ET (PROG GAXZ1);
+CMACRO . GAYZ = (CMACRO . GAYZ) ET (PROG GAYZ1);
+*
+* 2 / INCREMENT DE CONTRAINTE A pARTIR DE L'ETAT RELAXE
+*--------------------------------------------------------
+DEP2 = RESOU RIGTOT DEPTOT0;
+DEF2 = EPSI MOD0 DEP2;
+SIG2 = SIGMA MOD0 MAT0 DEP2;
+*
+*  calcul du critÂŠre
+*
+SIGP02 = PRIN SIG2 MOD0;
+SIGPMAX2 = EXCO SI11 SIGP02 SCAL;
+SIGPMAX2 = INTG ELEM MOD0 SIGPMAX2 SCAL;
+SIGPMAX2 = SIGPMAX2 * (UN_INTG0 ** -1);
+*
+*  "Optimisation" de l'incrÂ‚ment
+*
+ALPHAT = MINI ( ABS ( CRIT0 * (SIGPMAX2 ** -1) ) );
+*
+*  Calcul du critÂŠre aprÂŠs incrÂ‚ment "optimisÂ‚"
+*   
+SIGP0 = PRIN (ALPHAT * SIG2) MOD0;
+SIGPMAX0 = EXCO SI11 SIGP0 SCAL;
+SIGPMAX0 = INTG ELEM MOD0 SIGPMAX0 SCAL;
+SIGPMAX0 = SIGPMAX0 * (UN_INTG0 ** -1);
+DELTA0 = CRIT0 - SIGPMAX0;
+F0 = MINI DELTA0;
+MESS 'ALPHAT ' ALPHAT;
+MESS 'F0 ' F0;
+*
+SI (F0 > FTOL0);
+MESSAGE 'ERREUR1, F0 = ' F0;
+QUITTER BOU0;
+FINSI;
+*
+* Modification des proprietes des elements
+*-------------------------------------------
+IND0 = DELTA0 MASQUE INFERIEUR FTOL0;
+CRIT0 = CRIT0 + (1.e100 * IND0);
+IND0 = UN0 - (IND0 * (1 - KRED0));
+IND0 = CHAN RIGIDITE MOD0 IND0;
+YOUN0 = IND0 * YOUN0;
+MAT0 = MATE MOD0 'YOUN' YOUN0 'NU' NU0;
+RIGMAT = RIGI MOD0 MAT0;
+*
+* Sauvegarde des champs de contraintes et deformations
+*-----------------------------------------------------
+SI (ALPHAT > 1.);
+ALPHAT = 1.;
+FINSI;
+DEF3 = ALPHAT * DEF2;
+SIG3 = ALPHAT * SIG2;
+*
+SI ((ALPHAT - ALPHSAUV) >EG DSAUV);
+DEFOT . i = DEF3;
+CONTT . i = SIG3;
+RUPTT . i = CRIT0;
+i = i + 1;
+ALPHSAUV = ALPHAT;
+FINSI;
+*
+* sauvegarde du comportement macro
+*-----------------------------------
+SMXX1 = (INTG MOD0 (EXCO SIG3 SMXX)) / (INTG MOD0 UN0 SCAL);
+SMYY1 = (INTG MOD0 (EXCO SIG3 SMYY)) / (INTG MOD0 UN0 SCAL);
+SMZZ1 = (INTG MOD0 (EXCO SIG3 SMZZ)) / (INTG MOD0 UN0 SCAL);
+SMXY1 = (INTG MOD0 (EXCO SIG3 SMXY)) / (INTG MOD0 UN0 SCAL);
+SMXZ1 = (INTG MOD0 (EXCO SIG3 SMXZ)) / (INTG MOD0 UN0 SCAL);
+SMYZ1 = (INTG MOD0 (EXCO SIG3 SMYZ)) / (INTG MOD0 UN0 SCAL);
+EPXX1 = (INTG MOD0 (EXCO DEF3 EPXX)) / (INTG MOD0 UN0 SCAL);
+EPYY1 = (INTG MOD0 (EXCO DEF3 EPYY)) / (INTG MOD0 UN0 SCAL);
+EPZZ1 = (INTG MOD0 (EXCO DEF3 EPZZ)) / (INTG MOD0 UN0 SCAL);
+GAXY1 = (INTG MOD0 (EXCO DEF3 GAXY)) / (INTG MOD0 UN0 SCAL);
+GAXZ1 = (INTG MOD0 (EXCO DEF3 GAXZ)) / (INTG MOD0 UN0 SCAL);
+GAYZ1 = (INTG MOD0 (EXCO DEF3 GAYZ)) / (INTG MOD0 UN0 SCAL);
+*
+CMACRO . SMXX = (CMACRO . SMXX) ET (PROG SMXX1);
+CMACRO . SMYY = (CMACRO . SMYY) ET (PROG SMYY1);
+CMACRO . SMZZ = (CMACRO . SMZZ) ET (PROG SMZZ1);
+CMACRO . SMXY = (CMACRO . SMXY) ET (PROG SMXY1);
+CMACRO . SMXZ = (CMACRO . SMXZ) ET (PROG SMXZ1);
+CMACRO . SMYZ = (CMACRO . SMYZ) ET (PROG SMYZ1);
+CMACRO . EPXX = (CMACRO . EPXX) ET (PROG EPXX1);
+CMACRO . EPYY = (CMACRO . EPYY) ET (PROG EPYY1);
+CMACRO . EPZZ = (CMACRO . EPZZ) ET (PROG EPZZ1);
+CMACRO . GAXY = (CMACRO . GAXY) ET (PROG GAXY1);
+CMACRO . GAXZ = (CMACRO . GAXZ) ET (PROG GAXZ1);
+CMACRO . GAYZ = (CMACRO . GAYZ) ET (PROG GAYZ1);
+*
+* Criteres de sortie de boucle
+*-------------------------------
+*
+SI (ALPHAT EGA 1.);
+MESSAGE 'SORTIE : CHARGEMENT ATTEINT';
+QUITTER BOU0;
+FINSI;
+*
+SI ((MINI CRIT0) >EG (1.e100));
+MESSAGE 'SORTIE : RUINE DU MATERIAU';
+QUITTER BOU0;
+FINSI;
+*
+FIN BOU0;
+FINPROC CMACRO DEFOT CONTT RUPTT;
+******************************************************
+*  FIN DE LA PROCEDURE @MENDOS
+******************************************************
+$$$$
+
+$$$$ @CLDH
+****************************************************
+****************************************************
+*
+*  PROCEDURE POUR APPLICATION DE DEF HOMOGENES
+*  AU CONTOUR AVEC PILOTAGE EN DEFORMATION
+*
+* L.GELEBART, G.TREGO                         10/06
+****************************************************
+****************************************************
+* ATTENTION PRISE EN COMPTE POROSITE DEBOUCHANTE
+DEBPROC @CLDH MAIL0*MAILLAGE DEF0*TABLE;
+EXX = DEF0 . 1; EYY = DEF0 . 2; EZZ = DEF0 . 3;
+EXY = DEF0 . 4; EXZ = DEF0 . 5; EYZ = DEF0 . 6;
+MOD0 = MODE MAIL0 MECANIQUE ELASTIQUE;
+*  Identification des points et surfaces exterieures
+*    pour application des CL
+*=====================================================
+SURF0 = ENVE MAIL0;
+XMAX = MAXI (COOR 1 SURF0);XMIN = MINI (COOR 1 SURF0);
+LX0 = XMAX - XMIN;
+elim SURF0 MAIL0 (LX0 * 1.e-6);
+*
+*  Application des conditions de deformation homogene
+*====================================================
+*deplacements imposes*
+RIGTOTX = BLOQUER UX SURF0;
+RIGTOTY = BLOQUER UY SURF0;
+RIGTOTZ = BLOQUER UZ SURF0;
+DEPX = ((COOR 1 SURF0)*EXX) + ((COOR 2 SURF0)*EXY) +((COOR 3
+SURF0)*EXZ);
+DEPIX = DEPI RIGTOTX DEPX;
+DEPY = ((COOR 1 SURF0)*EXY) + ((COOR 2 SURF0)*EYY) +((COOR 3
+SURF0)*EYZ);
+DEPIY = DEPI RIGTOTY DEPY;
+DEPZ = ((COOR 1 SURF0)*EXZ) + ((COOR 2 SURF0)*EYZ) +((COOR 3
+SURF0)*EZZ);
+DEPIZ = DEPI RIGTOTZ DEPZ;
+RIGCL = RIGTOTX ET (RIGTOTY ET RIGTOTZ);
+DEPTOT=(DEPIX ET (DEPIY ET DEPIZ));
+FINPROC RIGCL DEPTOT;
+*******************************************************
+* FIN DE LA PROCEDURE CLDH
+*******************************************************
+$$$$
+
+$$$$ @CLPD
+****************************************************
+****************************************************
+*
+*  PROCEDURE POUR CONDITIONS AUX LIMITES 
+*
+*    PERIODIQUE EN DEFORMATION IMPOSEE
+*
+*  L.GELEBART, G. TREGO                          10/06
+****************************************************
+*****************************************************
+DEBPROC @CLPD MAIL0*MAILLAGE DEF0*TABLE;
+EXX = DEF0 . 1; EYY = DEF0 . 2; EZZ = DEF0 . 3;
+EXY = DEF0 . 4; EXZ = DEF0 . 5; EYZ = DEF0 . 6;
+MOD0 = MODE MAIL0 MECANIQUE ELASTIQUE;
+*
+*  Identification des points et surfaces exterieures
+*    pour application des CL
+*=====================================================
+ENVE0 = ENVE MAIL0;
+elim0 = 1.e-4;
+ENVE_PT0 = CHANGE ENVE0 POI1;
+XMAX = MAXI (COOR 1 ENVE0);XMIN = MINI (COOR 1 ENVE0);
+YMAX = MAXI (COOR 2 ENVE0);YMIN = MINI (COOR 2 ENVE0);
+ZMAX = MAXI (COOR 3 ENVE0);ZMIN = MINI (COOR 3 ENVE0);
+LX0 = XMAX - XMIN; LY0 = YMAX - YMIN; LZ0 = ZMAX - ZMIN;
+PXMIN = ENVE_PT0 POIN 'PLAN'
+ (XMIN 0. 0.) (XMIN 1. 0.) (XMIN 0. 1.) (LX0 * elim0);
+PYMIN = ENVE_PT0 POIN 'PLAN'
+ (0. YMIN 0.) (1. YMIN 0.) (0. YMIN 1.) (LY0 * elim0);
+PZMIN = ENVE_PT0 POIN 'PLAN'
+ (0. 0. ZMIN) (1. 0. ZMIN) (0. 1. ZMIN) (LZ0 * elim0);
+*
+SURFX0 = ENVE0 ELEM APPUYE STRICTEMENT PXMIN;
+SURFY0 = ENVE0 ELEM APPUYE STRICTEMENT PYMIN;
+SURFZ0 = ENVE0 ELEM APPUYE STRICTEMENT PZMIN;
+SURFX1 = SURFX0 PLUS (LX0 0. 0.); 
+SURFY1 = SURFY0 PLUS (0. LY0 0.); 
+SURFZ1 = SURFZ0 PLUS (0. 0. LZ0); 
+elim SURFX1 MAIL0 (LX0 * elim0);
+elim SURFY1 MAIL0 (LX0 * elim0);
+elim SURFZ1 MAIL0 (LX0 * elim0);
+*trac (SURFX0 ET SURFY0 ET SURFZ0);
+*trac (SURFX1 ET SURFY1 ET SURFZ1);
+*
+A1 = ENVE_PT0 POIN PROC (XMIN YMIN ZMIN);
+*
+*  Blocage du mvt de corps rigide
+*===========================================
+BL1 = BLOQUE UX UY UZ A1;
+*BL1 = @CORIGI ENVE0;
+*
+*  Application des conditions de periodicite
+*===========================================
+RIGCLP = BL1;
+*deplacements imposes*
+*faces perpendiculaires a X
+CLP1X = RELA 1. UX SURFX1 - 1. UX SURFX0;
+depCLP1X = DEPI CLP1X (EXX * LX0);
+CLP1Y = RELA 1. UY SURFX1 - 1. UY SURFX0;
+depCLP1Y = DEPI CLP1Y (EXY * LX0);
+CLP1Z = RELA 1. UZ SURFX1 - 1. UZ SURFX0;
+depCLP1Z = DEPI CLP1Z (EXZ * LX0);
+CLP1 = CLP1X ET (CLP1Y ET CLP1Z);
+depCLP1 = depCLP1X ET (depCLP1Y ET depCLP1Z);
+*faces perpendiculaires a Y
+CLP2X = RELA 1. UX SURFY1 - 1. UX SURFY0;
+depCLP2X = DEPI CLP2X (EXY * LY0);
+CLP2Y = RELA 1. UY SURFY1 - 1. UY SURFY0;
+depCLP2Y = DEPI CLP2Y (EYY * LY0);
+CLP2Z = RELA 1. UZ SURFY1 - 1. UZ SURFY0;
+depCLP2Z = DEPI CLP2Z (EYZ * LY0);
+CLP2 = CLP2X ET (CLP2Y ET CLP2Z);
+depCLP2 = depCLP2X ET (depCLP2Y ET depCLP2Z);
+*faces perpendiculaires Z
+CLP3X = RELA 1. UX SURFZ1 - 1. UX SURFZ0;
+depCLP3X = DEPI CLP3X (EXZ * LZ0);
+CLP3Y = RELA 1. UY SURFZ1 - 1. UY SURFZ0;
+depCLP3Y = DEPI CLP3Y (EYZ * LZ0);
+CLP3Z = RELA 1. UZ SURFZ1 - 1. UZ SURFZ0;
+depCLP3Z = DEPI CLP3Z (EZZ * LZ0);
+CLP3 = CLP3X ET (CLP3Y ET CLP3Z);
+depCLP3 = depCLP3X ET (depCLP3Y ET depCLP3Z);
+*
+DEPTOT = depCLP1 et (depCLP2 et depCLP3 );
+RIGCLP = RIGCLP et (CLP1 et (CLP2 et CLP3));
+*
+FINPROC RIGCLP DEPTOT;
+*********************************************
+* FIN DE LA PROCEDURE CLPD
+*********************************************
+$$$$
+
+$$$$ @CLPD2D
+****************************************************
+****************************************************
+*
+*  PROCEDURE POUR CONDITIONS AUX LIMITES 
+*
+*    PERIODIQUE EN DEFORMATION IMPOSEE
+*
+* APPLIQUABLE EN 2D
+*
+*  L.GELEBART                          10/17
+****************************************************
+*****************************************************
+DEBPROC @CLPD2D MAIL0*MAILLAGE DEF0*TABLE;
+EXX = DEF0 . 1; EYY = DEF0 . 2; 
+EXY = DEF0 . 3; 
+MOD0 = MODE MAIL0 MECANIQUE ELASTIQUE;
+*
+*  Identification des points et surfaces exterieures
+*    pour application des CL
+*=====================================================
+ENVE0 = CONTOUR MAIL0;
+elim0 = 1.e-4;
+ENVE_PT0 = CHANGE ENVE0 POI1;
+XMAX = MAXI (COOR 1 ENVE0);XMIN = MINI (COOR 1 ENVE0);
+YMAX = MAXI (COOR 2 ENVE0);YMIN = MINI (COOR 2 ENVE0);
+
+LX0 = XMAX - XMIN; LY0 = YMAX - YMIN; 
+PXMIN = ENVE_PT0 POIN 'DROIT'
+ (XMIN 0.) (XMIN 1. )  (LX0 * elim0);
+PYMIN = ENVE_PT0 POIN 'DROIT'
+ (0. YMIN ) (1. YMIN )  (LY0 * elim0);
+*
+*trac (PXMIN ET ENVE0);
+SURFX0 = ENVE0 ELEM APPUYE STRICTEMENT PXMIN;
+SURFY0 = ENVE0 ELEM APPUYE STRICTEMENT PYMIN;
+SURFX1 = SURFX0 PLUS (LX0 0. ); 
+SURFY1 = SURFY0 PLUS (0. LY0 ); 
+elim SURFX1 MAIL0 (LX0 * elim0);
+elim SURFY1 MAIL0 (LX0 * elim0);
+*trac (SURFX0 ET SURFY0 );
+*trac (SURFX1 ET SURFY1 );
+*
+A1 = ENVE_PT0 POIN PROC (XMIN YMIN);
+*
+*  Blocage du mvt de corps rigide
+*===========================================
+BL1 = BLOQUE UX UY A1;
+*BL1 = @CORIGI ENVE0;
+*
+*  Application des conditions de periodicite
+*===========================================
+RIGCLP = BL1;
+*deplacements imposes*
+*faces perpendiculaires a X
+CLP1X = RELA 1. UX SURFX1 - 1. UX SURFX0;
+depCLP1X = DEPI CLP1X (EXX * LX0);
+CLP1Y = RELA 1. UY SURFX1 - 1. UY SURFX0;
+depCLP1Y = DEPI CLP1Y (EXY * LX0);
+CLP1 = CLP1X ET CLP1Y;
+depCLP1 = depCLP1X ET depCLP1Y;
+*faces perpendiculaires a Y
+CLP2X = RELA 1. UX SURFY1 - 1. UX SURFY0;
+depCLP2X = DEPI CLP2X (EXY * LY0);
+CLP2Y = RELA 1. UY SURFY1 - 1. UY SURFY0;
+depCLP2Y = DEPI CLP2Y (EYY * LY0);
+CLP2 = CLP2X ET CLP2Y;
+depCLP2 = depCLP2X ET depCLP2Y;
+*
+DEPTOT = depCLP1 et depCLP2;
+RIGCLP = RIGCLP et (CLP1 et CLP2 );
+*
+FINPROC RIGCLP DEPTOT;
+*********************************************
+* FIN DE LA PROCEDURE CLPD2D
+*********************************************
+$$$$
+
+
+
+
+
+
+$$$$ HISTCHAM
+***************************************************************
+*
+* PROCEDURE PERMETTANT DE CALCULER LA FONCTINO DE DISTRIBUTION
+*   
+*  DE PROBABILITE ET LA FONCTION DE REPARTITION
+*
+*      A PARTIR D'UN CHAMP PAR ELEMENT
+*
+* L. GELEBART 06/07
+*
+*=============================================================
+DEBPROC HISTCHAM CHAM0*MCHAML MOD0*MMODEL N0*ENTIER;
+*
+*ATTENTION : le nom de la composante du champ est SCAL
+MAIL0 = EXTR MOD0 MAIL;
+*
+*
+* Calcul des volumes des elements et des 
+* contraintes moyenne par element
+*----------------------------------------
+UNF0 = MANU CHML MAIL0 SCAL 1.;
+VELF0 = INTG ELEM MOD0 UNF0;
+CHAMINT0 = INTG ELEM MOD0 CHAM0 SCAL;
+CHAMM0 = CHAMINT0 * (VELF0 ** -1);
+*
+* Definition des listes pour l'histogramme
+*-----------------------------------------
+nel0 = NBEL MAIL0;
+i = 0;
+Sprog = prog;
+Vprog = prog;
+REPETE BOU1 nel0;
+i = i+1;
+Sprogi = prog (EXTR CHAMM0 SCAL 1 i 1);
+Vprogi = prog (EXTR VELF0 SCAL 1 i 1);
+Sprog = Sprog ET Sprogi;
+Vprog = Vprog ET Vprogi;
+FIN BOU1;
+Smax = MAXI Sprog;
+Smin = MINI Sprog;
+Xfrn = prog (Smin) PAS ((Smax - Smin)/N0) (Smax);
+Xfdp = prog (Smin +(((Smax - Smin)/N0)/2.)) PAS ((Smax - Smin)/N0)
+(Smax -(((Smax - Smin)/N0)/2.));
+*
+* Calcul de l'histogramme
+*------------------------------------------
+Sfrn Sfdp = CALCHIST Sprog Vprog Xfrn;
+FINPROC Sfrn Sfdp Xfrn Xfdp;
+*********************************************
+* FIN DE LA PROCEDURE HISTCHAM
+*********************************************
+$$$$
+
+
+
+$$$$ CALCHIST
+***********************************************************************
+*                                                                      -
+*  CALCUL D'HISTOGRAMME                                                -
+*                                                                      -
+* d'apres une procedure de P. Maugis, modifiee pour prendre en compte
+* des poids pour chacune des variable                                  -
+*     
+* L. GELEBART 06/07                                                    -
+*-----------------------------------------------------------------------
+*                                                                      -
+*  Syntaxe :                                                           -
+*                                                                      -
+*    lifrn lifdpn = 'CALCHIST' lival lipoids liint ;                   -
+*                                                                      -
+*-----------------------------------------------------------------------
+*                                                                      -
+* en entrée :                                                          -
+*   - lival : liste des valeurs dont on veut dériver l'histogramme     -
+*   - liint : liste des abscisses de l'histogramme                     -
+*   - lipoids : liste des poids affectees à chaque valeur de lival
+*      (liste de 1 si toutes les valeurs ont le meme poids                                     -
+* en sortie :                                                          -
+*   - lifrn : fonction de répartition (liste des fractions de          -
+*             réalisations dont les valeurs mesurées sont inférieures  -
+*             à la valeur en cours de 'liint'                          -
+*             dimension = DIME (liint)                                 -
+*   - lifdpn: densité de probabilité de présence entre deux valeurs    -
+*             successives de 'liint'                                   -
+*             dimension = DIME (liint) - 1                             -
+*                                                                      -
+*-----------------------------------------------------------------------
+*                                                                      -
+*                                                                      -
+*       la valeur i de fdp correspond au comptage ] i ; i+1 ]          -
+*       la valeur i de fr  correspond au comptage ] -oo ; i ]          -
+*                                                                      -
+*       les sorties sont normalisées par le nombre de valeurs entrées  -
+*       de sorte que :                                                -
+*       . la DENSITE de probabilité a une intégrale unitaire si        -
+*         min (lival)   >   min (liint)                                -
+*       . la fonction de répartition a une valeur finale de 1 si       -
+*         max (lival)  <EG  max (liint)                                -
+*                                                                      -
+*-----------------------------------------------------------------------
+
+'DEBPROC' CALCHIST 
+lival*'LISTREEL' lipoids*'LISTREEL' liint*'LISTREEL' ;
+*
+* initialisation
+* ---------------- 
+*
+nbval  = 'DIME' lival ;
+nbint = DIME liint;
+lidval = ('ENLEVER' liint 1) - ('ENLEVER' liint nbint) ;
+lifr   = 'PROG'  nbint    * 0. ;
+lifdp  = 'PROG' (nbint-1) * 0. ;
+*
+Mlist1 = 'MASQUE' lival 'EGINFE' ( 'EXTR' liint 1 ) ;
+fr0  = 'MASQUE' lival 'EGINFE' 'SOMME' ('EXTR' liint 1) ;
+i = 0;
+fr0 = 0;
+REPETE BOU2 (DIME Mlist1);
+i = i+1;
+fr0 = fr0 + 
+    ((EXTR Mlist1 i) * (EXTR lipoids i) );
+FIN BOU2;
+REMPLACER lifr 1 fr0 ;
+*
+* boucle sur les fr et les fdp
+*-----------------------------
+k=0;
+REPETER bloc1 (('DIME' liint) - 1) ;
+    k = &bloc1 + 1 ;
+*
+    Mlist1 = 'MASQUE' lival 'EGINFE' ( 'EXTR' liint k ) ;
+    i = 0;
+    fr1 = 0;
+    REPETE BOU2 (DIME Mlist1);
+    i = i+1;
+    fr1 = fr1 + 
+        ((EXTR Mlist1 i) * (EXTR lipoids i) );
+    FIN BOU2;
+*
+    REMPLACER lifr  k      fr1 ;
+    REMPLACER lifdp (k-1) (fr1 - fr0) ;
+    fr0   = fr1 ;
+FIN bloc1 ;
+*
+* normalisations
+*----------------------
+V0 = 0;
+i=0;
+REPETE BOU3 (DIME lipoids);
+i = i+1;
+V0 = V0 + (EXTR lipoids i);
+FIN BOU3;
+*
+lifrn   = lifr           / V0 ;
+lifdpn  = lifdp / lidval/  V0  ;
+*
+* verification
+*--------------
+i=0;
+S0 = 0;
+REPETE BOU4 (DIME lifdpn);
+i = i+1;
+S0 = S0 + ((EXTR lifdpn i) * (EXTR lidval i));
+FIN BOU4;
+MESSAGE 'VERIFICATION : integrale de la fdp = ' S0; 
+FINPROC lifrn lifdpn ;
+*********************************************
+* FIN DE LA PROCEDURE CALCHIST
+*********************************************
+$$$$
+
+$$$$ @CLPM
+****************************************************
+****************************************************
+*
+*  PROCEDURE POUR CONDITIONS AUX LIMITES 
+*
+*    PERIODIQUE EN DEFORMATION IMPOSE SUIVANT X
+*    CONTRAINTE IMPOSEE NULLE SUIVANT Y ET Z
+*
+*  L.GELEBART	                         03/08
+****************************************************
+*****************************************************
+DEBPROC @CLPM MAIL0*MAILLAGE EXX0*FLOTTANT;
+MOD0 = MODE MAIL0 MECANIQUE ELASTIQUE;
+*
+*  Identification des points et surfaces exterieures
+*    pour application des CL
+*=====================================================
+ENVE0 = ENVE MAIL0;
+elim0 = 1.e-4;
+ENVE_PT0 = CHANGE ENVE0 POI1;
+XMAX = MAXI (COOR 1 ENVE0);XMIN = MINI (COOR 1 ENVE0);
+YMAX = MAXI (COOR 2 ENVE0);YMIN = MINI (COOR 2 ENVE0);
+ZMAX = MAXI (COOR 3 ENVE0);ZMIN = MINI (COOR 3 ENVE0);
+LX0 = XMAX - XMIN; LY0 = YMAX - YMIN; LZ0 = ZMAX - ZMIN;
+PXMIN = ENVE_PT0 POIN 'PLAN'
+ (XMIN 0. 0.) (XMIN 1. 0.) (XMIN 0. 1.) (LX0 * elim0);
+PYMIN = ENVE_PT0 POIN 'PLAN'
+ (0. YMIN 0.) (1. YMIN 0.) (0. YMIN 1.) (LY0 * elim0);
+PZMIN = ENVE_PT0 POIN 'PLAN'
+ (0. 0. ZMIN) (1. 0. ZMIN) (0. 1. ZMIN) (LZ0 * elim0);
+*
+SURFX0 = ENVE0 ELEM APPUYE STRICTEMENT PXMIN;
+SURFY0 = ENVE0 ELEM APPUYE STRICTEMENT PYMIN;
+SURFZ0 = ENVE0 ELEM APPUYE STRICTEMENT PZMIN;
+SURFX1 = SURFX0 PLUS (LX0 0. 0.); 
+SURFY1 = SURFY0 PLUS (0. LY0 0.); 
+SURFZ1 = SURFZ0 PLUS (0. 0. LZ0); 
+elim SURFX1 MAIL0 (LX0 * elim0);
+elim SURFY1 MAIL0 (LX0 * elim0);
+elim SURFZ1 MAIL0 (LX0 * elim0);
+*
+A1 = ENVE_PT0 POIN PROC (XMIN YMIN ZMIN);
+A2 = ENVE_PT0 POIN PROC (XMAX YMIN ZMIN);
+A4 = ENVE_PT0 POIN PROC (XMIN YMAX ZMIN);
+*
+SX00 = LY0 * LZ0;
+SX0 = MESU SURFX0; 
+SX1 = MESU SURFX1; 
+SY00 = LX0 * LZ0;
+SY0 = MESU SURFY0; 
+SY1 = MESU SURFY1; 
+SZ00 = LX0 * LY0;
+SZ0 = MESU SURFZ0; 
+SZ1 = MESU SURFZ1; 
+*
+*  Blocage du mvt de corps rigide
+*===========================================
+*BL1 = BLOQUE UX UY UZ A1;
+*BL2 = BLOQUE UY UZ A2;
+*BL3 = BLOQUE UZ A4;
+*BL0 = BL1 ET (BL2 ET BL3); 
+BL0 = @CORIGI ENVE0;
+*
+*  Application des conditions de periodicite
+*  en contrainte imposee (nulle)
+*  sur les surfaces y=cte et z=cte
+*  et x=cte dans les direction y et z
+*===========================================
+RIGCLP = BL0;
+
+*surfaces z=cte
+SURFZ0P = SURFZ0 CHAN POI1;
+SURFZ1P = SURFZ1 CHAN POI1;
+N0 = NBNO SURFZ0P;
+i = 0;
+M0 = SURFZ0P POIN 1; M1 = SURFZ1P POIN 1;
+REPETE BOU0 (N0 - 1);
+i = i + 1; 
+P0 = SURFZ0P POIN (i + 1); P1 = SURFZ1P POIN (i + 1); 
+RIGIX = RELA UX M0 - UX M1 - UX P0 +UX P1;
+RIGIY = RELA UY M0 - UY M1 - UY P0 +UY P1;
+RIGIZ = RELA UZ M0 - UZ M1 - UZ P0 +UZ P1;
+RIGCLP = RIGCLP ET (RIGIX ET RIGIY ET RIGIZ);
+FIN BOU0;
+
+*surfaces y=cte
+SURFY0P = SURFY0 CHAN POI1;
+SURFY1P = SURFY1 CHAN POI1;
+N0 = NBNO SURFY0P;
+i = 0;
+M0 = SURFY0P POIN 1; M1 = SURFY1P POIN 1;
+REPETE BOU2 (N0 - 1);
+i = i + 1;
+P0 = SURFY0P POIN (i + 1); P1 = SURFY1P POIN (i + 1); 
+RIGIX = RELA UX M0 - UX M1 - UX P0 +UX P1;
+RIGIY = RELA UY M0 - UY M1 - UY P0 +UY P1;
+RIGIZ = RELA UZ M0 - UZ M1 - UZ P0 +UZ P1;
+RIGCLP = RIGCLP ET (RIGIX ET RIGIY ET RIGIZ);
+FIN BOU2;
+
+*surfaces x=cte
+SURFX0P = SURFX0 CHAN POI1;
+SURFX1P = SURFX1 CHAN POI1;
+N0 = NBNO SURFX0P;
+i = 0;
+M0 = SURFX0P POIN 1; M1 = SURFX1P POIN 1;
+REPETE BOU1 (N0 - 1);
+i = i + 1;
+P0 = SURFX0P POIN (i + 1); P1 = SURFX1P POIN (i + 1); 
+RIGIY = RELA UY M0 - UY M1 - UY P0 +UY P1;
+RIGIZ = RELA UZ M0 - UZ M1 - UZ P0 +UZ P1;
+RIGCLP = RIGCLP ET (RIGIY ET RIGIZ);
+FIN BOU1;
+
+*
+*  Application des conditions de periodicite
+*  en deformation imposee
+*  sur les surfaces x=cte 
+*===========================================
+*faces perpendiculaires a X
+CLP1X = RELA 1. UX SURFX1 - 1. UX SURFX0;
+depCLP1X = DEPI CLP1X (EXX0 * LX0);
+*
+*
+*                          Assemblage des CL
+*===========================================
+RIGCLP = CLP1X ET RIGCLP;
+DEPTOT = depCLP1X;
+*
+FINPROC RIGCLP DEPTOT;
+*********************************************
+* FIN DE LA PROCEDURE CLPM
+*********************************************
+$$$$
+
+
+
+$$$$ POLYXMM4
+*********************************************
+*********************************************
+* GENERATION DE MICROSTRUCTURES VORONOI
+*
+* AVEC ELEMENTS MULTI-MATERIAUX
+*
+* L. Gélébart 27/04/2008
+*********************************************
+*********************************************
+DEBPROC POLYXMM4 MOD0*MMODEL C0*TABLE TNUM0*TABLE
+        VISU0*ENTIER;
+*
+V0 = EXTR MOD0 MAIL;
+*
+*               Nombre de point et nombre de zones
+*-------------------------------------------------
+NBC0 = DIME C0;
+*
+NUMMAX0 = 0;
+NUMMIN0 = 1e100;
+i = 1;
+REPETE BOU00 NBC0;
+NUMMAX0 = MAXI (PROG NUMMAX0 (TNUM0 . i));
+NUMMIN0 = MINI (PROG NUMMIN0 (TNUM0 . i));
+i = i + 1;
+FIN BOU00;
+NUMMAX0 = ENTI NUMMAX0;
+NUMMIN0 = ENTI NUMMIN0;
+*
+*                           CALCUL DES DISTANCES
+*===============================================
+UN0 = MANU CHML MOD0 SCAL 1. RIGIDITE;
+X0 = COOR 1 UN0;
+Y0 = COOR 2 UN0;
+Z0 = COOR 3 UN0;
+D0 = TABLE;
+i = 1;
+REPETE BOU0 NBC0;
+XC0 = COOR 1 (C0 . i);
+YC0 = COOR 2 (C0 . i);
+ZC0 = COOR 3 (C0 . i);
+D0 . i = (((X0-(XC0 * UN0))**2) + ((Y0-(YC0*UN0))**2)
++ ((Z0-(ZC0*UN0))**2))**0.5;
+i = i + 1;
+FIN BOU0;
+*
+*                  CALCUL DES CHAMPS INDICATEURS
+*===============================================
+* attention : la representation graphique des 
+*    champs indicateurs est tres trompeuse!!
+*    le test commenté valide que le champ est 
+*    bien coonstitue de 0. et de 1
+*===============================================
+IND0 = TABLE;
+IND0G = TABLE;
+NUM0 = 0. * UN0;
+i = 1;
+REPETE BOU1 NBC0;
+IND0 . i = UN0;
+j = 1;
+REPETE BOU2 NBC0;
+SI (j NEG i);
+IND1  = MASQUE ((D0 . i) - (D0 . j)) EGINFE 0.;
+RECOUVR0 = MASQUE (IND1 * NUM0) SUPERIEUR 0.;
+IND1 = IND1 - RECOUVR0;
+IND0 . i = (IND0 . i) * IND1;
+FINSI;
+j = j + 1;
+FIN BOU2;
+*trac (IND0 . i) MOD0;
+*
+M0 = MINI (IND0 . i);
+M1 = MAXI (IND0 . i);
+*SI ((M0 NEG 0.) OU (M1 NEG 1.));
+*MESSAGE 'ERREUR SUR LE CHAMP INDICATEUR';
+*OPTI DONN 5;
+*FINSI;
+
+*
+*NUM0 = NUM0 + ((IND0 . i) * (1.*i));
+NUM0 = NUM0 + ((IND0 . i) * (TNUM0 . i));
+i = i + 1;
+FIN BOU1;
+SI (VISU0 EGA 1)
+trac NUM0 MOD0;
+FINSI;
+*opti donn 5;
+*
+*
+*                REGROUPEMENT PAR NUMERO DE ZONE
+*===============================================
+IND0 = TABLE;
+i = NUMMIN0;
+k = 1;
+REPETE BOU11 (NUMMAX0 - NUMMIN0 + 1);
+INDI0 = MASQUE NUM0 SUPERIEUR (i - 0.5);
+INDS0 = MASQUE NUM0 INFERIEUR (i + 0.5);
+IND0 . k = INDI0 * INDS0;
+IND0G . k = CHAN STRESSES MOD0 (IND0 . k);
+i = i + 1;
+k = k + 1;
+FIN BOU11;
+*
+FINPROC IND0 NUMMIN0 NUMMAX0;
+*****************************************
+* FIN DE LA PROCEDURE POLYXMM4
+*****************************************
+$$$$
+
+
+$$$$ @DEFMO
+****************************************************
+****************************************************
+*
+*  PROCEDURE D'IDENTIFICATION D'UNE TRANSFORMATION 
+*  HOMOGENE PAR MINIMISATION AVEC LE CHAMP DE 
+*  DEPLACEMENTS SUR UN MAILLAGE DONNE
+*
+* L.GELEBART                         09/08
+****************************************************
+****************************************************
+DEBPROC @DEFMO S0*MAILLAGE DEP0*CHPOINT;
+*
+* S0 = Maillage "enveloppe" du volume
+* DEP0 = champs de déplacement sur MAIL0
+*
+* calcul des coefficients du système lineaire
+*                 "moindres carres"
+*---------------------------------------------
+MODS0 = S0 MODE MECANIQUE ELASTIQUE;
+X0 = COOR 1 S0; UX0 = EXCO DEP0 UX;
+Y0 = COOR 2 S0; UY0 = EXCO DEP0 UY;
+Z0 = COOR 3 S0; UZ0 = EXCO DEP0 UZ;
+IXX0 = INTG MODS0 (CHAN CHAM (X0 * X0) S0);
+IXY0 = INTG MODS0 (CHAN CHAM (X0 * Y0) S0);
+IXZ0 = INTG MODS0 (CHAN CHAM (X0 * Z0) S0);
+IYX0 = INTG MODS0 (CHAN CHAM (Y0 * X0) S0);
+IYY0 = INTG MODS0 (CHAN CHAM (Y0 * Y0) S0);
+IYZ0 = INTG MODS0 (CHAN CHAM (Y0 * Z0) S0);
+IZX0 = INTG MODS0 (CHAN CHAM (Z0 * X0) S0);
+IZY0 = INTG MODS0 (CHAN CHAM (Z0 * Y0) S0);
+IZZ0 = INTG MODS0 (CHAN CHAM (Z0 * Z0) S0);
+*
+IXUX0 = INTG MODS0 (CHAN CHAM (X0 * UX0) S0); 
+IXUY0 = INTG MODS0 (CHAN CHAM (X0 * UY0) S0); 
+IXUZ0 = INTG MODS0 (CHAN CHAM (X0 * UZ0) S0); 
+IYUX0 = INTG MODS0 (CHAN CHAM (Y0 * UX0) S0); 
+IYUY0 = INTG MODS0 (CHAN CHAM (Y0 * UY0) S0); 
+IYUZ0 = INTG MODS0 (CHAN CHAM (Y0 * UZ0) S0); 
+IZUX0 = INTG MODS0 (CHAN CHAM (Z0 * UX0) S0); 
+IZUY0 = INTG MODS0 (CHAN CHAM (Z0 * UY0) S0); 
+IZUZ0 = INTG MODS0 (CHAN CHAM (Z0 * UZ0) S0); 
+*
+IUX0 = INTG MODS0 (CHAN CHAM UX0 S0);
+IUY0 = INTG MODS0 (CHAN CHAM UY0 S0);
+IUZ0 = INTG MODS0 (CHAN CHAM UZ0 S0);
+*
+IX0 = INTG MODS0 (CHAN CHAM X0 S0);IX1 = 0. - IX0;
+IY0 = INTG MODS0 (CHAN CHAM Y0 S0);IY1 = 0. - IY0;
+IZ0 = INTG MODS0 (CHAN CHAM Z0 S0);IZ1 = 0. - IZ0;
+*
+I0 = INTG MODS0 (MANU CHML S0 SCAL 1.);
+*
+*              RESOLUTION DU SYSTEME LINEAIRE
+*--------------------------------------------
+*23456789123456789123456789123456789123456789123456789123456789123456789
+PA = 1. 0. 0.;
+MAIL0 = MANU POI1 PA;
+nom_i = MOTS FXX  FYY  FZZ  FXY  FYX  FXZ  FZX  FYZ  FZY  UX  UY  UZ;
+ligxx = prog IXX0 0.   0.   IYX0 0.   IZX0 0.   0.   0.   IX1 0.  0.;
+ligyy = prog 0.   IYY0 0.   0.   IXY0 0.   0.   IZY0 0.   0.  IY1 0.;
+ligzz = prog 0.   0.   IZZ0 0.   0.   0.   IXZ0 0.   IYZ0 0.  0.  IZ1;
+ligxy = prog IXY0 0.   0.   IYY0 0.   IZY0 0.   0.   0.   IY1 0.  0.;
+ligyx = prog 0.   IYX0 0.   0.   IXX0 0.   0.   IZX0 0.   0.  IX1 0.;
+ligxz = prog IXZ0 0.   0.   IYZ0 0.   IZZ0 0.   0.   0.   IZ1 0.  0.;
+ligzx = prog 0.   0.   IZX0 0.   0.   0.   IXX0 0.   IYX0 0.  0.  IX1;
+ligyz = prog 0.   IYZ0 0.   0.   IXZ0 0.   0.   IZZ0 0.   0.  IZ1 0.;
+ligzy = prog 0.   0.   IZY0 0.   0.   0.   IXY0 0.   IYY0 0.  0.  IY0;
+ligx =  prog IX0  0.   0.   IY0  0.   IZ0  0.   0.   0.   I0  0.  0.;
+ligy =  prog 0.   IY0  0.   0.   IX0  0.   0.   IZ0  0.   0.  I0  0.;
+ligz =  prog 0.   0.   IZ0  0.   0.   0.   IX0  0.   IY0  0.  0.  I0;
+*
+nom_d =  MOTS IXX IYY IZZ IXY IYX IXZ IZX IYZ IZY IX IY IZ;
+*
+RIG0 = MANU RIGI MAIL0 nom_i DUAL nom_d 'QUEL'
+ligxx ligyy ligzz ligxy ligyx ligxz ligzx ligyz ligzy
+ligx ligy ligz;
+*
+F0 = MANU CHPO PA IXUX0 IXX IYUY0 IYY IZUZ0 IZZ
+IYUX0 IXY IXUY0 IYX 
+IZUX0 IXZ IXUZ0 IZX
+IZUY0 IYZ IYUZ0 IZY IUX0 IX IUY0 IY IUZ0 IZ;
+*
+SOL0 = RESOU RIG0 F0;
+*
+ETAB1 = TABLE;
+*
+ETAB1 . 1 = MAXI (EXCO FXX SOL0);
+ETAB1 . 2 = MAXI (EXCO FYY SOL0);
+ETAB1 . 3 = MAXI (EXCO FZZ SOL0);
+ETAB1 . 4 = MAXI (EXCO FXY SOL0);
+ETAB1 . 5 = MAXI (EXCO FYX SOL0);
+ETAB1 . 6 = MAXI (EXCO FXZ SOL0);
+ETAB1 . 7 = MAXI (EXCO FZX SOL0);
+ETAB1 . 8 = MAXI (EXCO FYZ SOL0);
+ETAB1 . 9 = MAXI (EXCO FZY SOL0);
+ETAB1 . 10 = MAXI (EXCO UX SOL0);
+ETAB1 . 11 = MAXI (EXCO UY SOL0);
+ETAB1 . 12 = MAXI (EXCO UZ SOL0);
+
+*
+FINPROC ETAB1;
+*****************************************
+* FIN DE LA PROCEDURE @DEFMO
+*****************************************
+$$$$
+
+$$$$ @SYSLIN
+*23456789123456789123456789123456789123456789123456789123456789123456789
+************************************************************************
+*
+* PROCEDURE POUUR LA RESOLUTION D'UN SYSTEME LINEAIRE
+*
+* L. GELEBART 24/09/08
+*
+************************************************************************
+************************************************************************
+DEBPROC @SYSLIN K1*TABLE F1*TABLE;
+DIME0 = VALE DIME;
+OPTI DIME 3;
+*
+IMAX = DIME K1;
+P0 = MANU POI1 (0. 0. 0.);
+*
+* definition des noms des inconnues et de leurs duales
+*-----------------------------------------------------
+I0 = 0;
+REPETE BOU0 IMAX;
+I0 = I0+1;
+SI (I0 EGA 1);
+NOM_I = MOTS (CHAINE 'I' I0);
+NOM_D = MOTS (CHAINE 'D' I0);
+SINON;
+NOM_I = NOM_I ET (MOTS (CHAINE 'I' I0));
+NOM_D = NOM_D ET (MOTS (CHAINE 'D' I0));
+FINSI;
+FIN BOU0;
+*
+*                             definition de la matrice
+*-----------------------------------------------------
+I0 = 0;
+REPETE BOUI0 IMAX;
+I0=I0+1;
+J0 = 0;
+REPETE BOUJ0 IMAX;
+J0 = J0 + 1;
+SI ((I0 EGA 1) ET (J0 EGA 1));
+KPROG0 = PROG (K1 . I0 . J0);
+SINON;
+KPROG0 = KPROG0 ET (PROG (K1 . I0 . J0));
+FINSI;
+FIN BOUJ0;
+FIN BOUI0;
+*
+RIG0 = MANU RIGI P0 NOM_I DUAL NOM_D 'QUEL' KPROG0;
+*
+*                                definition du vecteur
+*-----------------------------------------------------
+I0 = 0;
+REPETE BOUI0 IMAX;
+I0=I0+1;
+SI (I0 EGA 1);
+V0 = MANU CHPO P0 (F1 . I0) (EXTR NOM_D I0);
+SINON;
+V0 = V0 + (MANU CHPO P0 (F1 . I0) (EXTR NOM_D I0));
+FINSI;
+FIN BOUI0;
+*
+*                                resolution du systeme
+*-----------------------------------------------------
+V1 = RESOU RIG0 V0; 
+*
+*         regroupement du resultat sous forme de table
+*-----------------------------------------------------
+U1 = TABLE;
+I0 = 0;
+REPETE BOUI0 IMAX;
+I0=I0+1;
+U1 . I0 = MAXI (EXCO (EXTR NOM_I I0) V1);
+FIN BOUI0;
+*
+OPTI DIME DIME0;
+FINPROC U1;
+************************************************************************
+* FIN DE LA PROCEDURE @SYSLIN
+************************************************************************
+$$$$
+
+
+$$$$ @KEFF
+*23456789123456789123456789123456789123456789123456789123456789123456789
+************************************************************************
+************************************************************************
+*
+*  PROCEDURE DE CALCUL DU COMPOPRTEMENT EFFECTIF D'UNE MICROSTRUTURE
+*
+*  L. GELEBART 25/09/2008
+*
+************************************************************************
+************************************************************************
+DEBPROC @KEFF MOD1*MMODEL  MAT1*MCHAML CLIM1*PROCEDUR AMPL1*FLOTTANT 
+              CONV1*ENTIER VISU1*TABLE;
+*
+*PCLIM1 = MOT CLIM1;
+MAIL1 = MOD1 EXTR 'MAIL';
+AMPL2 = AMPL1 * 1.e-6;
+* 
+*                       DEFINITION DES 6 CHARGEMENTS
+*===================================================
+ETAB = TABLE;
+ETAB . 1 = TABLE;
+ETAB . 1 . 1 = AMPL1; ETAB . 1 . 2 = AMPL2; ETAB . 1 . 3 = AMPL2;
+ETAB . 1 . 4 = AMPL2; ETAB . 1 . 5 = AMPL2; ETAB . 1 . 6 = AMPL2;
+ETAB . 2 = TABLE;
+ETAB . 2 . 1 = AMPL2; ETAB . 2 . 2 = AMPL1; ETAB . 2 . 3 = AMPL2;
+ETAB . 2 . 4 = AMPL2; ETAB . 2 . 5 = AMPL2; ETAB . 2 . 6 = AMPL2;
+ETAB . 3 = TABLE;
+ETAB . 3 . 1 = AMPL2; ETAB . 3 . 2 = AMPL2; ETAB . 3 . 3 = AMPL1;
+ETAB . 3 . 4 = AMPL2; ETAB . 3 . 5 = AMPL2; ETAB . 3 . 6 = AMPL2;
+ETAB . 4 = TABLE;
+ETAB . 4 . 1 = AMPL2; ETAB . 4 . 2 = AMPL2; ETAB . 4 . 3 = AMPL2;
+ETAB . 4 . 4 = AMPL1; ETAB . 4 . 5 = AMPL2; ETAB . 4 . 6 = AMPL2;
+ETAB . 5 = TABLE;
+ETAB . 5 . 1 = AMPL2; ETAB . 5 . 2 = AMPL2; ETAB . 5 . 3 = AMPL2;
+ETAB . 5 . 4 = AMPL2; ETAB . 5 . 5 = AMPL1; ETAB . 5 . 6 = AMPL2;
+ETAB . 6 = TABLE;
+ETAB . 6 . 1 = AMPL2; ETAB . 6 . 2 = AMPL2; ETAB . 6 . 3 = AMPL2;
+ETAB . 6 . 4 = AMPL2; ETAB . 6 . 5 = AMPL2; ETAB . 6 . 6 = AMPL1;
+*
+*                                    INITIALISATIONS
+*===================================================
+*   Systeme lineaire
+*-------------------
+KSL0 = TABLE; KSL1 = TABLE;
+VSL0 = TABLE; VSL1 = TABLE;
+I0 = 0;
+REPETE BOUI0 36;
+I0 = I0 + 1;
+VSL0 . I0 = 0.; VSL1 . I0 = 0.;
+KSL0 . I0 = TABLE; KSL1 . I0 = TABLE;
+J0 = 0;
+REPETE BOUJ0 36;
+J0 = J0 + 1;
+KSL0 . I0 . J0 = 0.;KSL1 . I0 . J0 = 0.;
+FIN BOUJ0;
+FIN BOUI0;
+*   tables de sortie (contraintes et deformations moyennes)
+*----------------------------------------------------------
+C = TABLE;
+C . 1 = TABLE; C . 2 = TABLE; C . 3 = TABLE;
+C . 4 = TABLE; C . 5 = TABLE; C . 6 = TABLE;
+*
+*
+D = TABLE;
+D . 1 = TABLE; D . 2 = TABLE; D . 3 = TABLE;
+D . 4 = TABLE; D . 5 = TABLE; D . 6 = TABLE;
+*
+*                         BOUCLE SUR LES CHARGEMENTS
+*===================================================
+I = 0;
+REPETER CHGT 6;
+I = I + 1;
+ETAB1 = TABLE (ETAB . I);
+RIG1 FTOT1 = CLIM1 MAIL1 ETAB1;
+*K = 0.; QUITTER @KEFF;
+*
+*               CALCUL ELASTIQUE
+*-------------------------------
+RIGMAT = RIGI MOD1 MAT1;
+KTOT1 = RIGMAT ET RIG1;
+DEP1 = RESOU KTOT1 FTOT1;
+DEFO0 = DEFO DEP1 MAIL1 0.;
+DEFO1 = DEFO DEP1 MAIL1 1. ROUGE;
+SI ((VISU1 . 1) EGA 1);
+trac (DEFO0 ET DEFO1) CACH;
+FINSI;
+*
+DEF1 = EPSI MOD1 DEP1;
+SIG1 = SIGMA MOD1 MAT1 DEP1;
+SI ((VISU1 . 2) EGA 1);
+TRAC MOD1 SIG1;
+FINSI;
+SI ((VISU1 . 3) EGA 1);
+TRAC MOD1 DEF1;
+FINSI;
+*
+*                POST-TRAITEMENT
+*  (contraintes et deformation moyennes)
+*-------------------------------
+V1 = MESU MAIL1;
+*
+SXX1 = (INTG SIG1 MOD1 SMXX) / V1;
+SYY1 = (INTG SIG1 MOD1 SMYY) / V1;
+SZZ1 = (INTG SIG1 MOD1 SMZZ) / V1;
+SXY1 = (INTG SIG1 MOD1 SMXY) / V1;
+SXZ1 = (INTG SIG1 MOD1 SMXZ) / V1;
+SYZ1 = (INTG SIG1 MOD1 SMYZ) / V1;
+*
+EXX1 = (INTG DEF1 MOD1 EPXX) / V1;
+EYY1 = (INTG DEF1 MOD1 EPYY) / V1;
+EZZ1 = (INTG DEF1 MOD1 EPZZ) / V1;
+EXY1 = (INTG DEF1 MOD1 GAXY) / (2 * V1);
+EYZ1 = (INTG DEF1 MOD1 GAYZ) / (2 * V1);
+EXZ1 = (INTG DEF1 MOD1 GAXZ) / (2 * V1);
+*
+* ECRITURE DES RESULTATS DANS DES TABLES (pour les 6 chargements)
+*-----------------------------------------------------------------
+C . 1 . I = SXX1;
+C . 2 . I = SYY1;
+C . 3 . I = SZZ1;
+C . 4 . I = SXY1;
+C . 5 . I = SXZ1;
+C . 6 . I = SYZ1;
+*
+D . 1 . I = EXX1;
+D . 2 . I = EYY1;
+D . 3 . I = EZZ1;
+D . 4 . I = EXY1;
+D . 5 . I = EXZ1;
+D . 6 . I = EYZ1;
+*
+*  DEFINITION DU SYTEME LINEAIRE 36*36                       
+*-------------------------------------
+* !!! mauvais arrangement des equationr pour RESO 
+*
+SI (CONV1 EGA 0);
+EXY2 = 2. * EXY1; EXZ2 = 2. * EXZ1; EYZ2 = 2. * EYZ1;
+SXY2 = SXY1; SXZ2 = SXZ1; SYZ2 = SYZ1;
+FINSI;
+SI (CONV1 EGA 1);
+RA2 = 2. ** 0.5;
+EXY2 = RA2 * EXY1; EXZ2 = RA2 * EXZ1; EYZ2 = RA2 * EYZ1;
+SXY2 = RA2 * SXY1; SXZ2 = RA2 * SXZ1; SYZ2 = RA2 * SYZ1;
+FINSI;
+*
+J0 = 0;
+REPETE BOUJ0 6;
+J0 = J0 + 1;
+KSL0 . (J0 + (6 *(I-1))) . ((6*(J0-1)) + 1) = EXX1; 
+KSL0 . (J0 + (6 *(I-1))) . ((6*(J0-1)) + 2) = EYY1; 
+KSL0 . (J0 + (6 *(I-1))) . ((6*(J0-1)) + 3) = EZZ1; 
+KSL0 . (J0 + (6 *(I-1))) . ((6*(J0-1)) + 4) = EXY2; 
+KSL0 . (J0 + (6 *(I-1))) . ((6*(J0-1)) + 5) = EXZ2; 
+KSL0 . (J0 + (6 *(I-1))) . ((6*(J0-1)) + 6) = EYZ2; 
+FIN BOUJ0;
+*
+VSL0 . (1 + (6 *(I-1))) = SXX1;
+VSL0 . (2 + (6 *(I-1))) = SYY1;
+VSL0 . (3 + (6 *(I-1))) = SZZ1;
+VSL0 . (4 + (6 *(I-1))) = SXY2;
+VSL0 . (5 + (6 *(I-1))) = SXZ2;
+VSL0 . (6 + (6 *(I-1))) = SYZ2;
+*
+FIN CHGT;
+*
+*                     FIN BOUCLE SUR LES CHARGEMENTS
+*                           RESOLUTION SYST LINEAIRE
+*===================================================
+*
+* rearrangement des equations KSL0 et VSL0!
+*-------------------------------------------
+I0 = 0;
+REPETE BOUA0 36;
+I0 = I0 + 1;
+KSL1 . 1 . I0 = KSL0 . 1 . I0; VSL1 . 1 = VSL0 . 1;
+KSL1 . 2 . I0 = KSL0 . 7 . I0; VSL1 . 2 = VSL0 . 7;
+KSL1 . 3 . I0 = KSL0 . 13 . I0; VSL1 . 3 = VSL0 . 13;
+KSL1 . 4 . I0 = KSL0 . 19 . I0; VSL1 . 4 = VSL0 . 19;
+KSL1 . 5 . I0 = KSL0 . 25 . I0; VSL1 . 5 = VSL0 . 25;
+KSL1 . 6 . I0 = KSL0 . 31 . I0; VSL1 . 6 = VSL0 . 31;
+*
+KSL1 . 7 . I0 = KSL0 . 2 . I0; VSL1 . 7 = VSL0 . 2;
+KSL1 . 8 . I0 = KSL0 . 8 . I0; VSL1 . 8 = VSL0 . 8;
+KSL1 . 9 . I0 = KSL0 . 14 . I0; VSL1 . 9 = VSL0 . 14;
+KSL1 . 10 . I0 = KSL0 . 20 . I0; VSL1 . 10 = VSL0 . 20;
+KSL1 . 11 . I0 = KSL0 . 26 . I0; VSL1 . 11 = VSL0 . 26;
+KSL1 . 12 . I0 = KSL0 . 32 . I0; VSL1 . 12 = VSL0 . 32;
+*
+KSL1 . 13 . I0 = KSL0 . 3 . I0; VSL1 . 13 = VSL0 . 3;
+KSL1 . 14 . I0 = KSL0 . 9 . I0; VSL1 . 14 = VSL0 . 9;
+KSL1 . 15 . I0 = KSL0 . 15 . I0; VSL1 . 15 = VSL0 . 15;
+KSL1 . 16 . I0 = KSL0 . 21 . I0; VSL1 . 16 = VSL0 . 21;
+KSL1 . 17 . I0 = KSL0 . 27 . I0; VSL1 . 17 = VSL0 . 27;
+KSL1 . 18 . I0 = KSL0 . 33 . I0; VSL1 . 18 = VSL0 . 33;
+*
+KSL1 . 19 . I0 = KSL0 . 4 . I0; VSL1 . 19 = VSL0 . 4;
+KSL1 . 20 . I0 = KSL0 . 10 . I0; VSL1 . 20 = VSL0 . 10;
+KSL1 . 21 . I0 = KSL0 . 16 . I0; VSL1 . 21 = VSL0 . 16;
+KSL1 . 22 . I0 = KSL0 . 22 . I0; VSL1 . 22 = VSL0 . 22;
+KSL1 . 23 . I0 = KSL0 . 28 . I0; VSL1 . 23 = VSL0 . 28;
+KSL1 . 24 . I0 = KSL0 . 34 . I0; VSL1 . 24 = VSL0 . 34;
+*
+KSL1 . 25 . I0 = KSL0 . 5 . I0; VSL1 . 25 = VSL0 . 5;
+KSL1 . 26 . I0 = KSL0 . 11 . I0; VSL1 . 26 = VSL0 . 11;
+KSL1 . 27 . I0 = KSL0 . 17 . I0; VSL1 . 27 = VSL0 . 17;
+KSL1 . 28 . I0 = KSL0 . 23 . I0; VSL1 . 28 = VSL0 . 23;
+KSL1 . 29 . I0 = KSL0 . 29 . I0; VSL1 . 29 = VSL0 . 29;
+KSL1 . 30 . I0 = KSL0 . 35 . I0; VSL1 . 30 = VSL0 . 35;
+*
+KSL1 . 31 . I0 = KSL0 . 6 . I0; VSL1 . 31 = VSL0 . 6;
+KSL1 . 32 . I0 = KSL0 . 12 . I0; VSL1 . 32 = VSL0 . 12;
+KSL1 . 33 . I0 = KSL0 . 18 . I0; VSL1 . 33 = VSL0 . 18;
+KSL1 . 34 . I0 = KSL0 . 24 . I0; VSL1 . 34 = VSL0 . 24;
+KSL1 . 35 . I0 = KSL0 . 30 . I0; VSL1 . 35 = VSL0 . 30;
+KSL1 . 36 . I0 = KSL0 . 36 . I0; VSL1 . 36 = VSL0 . 36;
+*
+FIN BOUA0;
+*
+*CALCUL DU TENSEUR EFFECTIF
+*--------------------------
+*
+KEFF1 = @SYSLIN KSL1 VSL1;
+K = TABLE;
+I0 = 0;
+J0 = 0;
+i = 0;
+REPETE BOUI0 6;
+I0 = I0 + 1;
+K . I0 = TABLE;
+J0 = 0;
+REPETE BOUJ0 6;
+J0 = J0 + 1;
+i = i+1;
+K . I0 . J0 = KEFF1 . i;
+FIN BOUJ0;
+FIN BOUI0;
+*
+*
+FINPROC K C D;
+************************************************************************
+*  FIN DE LA PROCEDURE @KEFF
+************************************************************************
+$$$$
+
+$$$$ @CLMI1C
+****************************************************
+****************************************************
+*
+*  PROCEDURE POUR APPLICATION DE COND LIM MIXTES
+*  TYPE I AVEC PILOTAGE EN CONTRAINTE
+*
+* L.GELEBART                         07/08
+****************************************************
+****************************************************
+DEBPROC @CLMI1C MAIL0*MAILLAGE CONT0*TABLE;
+SXX = CONT0 . 1; SYY = CONT0 . 2; SZZ = CONT0 . 3;
+SXY = CONT0 . 4; SXZ = CONT0 . 5; SYZ = CONT0 . 6;
+MOD0 = MODE MAIL0 MECANIQUE ELASTIQUE;
+*  Identification des points et surfaces exterieures
+*    pour application des CL
+*=====================================================
+ENVE0 = ENVE MAIL0;
+elim0 = 1.e-4;
+ENVE_PT0 = CHANGE ENVE0 POI1;
+XMAX = MAXI (COOR 1 ENVE0);XMIN = MINI (COOR 1 ENVE0);
+YMAX = MAXI (COOR 2 ENVE0);YMIN = MINI (COOR 2 ENVE0);
+ZMAX = MAXI (COOR 3 ENVE0);ZMIN = MINI (COOR 3 ENVE0);
+LX0 = XMAX - XMIN; LY0 = YMAX - YMIN; LZ0 = ZMAX - ZMIN;
+PXMIN = ENVE_PT0 POIN 'PLAN'
+ (XMIN 0. 0.) (XMIN 1. 0.) (XMIN 0. 1.) (LX0 * elim0);
+PYMIN = ENVE_PT0 POIN 'PLAN'
+ (0. YMIN 0.) (1. YMIN 0.) (0. YMIN 1.) (LY0 * elim0);
+PZMIN = ENVE_PT0 POIN 'PLAN'
+ (0. 0. ZMIN) (1. 0. ZMIN) (0. 1. ZMIN) (LZ0 * elim0);
+PXMAX = ENVE_PT0 POIN 'PLAN'
+ (XMAX 0. 0.) (XMAX 1. 0.) (XMAX 0. 1.) (LX0 * elim0);
+PYMAX = ENVE_PT0 POIN 'PLAN'
+ (0. YMAX 0.) (1. YMAX 0.) (0. YMAX 1.) (LY0 * elim0);
+PZMAX = ENVE_PT0 POIN 'PLAN'
+ (0. 0. ZMAX) (1. 0. ZMAX) (0. 1. ZMAX) (LZ0 * elim0);
+*
+SURFX0 = ENVE0 ELEM APPUYE STRICTEMENT PXMIN;
+SURFY0 = ENVE0 ELEM APPUYE STRICTEMENT PYMIN;
+SURFZ0 = ENVE0 ELEM APPUYE STRICTEMENT PZMIN;
+SURFX1 = ENVE0 ELEM APPUYE STRICTEMENT PXMAX;
+SURFY1 = ENVE0 ELEM APPUYE STRICTEMENT PYMAX;
+SURFZ1 = ENVE0 ELEM APPUYE STRICTEMENT PZMAX;
+*
+A1 = ENVE_PT0 POIN PROC (XMIN YMIN ZMIN);
+A2 = ENVE_PT0 POIN PROC (XMAX YMIN ZMIN);
+A4 = ENVE_PT0 POIN PROC (XMIN YMAX ZMIN);
+*
+SX00 = LY0 * LZ0;
+SX0 = MESU SURFX0; 
+SX1 = MESU SURFX1; 
+SY00 = LX0 * LZ0;
+SY0 = MESU SURFY0; 
+SY1 = MESU SURFY1; 
+SZ00 = LX0 * LY0;
+SZ0 = MESU SURFZ0; 
+SZ1 = MESU SURFZ1; 
+*trac SURFZ0;
+*MESSAGE 'SX00 = ' SX00;
+*MESSAGE 'SX0 = ' SX0;
+*MESSAGE 'SX1 = ' SX1;
+*MESSAGE 'SY00 = ' SY00;
+*MESSAGE 'SY0 = ' SY0;
+*MESSAGE 'SY1 = ' SY1;
+*MESSAGE 'SZ00 = ' SZ00;
+*MESSAGE 'SZ0 = ' SZ0;
+*MESSAGE 'SZ1 = ' SZ1;
+*
+*  Application des contraintes
+*================================
+test = 0;
+SI ((SXZ NEG 0.) OU (SYZ NEG 0.) OU (SZZ NEG 0.));
+FZ1 = FSUR MASS MOD0 SURFZ1 (SXZ SYZ SZZ);
+FZ0 = FSUR MASS MOD0 SURFZ0 
+         ((0. - SXZ) (0. - SYZ) (0. - SZZ));
+FZ0 = FZ0 * (SZ00 / SZ0);
+FZ1 = FZ1 * (SZ00 / SZ1);
+FCLP0 = FZ0 ET FZ1;
+test=1;
+FINSI;
+*
+SI ((SXY NEG 0.) OU (SYY NEG 0.) OU (SYZ NEG 0.));
+FY1 = FSUR MASS MOD0 SURFY1 (SXY SYY SYZ);
+FY0 = FSUR MASS MOD0 SURFY0 
+         ((0. - SXY) (0. - SYY) (0. - SYZ));
+FY0 = FY0 * (SY00 / SY0);
+FY1 = FY1 * (SY00 / SY1);
+SI (test EGA 1); 
+FCLP0 = FCLP0 ET (FY0 ET FY1);
+SINON;
+FCLP0 = FY0 ET FY1;
+test=1;
+FINSI;
+FINSI;
+*
+SI ((SXX NEG 0.) OU (SXY NEG 0.) OU (SXZ NEG 0.));
+FX1 = FSUR MASS MOD0 SURFX1 (SXX SXY SXZ);
+FX0 = FSUR MASS MOD0 SURFX0 
+         ((0. - SXX) (0. - SXY) (0. - SXZ));
+FX0 = FX0 * (SX00 / SX0);
+FX1 = FX1 * (SX00 / SX1);
+SI (test EGA 1); 
+FCLP0 = FCLP0 ET (FX0 ET FX1);
+SINON;
+FCLP0 = FX0 ET FX1;
+FINSI;
+FINSI;
+*
+*  Blocage du mvt de corps rigide
+*===========================================
+BL1 = BLOQUE UX UY UZ A1;
+BL2 = BLOQUE UY UZ A2;
+BL3 = BLOQUE UZ A4;
+BL0 = BL1 ET (BL2 ET BL3); 
+*BL0 = @CORIGI ENVE0;
+*
+*  Application des conditions de deformation normale homogene
+*=============================================================
+*
+*  Application des conditions de deformation homogene
+*====================================================
+ENVE1 = (SURFX0 ET SURFX1 ET SURFY0 ET SURFY1 ET SURFZ0 ET SURFZ1);
+elim 1.e-4  ENVE1;
+ENVE_PT1 = CHANGE ENVE1 POI1;
+B1 = ENVE_PT1 POIN PROC (XMAX YMIN ZMIN);
+B2 = ENVE_PT1 POIN PROC (XMIN YMAX ZMIN);
+B3 = ENVE_PT1 POIN PROC (XMIN YMIN ZMAX);
+N0 = NBNO ENVE_PT1;
+*trac ENVE1 CACH;
+RIGCLP = BL0;
+*
+SURFXPT0 = CHANGE SURFX0 POI1;
+N0 = NBNO SURFX0;
+i = 0;
+REPETE BOUX0 (N0);
+i = i + 1;
+M0 = SURFXPT0 POIN i;
+SI ((M0 NEG B1) ET (M0 NEG B2) ET (M0 NEG B3));
+RIGIX = RELA 1. UX M0 - (((coor 1 M0)-XMIN)/LX0) UX B1 
+-(((coor 2 M0)-YMIN)/LY0) UX B2 - (((coor 3 M0)-ZMIN)/LZ0) UX B3;
+RIGCLP = RIGCLP ET (RIGIX);
+FINSI;
+FIN BOUX0;
+*
+SURFXPT1 = CHANGE SURFX1 POI1;
+N0 = NBNO SURFX1; 
+i = 0;
+REPETE BOUX1 (N0);
+i = i + 1;
+M0 = SURFXPT1 POIN i;
+SI ((M0 NEG B1) ET (M0 NEG B2) ET (M0 NEG B3));
+RIGIX = RELA 1. UX M0 - (((coor 1 M0)-XMIN)/LX0) UX B1 
+-(((coor 2 M0)-YMIN)/LY0) UX B2 - (((coor 3 M0)-ZMIN)/LZ0) UX B3;
+RIGCLP = RIGCLP ET (RIGIX);
+FINSI;
+FIN BOUX1;
+*
+SURFYPT0 = CHANGE SURFY0 POI1;
+N0 = NBNO SURFY0;
+i = 0;
+REPETE BOUY0 (N0);
+i = i + 1;
+M0 = SURFYPT0 POIN i;
+SI ((M0 NEG B1) ET (M0 NEG B2) ET (M0 NEG B3));
+RIGIY = RELA 1. UY M0 - (((coor 1 M0)-XMIN)/LX0) UY B1 
+-(((coor 2 M0)-YMIN)/LY0) UY B2 - (((coor 3 M0)-ZMIN)/LZ0) UY B3;
+RIGCLP = RIGCLP ET (RIGIY);
+FINSI;
+FIN BOUY0;
+*
+SURFYPT1 = CHANGE SURFY1 POI1;
+N0 = NBNO SURFY1;
+i = 0;
+REPETE BOUY1 (N0);
+i = i + 1;
+M0 = SURFYPT1 POIN i;
+SI ((M0 NEG B1) ET (M0 NEG B2) ET (M0 NEG B3));
+RIGIY = RELA 1. UY M0 - (((coor 1 M0)-XMIN)/LX0) UY B1 
+-(((coor 2 M0)-YMIN)/LY0) UY B2 - (((coor 3 M0)-ZMIN)/LZ0) UY B3;
+RIGCLP = RIGCLP ET (RIGIY);
+FINSI;
+FIN BOUY1;
+*
+SURFZPT0 = CHANGE SURFZ0 POI1;
+N0 = NBNO SURFZ0;
+i = 0;
+REPETE BOUZ0 (N0);
+i = i + 1;
+M0 = SURFZPT0 POIN i;
+SI ((M0 NEG B1) ET (M0 NEG B2) ET (M0 NEG B3));
+RIGIZ = RELA 1. UZ M0 - (((coor 1 M0)-XMIN)/LX0) UZ B1 
+-(((coor 2 M0)-YMIN)/LY0) UZ B2 - (((coor 3 M0)-ZMIN)/LZ0) UZ B3;
+RIGCLP = RIGCLP ET (RIGIZ);
+FINSI;
+FIN BOUZ0;
+*
+SURFZPT1 = CHANGE SURFZ1 POI1;
+N0 = NBNO SURFZ1;
+i = 0;
+REPETE BOUZ1 (N0);
+i = i + 1;
+M0 = SURFZPT1 POIN i;
+SI ((M0 NEG B1) ET (M0 NEG B2) ET (M0 NEG B3));
+RIGIZ = RELA 1. UZ M0 - (((coor 1 M0)-XMIN)/LX0) UZ B1 
+-(((coor 2 M0)-YMIN)/LY0) UZ B2 - (((coor 3 M0)-ZMIN)/LZ0) UZ B3;
+RIGCLP = RIGCLP ET (RIGIZ);
+FINSI;
+FIN BOUZ1;
+*
+FINPROC RIGCLP FCLP0;
+*******************************************************
+* FIN DE LA PROCEDURE CLMI1C
+*******************************************************
+$$$$
+
+
+
+$$$$ @CLMI2C
+*23456789123456789123456789123456789123456789123456789123456789123456789
+****************************************************
+****************************************************
+*
+*  PROCEDURE POUR APPLICATION DE COND LIM MIXTES
+*  TYPE II AVEC PILOTAGE EN CONTRAINTE
+*
+* L.GELEBART                         08/08
+****************************************************
+****************************************************
+DEBPROC @CLMI2C MAIL0*MAILLAGE CONT0*TABLE;
+SXX = CONT0 . 1; SYY = CONT0 . 2; SZZ = CONT0 . 3;
+SXY = CONT0 . 4; SXZ = CONT0 . 5; SYZ = CONT0 . 6;
+MOD0 = MODE MAIL0 MECANIQUE ELASTIQUE;
+*  Identification des points et surfaces exterieures
+*    pour application des CL
+*=====================================================
+ENVE0 = ENVE MAIL0;
+elim0 = 1.e-4;
+ENVE_PT0 = CHANGE ENVE0 POI1;
+XMAX = MAXI (COOR 1 ENVE0);XMIN = MINI (COOR 1 ENVE0);
+YMAX = MAXI (COOR 2 ENVE0);YMIN = MINI (COOR 2 ENVE0);
+ZMAX = MAXI (COOR 3 ENVE0);ZMIN = MINI (COOR 3 ENVE0);
+LX0 = XMAX - XMIN; LY0 = YMAX - YMIN; LZ0 = ZMAX - ZMIN;
+PXMIN = ENVE_PT0 POIN 'PLAN'
+ (XMIN 0. 0.) (XMIN 1. 0.) (XMIN 0. 1.) (LX0 * elim0);
+PYMIN = ENVE_PT0 POIN 'PLAN'
+ (0. YMIN 0.) (1. YMIN 0.) (0. YMIN 1.) (LY0 * elim0);
+PZMIN = ENVE_PT0 POIN 'PLAN'
+ (0. 0. ZMIN) (1. 0. ZMIN) (0. 1. ZMIN) (LZ0 * elim0);
+PXMAX = ENVE_PT0 POIN 'PLAN'
+ (XMAX 0. 0.) (XMAX 1. 0.) (XMAX 0. 1.) (LX0 * elim0);
+PYMAX = ENVE_PT0 POIN 'PLAN'
+ (0. YMAX 0.) (1. YMAX 0.) (0. YMAX 1.) (LY0 * elim0);
+PZMAX = ENVE_PT0 POIN 'PLAN'
+ (0. 0. ZMAX) (1. 0. ZMAX) (0. 1. ZMAX) (LZ0 * elim0);
+*
+SURFX0 = ENVE0 ELEM APPUYE STRICTEMENT PXMIN;
+SURFY0 = ENVE0 ELEM APPUYE STRICTEMENT PYMIN;
+SURFZ0 = ENVE0 ELEM APPUYE STRICTEMENT PZMIN;
+SURFX1 = ENVE0 ELEM APPUYE STRICTEMENT PXMAX;
+SURFY1 = ENVE0 ELEM APPUYE STRICTEMENT PYMAX;
+SURFZ1 = ENVE0 ELEM APPUYE STRICTEMENT PZMAX;
+*
+A1 = ENVE_PT0 POIN PROC (XMIN YMIN ZMIN);
+A2 = ENVE_PT0 POIN PROC (XMAX YMIN ZMIN);
+A4 = ENVE_PT0 POIN PROC (XMIN YMAX ZMIN);
+*
+SX00 = LY0 * LZ0;
+SX0 = MESU SURFX0; 
+SX1 = MESU SURFX1; 
+SY00 = LX0 * LZ0;
+SY0 = MESU SURFY0; 
+SY1 = MESU SURFY1; 
+SZ00 = LX0 * LY0;
+SZ0 = MESU SURFZ0; 
+SZ1 = MESU SURFZ1; 
+*trac SURFZ0;
+MESSAGE 'SX00 = ' SX00;
+MESSAGE 'SX0 = ' SX0;
+MESSAGE 'SX1 = ' SX1;
+MESSAGE 'SY00 = ' SY00;
+MESSAGE 'SY0 = ' SY0;
+MESSAGE 'SY1 = ' SY1;
+MESSAGE 'SZ00 = ' SZ00;
+MESSAGE 'SZ0 = ' SZ0;
+MESSAGE 'SZ1 = ' SZ1;
+*
+*  Application des contraintes
+*================================
+test = 0;
+SI ((SXZ NEG 0.) OU (SYZ NEG 0.) OU (SZZ NEG 0.));
+FZ1 = FSUR MASS MOD0 SURFZ1 (SXZ SYZ SZZ);
+FZ0 = FSUR MASS MOD0 SURFZ0 
+         ((0. - SXZ) (0. - SYZ) (0. - SZZ));
+FZ0 = FZ0 * (SZ00 / SZ0);
+FZ1 = FZ1 * (SZ00 / SZ1);
+FCLP0 = FZ0 ET FZ1;
+test=1;
+FINSI;
+*
+SI ((SXY NEG 0.) OU (SYY NEG 0.) OU (SYZ NEG 0.));
+FY1 = FSUR MASS MOD0 SURFY1 (SXY SYY SYZ);
+FY0 = FSUR MASS MOD0 SURFY0 
+         ((0. - SXY) (0. - SYY) (0. - SYZ));
+FY0 = FY0 * (SY00 / SY0);
+FY1 = FY1 * (SY00 / SY1);
+SI (test EGA 1); 
+FCLP0 = FCLP0 ET (FY0 ET FY1);
+SINON;
+FCLP0 = FY0 ET FY1;
+test=1;
+FINSI;
+FINSI;
+*
+SI ((SXX NEG 0.) OU (SXY NEG 0.) OU (SXZ NEG 0.));
+FX1 = FSUR MASS MOD0 SURFX1 (SXX SXY SXZ);
+FX0 = FSUR MASS MOD0 SURFX0 
+         ((0. - SXX) (0. - SXY) (0. - SXZ));
+FX0 = FX0 * (SX00 / SX0);
+FX1 = FX1 * (SX00 / SX1);
+SI (test EGA 1); 
+FCLP0 = FCLP0 ET (FX0 ET FX1);
+SINON;
+FCLP0 = FX0 ET FX1;
+FINSI;
+FINSI;
+*
+*  Blocage du mvt de corps rigide
+*===========================================
+BL1 = BLOQUE UX UY UZ A1;
+BL2 = BLOQUE UY UZ A2;
+BL3 = BLOQUE UZ A4;
+BL0 = BL1 ET (BL2 ET BL3); 
+*BL0 = @CORIGI ENVE0;
+*
+*  Application des conditions de deformation TANGEANTIELLE homogene
+*=============================================================
+*
+ENVE1 = (SURFX0 ET SURFX1 ET SURFY0 ET SURFY1 ET SURFZ0 ET SURFZ1);
+elim 1.e-4  ENVE1;
+ENVE_PT1 = CHANGE ENVE1 POI1;
+B1 = ENVE_PT1 POIN PROC (XMAX YMIN ZMIN);
+B2 = ENVE_PT1 POIN PROC (XMIN YMAX ZMIN);
+B3 = ENVE_PT1 POIN PROC (XMIN YMIN ZMAX);
+N0 = NBNO ENVE_PT1;
+*trac ENVE1 CACH;
+RIGCLP = BL0;
+*
+SURFXPT0 = CHANGE SURFX0 POI1;
+N0 = NBNO SURFX0;
+i = 0;
+REPETE BOUX0 (N0);
+i = i + 1;
+M0 = SURFXPT0 POIN i;
+SI ((M0 NEG B1) ET (M0 NEG B2) ET (M0 NEG B3));
+RIGIY = RELA 1. UY M0 - (((coor 1 M0)-XMIN)/LX0) UY B1 
+-(((coor 2 M0)-YMIN)/LY0) UY B2 - (((coor 3 M0)-ZMIN)/LZ0) UY B3;
+RIGIZ = RELA 1. UZ M0 - (((coor 1 M0)-XMIN)/LX0) UZ B1 
+-(((coor 2 M0)-YMIN)/LY0) UZ B2 - (((coor 3 M0)-ZMIN)/LZ0) UZ B3;
+RIGCLP = RIGCLP ET (RIGIY ET RIGIZ);
+FINSI;
+FIN BOUX0;
+*
+SURFXPT1 = CHANGE SURFX1 POI1;
+N0 = NBNO SURFX1; 
+i = 0;
+REPETE BOUX1 (N0);
+i = i + 1;
+M0 = SURFXPT1 POIN i;
+SI ((M0 NEG B1) ET (M0 NEG B2) ET (M0 NEG B3));
+RIGIY = RELA 1. UY M0 - (((coor 1 M0)-XMIN)/LX0) UY B1 
+-(((coor 2 M0)-YMIN)/LY0) UY B2 - (((coor 3 M0)-ZMIN)/LZ0) UY B3;
+RIGIZ = RELA 1. UZ M0 - (((coor 1 M0)-XMIN)/LX0) UZ B1 
+-(((coor 2 M0)-YMIN)/LY0) UZ B2 - (((coor 3 M0)-ZMIN)/LZ0) UZ B3;
+RIGCLP = RIGCLP ET (RIGIY ET RIGIZ);
+FINSI;
+FIN BOUX1;
+*
+SURFYPT0 = CHANGE SURFY0 POI1;
+N0 = NBNO SURFY0;
+i = 0;
+REPETE BOUY0 (N0);
+i = i + 1;
+M0 = SURFYPT0 POIN i;
+SI ((M0 NEG B1) ET (M0 NEG B2) ET (M0 NEG B3));
+RIGIX = RELA 1. UX M0 - (((coor 1 M0)-XMIN)/LX0) UX B1 
+-(((coor 2 M0)-YMIN)/LY0) UX B2 - (((coor 3 M0)-ZMIN)/LZ0) UX B3;
+RIGIZ = RELA 1. UZ M0 - (((coor 1 M0)-XMIN)/LX0) UZ B1 
+-(((coor 2 M0)-YMIN)/LY0) UZ B2 - (((coor 3 M0)-ZMIN)/LZ0) UZ B3;
+RIGCLP = RIGCLP ET (RIGIX ET RIGIZ);
+FINSI;
+FIN BOUY0;
+*
+SURFYPT1 = CHANGE SURFY1 POI1;
+N0 = NBNO SURFY1;
+i = 0;
+REPETE BOUY1 (N0);
+i = i + 1;
+M0 = SURFYPT1 POIN i;
+SI ((M0 NEG B1) ET (M0 NEG B2) ET (M0 NEG B3));
+RIGIX = RELA 1. UX M0 - (((coor 1 M0)-XMIN)/LX0) UX B1 
+-(((coor 2 M0)-YMIN)/LY0) UX B2 - (((coor 3 M0)-ZMIN)/LZ0) UX B3;
+RIGIZ = RELA 1. UZ M0 - (((coor 1 M0)-XMIN)/LX0) UZ B1 
+-(((coor 2 M0)-YMIN)/LY0) UZ B2 - (((coor 3 M0)-ZMIN)/LZ0) UZ B3;
+RIGCLP = RIGCLP ET (RIGIX ET RIGIZ);
+FINSI;
+FIN BOUY1;
+*
+SURFZPT0 = CHANGE SURFZ0 POI1;
+N0 = NBNO SURFZ0;
+i = 0;
+REPETE BOUZ0 (N0);
+i = i + 1;
+M0 = SURFZPT0 POIN i;
+SI ((M0 NEG B1) ET (M0 NEG B2) ET (M0 NEG B3));
+RIGIX = RELA 1. UX M0 - (((coor 1 M0)-XMIN)/LX0) UX B1 
+-(((coor 2 M0)-YMIN)/LY0) UX B2 - (((coor 3 M0)-ZMIN)/LZ0) UX B3;
+RIGIY = RELA 1. UY M0 - (((coor 1 M0)-XMIN)/LX0) UY B1 
+-(((coor 2 M0)-YMIN)/LY0) UY B2 - (((coor 3 M0)-ZMIN)/LZ0) UY B3;
+RIGCLP = RIGCLP ET (RIGIX ET RIGIY);
+FINSI;
+FIN BOUZ0;
+*
+SURFZPT1 = CHANGE SURFZ1 POI1;
+N0 = NBNO SURFZ1;
+i = 0;
+REPETE BOUZ1 (N0);
+i = i + 1;
+M0 = SURFZPT1 POIN i;
+SI ((M0 NEG B1) ET (M0 NEG B2) ET (M0 NEG B3));
+RIGIX = RELA 1. UX M0 - (((coor 1 M0)-XMIN)/LX0) UX B1 
+-(((coor 2 M0)-YMIN)/LY0) UX B2 - (((coor 3 M0)-ZMIN)/LZ0) UX B3;
+RIGIY = RELA 1. UY M0 - (((coor 1 M0)-XMIN)/LX0) UY B1 
+-(((coor 2 M0)-YMIN)/LY0) UY B2 - (((coor 3 M0)-ZMIN)/LZ0) UY B3;
+RIGCLP = RIGCLP ET (RIGIX ET RIGIY);
+FINSI;
+FIN BOUZ1;
+*
+FINPROC RIGCLP FCLP0;
+*******************************************************
+* FIN DE LA PROCEDURE CLMI2C
+*******************************************************
+$$$$
+
+
+$$$$ @CLTH
+*23456789123456789123456789123456789123456789123456789123456789123456789
+************************************************************************
+************************************************************************
+*
+*  PROCEDURE POUR CONDITIONS AUX LIMITES 
+*
+*    EN GRADIENT DE TEMPERATURE HOMOGENE
+*
+*  L.GELEBART                       01/09
+************************************************************************
+************************************************************************
+DEBPROC @CLTH MAIL0*MAILLAGE CONT0*TABLE;
+GTX = CONT0 . 1; GTY = CONT0 . 2; GTZ = CONT0 . 3;
+*
+*  Identification des points et surfaces exterieures
+*    pour application des CL
+*=====================================================
+SURF0 = ENVE MAIL0;
+XMIN = MINI (COOR 1 SURF0);
+YMIN = MINI (COOR 2 SURF0);
+ZMIN = MINI (COOR 3 SURF0);
+*
+*  Application des conditions de gradient de temperature homogene
+*================================================================
+RIGTOT = BLOQUE T SURF0;
+DEPT0= (GTX * ((COOR 1 SURF0) - XMIN))+(GTY * ((COOR 2 SURF0) - YMIN)) 
+      +(GTZ * ((COOR 3 SURF0) - ZMIN));
+DEPTOT = DEPI RIGTOT DEPT0;
+FINPROC RIGTOT DEPTOT;
+************************************************************************
+*  FIN DE @CLTH
+************************************************************************
+$$$$
+
+
+
+$$$$ @CLPT
+*23456789123456789123456789123456789123456789123456789123456789123456789
+************************************************************************
+************************************************************************
+*
+*  PROCEDURE POUR CONDITIONS AUX LIMITES 
+*
+*    PERIODIQUES, PILOTAGE TEMPERATURE
+*
+*  L.GELEBART                       01/09
+************************************************************************
+************************************************************************
+DEBPROC @CLPT MAIL0*MAILLAGE CONT0*TABLE;
+GTX = CONT0 . 1; GTY = CONT0 . 2; GTZ = CONT0 . 3;
+*
+* SURFACES POUR CL PERIODIQUES
+*==============================
+ENVE0 = ENVE MAIL0;
+ENVE_PT0 = CHANGE ENVE0 POI1;
+XMAX = MAXI (COOR 1 ENVE0);XMIN = MINI (COOR 1 ENVE0);
+YMAX = MAXI (COOR 2 ENVE0);YMIN = MINI (COOR 2 ENVE0);
+ZMAX = MAXI (COOR 3 ENVE0);ZMIN = MINI (COOR 3 ENVE0);
+LX0 = XMAX - XMIN; LY0 = YMAX - YMIN; LZ0 = ZMAX - ZMIN;
+elim0 = LX0 * 1.e-6;
+*
+PXMAX = ENVE_PT0 POIN 'PLAN' 
+ (XMAX 0. 0.) (XMAX 1. 0.) (XMAX 0. 1.) elim0;
+PXMIN = ENVE_PT0 POIN 'PLAN' 
+ (XMIN 0. 0.) (XMIN 1. 0.) (XMIN 0. 1.) elim0;
+PYMAX = ENVE_PT0 POIN 'PLAN' 
+ (0. YMAX 0.) (1. YMAX 0.) (0. YMAX 1.) elim0;
+PYMIN = ENVE_PT0 POIN 'PLAN' 
+ (0. YMIN 0.) (1. YMIN 0.) (0. YMIN 1.) elim0;
+PZMAX = ENVE_PT0 POIN 'PLAN' 
+ (0. 0. ZMAX) (1. 0. ZMAX) (0. 1. ZMAX) elim0;
+PZMIN = ENVE_PT0 POIN 'PLAN' 
+ (0. 0. ZMIN) (1. 0. ZMIN) (0. 1. ZMIN) elim0;
+*
+SXMAX0 = ENVE0 ELEM APPUYE STRICTEMENT PXMAX;
+SXMIN = ENVE0 ELEM APPUYE STRICTEMENT PXMIN;
+SYMAX0 = ENVE0 ELEM APPUYE STRICTEMENT PYMAX;
+SYMIN = ENVE0 ELEM APPUYE STRICTEMENT PYMIN;
+SZMAX0 = ENVE0 ELEM APPUYE STRICTEMENT PZMAX;
+SZMIN = ENVE0 ELEM APPUYE STRICTEMENT PZMIN;
+*
+SXMAX = SXMIN PLUS (LX0 0. 0.);
+SYMAX = SYMIN PLUS (0. LY0 0.);
+SZMAX = SZMIN PLUS (0. 0. LZ0);
+*
+* VERIFICATION QUE LE MAILLAGE EST BIEN PERIODIQUE
+* (nbre de noeuds elimines entre 2 faces paralleles 
+*  = nombre de noeuds dans la face)
+*---------------------------------------------------
+list (NBNO SXMAX0);list (NBNO SXMIN);
+elim elim0 SXMAX MAIL0;
+list (NBNO SYMAX0);list (NBNO SYMIN);
+elim elim0 SYMAX MAIL0;
+list (NBNO SZMAX0);list (NBNO SZMIN);
+elim elim0 SZMAX MAIL0;
+*
+* APPLICATION DU GRADIENT DE TEMPERATURE AVEC PERIODICITE
+*========================================================
+*
+* Conditions dans la direction X
+*--------------------------------
+CLP1T = RELA 1. T SXMAX - 1. T SXMIN;
+depCLP1T = DEPI CLP1T (GTX * LX0);
+*
+* Conditions dans la direction Y
+*--------------------------------
+CLP2T = RELA 1. T SYMAX - 1. T SYMIN;
+depCLP2T = DEPI CLP2T (GTY * LY0);
+*
+* Conditions dans la direction Z
+*--------------------------------
+CLP3T = RELA 1. T SZMAX - 1. T SZMIN;
+depCLP3T = DEPI CLP3T (GTZ * LZ0);
+*
+* Bloquage du mvt corps rigide
+*--------------------------------
+A0 = ENVE_PT0 POINT PROC (XMIN YMIN ZMIN);
+CR0 = BLOQUE T A0;
+*
+DEPTOT = depCLP1T et (depCLP2T et depCLP3T );
+RIGTOT = CR0 ET (CLP1T et (CLP2T et CLP3T));
+FINPROC RIGTOT DEPTOT;
+************************************************************************
+*  FIN DE @CLPT
+************************************************************************
+$$$$
+
+
+
+$$$$ @CLFH
+*23456789123456789123456789123456789123456789123456789123456789123456789
+************************************************************************
+************************************************************************
+*
+*  PROCEDURE POUR CONDITIONS AUX LIMITES 
+*
+*    EN FLUX DE CHALEUR HOMOGENE
+*
+*  L.GELEBART                       01/09
+************************************************************************
+************************************************************************
+DEBPROC @CLFH MAIL0*MAILLAGE CONT0*TABLE;
+FLX = CONT0 . 1; FLY = CONT0 . 2; FLZ = CONT0 . 3;
+*
+* IDENTIFICATION DES SURFACES POUR CL 
+*=======================================
+ENVE0 = ENVE MAIL0;
+ENVE_PT0 = CHANGE ENVE0 POI1;
+XMAX = MAXI (COOR 1 ENVE0);XMIN = MINI (COOR 1 ENVE0);
+YMAX = MAXI (COOR 2 ENVE0);YMIN = MINI (COOR 2 ENVE0);
+ZMAX = MAXI (COOR 3 ENVE0);ZMIN = MINI (COOR 3 ENVE0);
+LX0 = XMAX - XMIN; LY0 = YMAX - YMIN; LZ0 = ZMAX - ZMIN;
+elim0 = LX0 * 1.e-6;
+*
+PXMAX = ENVE_PT0 POIN 'PLAN' 
+ (XMAX 0. 0.) (XMAX 1. 0.) (XMAX 0. 1.) elim0;
+PXMIN = ENVE_PT0 POIN 'PLAN' 
+ (XMIN 0. 0.) (XMIN 1. 0.) (XMIN 0. 1.) elim0;
+PYMAX = ENVE_PT0 POIN 'PLAN' 
+ (0. YMAX 0.) (1. YMAX 0.) (0. YMAX 1.) elim0;
+PYMIN = ENVE_PT0 POIN 'PLAN' 
+ (0. YMIN 0.) (1. YMIN 0.) (0. YMIN 1.) elim0;
+PZMAX = ENVE_PT0 POIN 'PLAN' 
+ (0. 0. ZMAX) (1. 0. ZMAX) (0. 1. ZMAX) elim0;
+PZMIN = ENVE_PT0 POIN 'PLAN' 
+ (0. 0. ZMIN) (1. 0. ZMIN) (0. 1. ZMIN) elim0;
+*
+SXMAX = ENVE0 ELEM APPUYE STRICTEMENT PXMAX;
+SXMIN = ENVE0 ELEM APPUYE STRICTEMENT PXMIN;
+SYMAX = ENVE0 ELEM APPUYE STRICTEMENT PYMAX;
+SYMIN = ENVE0 ELEM APPUYE STRICTEMENT PYMIN;
+SZMAX = ENVE0 ELEM APPUYE STRICTEMENT PZMAX;
+SZMIN = ENVE0 ELEM APPUYE STRICTEMENT PZMIN;
+*
+*  APPLICATION DES CONDITION DE FLUX HOMOGENE
+*================================================================
+MOD0 = MAIL0 MODE THERMIQUE;
+FLXMAX = FLUX MOD0 (0. - FLX) SXMAX;
+FLXMIN = FLUX MOD0 FLX SXMIN; 
+FLYMAX = FLUX MOD0 (0. - FLY) SYMAX;
+FLYMIN = FLUX MOD0 FLY SYMIN; 
+FLZMAX = FLUX MOD0 (0. - FLZ) SZMAX;
+FLZMIN = FLUX MOD0 FLZ SZMIN; 
+*
+FLXX = FLXMAX ET FLXMIN;
+FLYY = FLYMAX ET FLYMIN;
+FLZZ = FLZMAX ET FLZMIN;
+DEPTOT = FLXX ET FLYY ET FLZZ;
+*
+* Bloquage du mvt corps rigide
+*--------------------------------
+A0 = ENVE_PT0 POINT PROC (XMIN YMIN ZMIN);
+CR0 = BLOQUE T A0;
+
+FINPROC CR0 DEPTOT;
+************************************************************************
+*  FIN DE @CLFH
+************************************************************************
+$$$$
+
+
+
+$$$$ @KEFFT
+*23456789123456789123456789123456789123456789123456789123456789123456789
+************************************************************************
+************************************************************************
+*
+*  PROCEDURE DE CALCUL DU COMPORTEMENT THERMIQUE EFFECTIF 
+*                 D'UNE MICROSTRUTURE
+*
+*  L. GELEBART 07/01/2009
+*
+************************************************************************
+************************************************************************
+DEBPROC @KEFFT MOD1*MMODEL  MAT1*MCHAML CLIM1*PROCEDUR AMPL1*FLOTTANT 
+               VISU1*TABLE;
+*
+MAIL1 = MOD1 EXTR 'MAIL';
+AMPL2 = AMPL1 * 1.e-6;
+* 
+*                       DEFINITION DES 3 CHARGEMENTS
+*===================================================
+ETAB = TABLE;
+ETAB . 1 = TABLE;
+ETAB . 1 . 1 = AMPL1; ETAB . 1 . 2 = AMPL2; ETAB . 1 . 3 = AMPL2;
+ETAB . 2 = TABLE;
+ETAB . 2 . 1 = AMPL2; ETAB . 2 . 2 = AMPL1; ETAB . 2 . 3 = AMPL2;
+ETAB . 3 = TABLE;
+ETAB . 3 . 1 = AMPL2; ETAB . 3 . 2 = AMPL2; ETAB . 3 . 3 = AMPL1;
+*
+*                                    INITIALISATIONS
+*===================================================
+*   Systeme lineaire (9x9)
+*-------------------
+KSL0 = TABLE; KSL1 = TABLE;
+VSL0 = TABLE; VSL1 = TABLE;
+I0 = 0;
+REPETE BOUI0 9;
+I0 = I0 + 1;
+VSL0 . I0 = 0.; VSL1 . I0 = 0.;
+KSL0 . I0 = TABLE; KSL1 . I0 = TABLE;
+J0 = 0;
+REPETE BOUJ0 9;
+J0 = J0 + 1;
+KSL0 . I0 . J0 = 0.;KSL1 . I0 . J0 = 0.;
+FIN BOUJ0;
+FIN BOUI0;
+*
+*   tables de sortie (flux et gradients de Temp  moyens)
+*----------------------------------------------------------
+C = TABLE;
+C . 1 = TABLE; C . 2 = TABLE; C . 3 = TABLE;
+*
+*
+D = TABLE;
+D . 1 = TABLE; D . 2 = TABLE; D . 3 = TABLE;
+*
+*                         BOUCLE SUR LES CHARGEMENTS
+*===================================================
+I = 0;
+REPETER CHGT 3;
+I = I + 1;
+ETAB1 = TABLE (ETAB . I);
+RIG1 FTOT1 = CLIM1 MAIL1 ETAB1;
+*
+*               CALCUL THERMIQUE
+*-------------------------------
+RIGMAT = CONDUCTIVITE MOD1 MAT1;
+KTOT1 = RIGMAT ET RIG1;
+TEMP1 = RESOU KTOT1 FTOT1;
+*
+GTEMP1 = GRAD MOD1 TEMP1;
+FLUX1 = @CFLUX MOD1 MAT1 TEMP1;
+*
+SI ((VISU1 . 1) EGA 1);
+TRAC TEMP1 MAIL1;
+FINSI;
+SI ((VISU1 . 2) EGA 1);
+TRAC MOD1 FLUX1;
+FINSI;
+*
+*                POST-TRAITEMENT
+*  (flux et gradients de T moyens)
+*-------------------------------
+V1 = MESU MAIL1;
+*
+FLX1 = (INTG FLUX1 MOD1 T,X) / V1;
+FLY1 = (INTG FLUX1 MOD1 T,Y) / V1;
+FLZ1 = (INTG FLUX1 MOD1 T,Z) / V1;
+*
+GTX1 = (INTG GTEMP1 MOD1 T,X) / V1;
+GTY1 = (INTG GTEMP1 MOD1 T,Y) / V1;
+GTZ1 = (INTG GTEMP1 MOD1 T,Z) / V1;
+*
+* ECRITURE DES RESULTATS DANS DES TABLES (pour les 6 chargements)
+*-----------------------------------------------------------------
+C . 1 . I = FLX1;
+C . 2 . I = FLY1;
+C . 3 . I = FLZ1;
+*
+D . 1 . I = GTX1;
+D . 2 . I = GTY1;
+D . 3 . I = GTZ1;
+*
+*  DEFINITION DU SYTEME LINEAIRE 9*9                               
+*-------------------------------------
+* !!! mauvais arrangement des equationr pour RESO
+*
+J0 = 0;
+REPETE BOUJ0 3;
+J0 = J0 + 1;
+KSL0 . (J0 + (3 *(I-1))) . ((3*(J0-1)) + 1) = 0. - GTX1; 
+KSL0 . (J0 + (3 *(I-1))) . ((3*(J0-1)) + 2) = 0. - GTY1; 
+KSL0 . (J0 + (3 *(I-1))) . ((3*(J0-1)) + 3) = 0. - GTZ1; 
+FIN BOUJ0;
+*
+VSL0 . (1 + (3 *(I-1))) = FLX1;
+VSL0 . (2 + (3 *(I-1))) = FLY1;
+VSL0 . (3 + (3 *(I-1))) = FLZ1;
+*
+FIN CHGT;
+*
+*                     FIN BOUCLE SUR LES CHARGEMENTS
+*                           RESOLUTION SYST LINEAIRE
+*===================================================
+*
+* rearrangement des equations KSL0 et VSL0????
+*------------------------------------------
+*
+I0 = 0;
+REPETE BOUA0 9;
+I0 = I0 + 1;
+KSL1 . 1 . I0 = KSL0 . 1 . I0; VSL1 . 1 = VSL0 . 1;
+KSL1 . 2 . I0 = KSL0 . 4 . I0; VSL1 . 2 = VSL0 . 4;
+KSL1 . 3 . I0 = KSL0 . 7 . I0; VSL1 . 3 = VSL0 . 7;
+*
+KSL1 . 4 . I0 = KSL0 . 2 . I0; VSL1 . 4 = VSL0 . 2;
+KSL1 . 5 . I0 = KSL0 . 5 . I0; VSL1 . 5 = VSL0 . 5;
+KSL1 . 6 . I0 = KSL0 . 8 . I0; VSL1 . 6 = VSL0 . 8;
+*
+KSL1 . 7 . I0 = KSL0 . 3 . I0; VSL1 . 7 = VSL0 . 3;
+KSL1 . 8 . I0 = KSL0 . 6 . I0; VSL1 . 8 = VSL0 . 6;
+KSL1 . 9 . I0 = KSL0 . 9 . I0; VSL1 . 9 = VSL0 . 9;
+*
+FIN BOUA0;
+
+* CALCUL DU TENSEUR EFFECTIF
+*--------------------------
+*
+KEFF1 = @SYSLIN KSL1 VSL1;
+K = TABLE;
+I0 = 0;
+J0 = 0;
+i = 0;
+REPETE BOUI0 3;
+I0 = I0 + 1;
+K . I0 = TABLE;
+J0 = 0;
+REPETE BOUJ0 3;
+J0 = J0 + 1;
+i = i+1;
+K . I0 . J0 = KEFF1 . i;
+FIN BOUJ0;
+FIN BOUI0;
+*
+*
+FINPROC K C D;
+************************************************************************
+*  FIN DE LA PROCEDURE @KEFFT
+************************************************************************
+$$$$
+
+
+$$$$ @CLCH
+****************************************************
+****************************************************
+*
+*  PROCEDURE POUR CONDITIONS AUX LIMITES 
+*
+*    CONTRAINTE HOMOGENE
+*
+*  L.GELEBART,                               06/07
+****************************************************
+*****************************************************
+DEBPROC @CLCH MAIL0*MAILLAGE CONT0*TABLE;
+SXX = CONT0 . 1; SYY = CONT0 . 2; SZZ = CONT0 . 3;
+SXY = CONT0 . 4; SXZ = CONT0 . 5; SYZ = CONT0 . 6;
+MOD0 = MODE MAIL0 MECANIQUE ELASTIQUE;
+*
+*  Identification des points et surfaces exterieures
+*    pour application des CL
+*=====================================================
+ENVE0 = ENVE MAIL0;
+ENVE_PT0 = CHANGE ENVE0 POI1;
+XMAX = MAXI (COOR 1 ENVE0);XMIN = MINI (COOR 1 ENVE0);
+YMAX = MAXI (COOR 2 ENVE0);YMIN = MINI (COOR 2 ENVE0);
+ZMAX = MAXI (COOR 3 ENVE0);ZMIN = MINI (COOR 3 ENVE0);
+LX0 = XMAX - XMIN; LY0 = YMAX - YMIN; LZ0 = ZMAX - ZMIN;
+elim0 = 1.e-6 * LX0;
+PXMIN = ENVE_PT0 POIN 'PLAN'
+ (XMIN 0. 0.) (XMIN 1. 0.) (XMIN 0. 1.) (LX0 * elim0);
+PYMIN = ENVE_PT0 POIN 'PLAN'
+ (0. YMIN 0.) (1. YMIN 0.) (0. YMIN 1.) (LY0 * elim0);
+PZMIN = ENVE_PT0 POIN 'PLAN'
+ (0. 0. ZMIN) (1. 0. ZMIN) (0. 1. ZMIN) (LZ0 * elim0);
+PXMAX = ENVE_PT0 POIN 'PLAN'
+ (XMAX 0. 0.) (XMAX 1. 0.) (XMAX 0. 1.) (LX0 * elim0);
+PYMAX = ENVE_PT0 POIN 'PLAN'
+ (0. YMAX 0.) (1. YMAX 0.) (0. YMAX 1.) (LY0 * elim0);
+PZMAX = ENVE_PT0 POIN 'PLAN'
+ (0. 0. ZMAX) (1. 0. ZMAX) (0. 1. ZMAX) (LZ0 * elim0);
+*
+SURFX0 = ENVE0 ELEM APPUYE STRICTEMENT PXMIN;
+SURFY0 = ENVE0 ELEM APPUYE STRICTEMENT PYMIN;
+SURFZ0 = ENVE0 ELEM APPUYE STRICTEMENT PZMIN;
+*
+SURFX1 = ENVE0 ELEM APPUYE STRICTEMENT PXMAX;
+SURFY1 = ENVE0 ELEM APPUYE STRICTEMENT PYMAX;
+SURFZ1 = ENVE0 ELEM APPUYE STRICTEMENT PZMAX; 
+*
+A1 = ENVE_PT0 POIN PROC (XMIN YMIN ZMIN);
+A2 = ENVE_PT0 POIN PROC (XMAX YMIN ZMIN);
+A4 = ENVE_PT0 POIN PROC (XMIN YMAX ZMIN);
+*
+SX00 = LY0 * LZ0;
+SX0 = MESU SURFX0; 
+SX1 = MESU SURFX1; 
+SY00 = LX0 * LZ0;
+SY0 = MESU SURFY0; 
+SY1 = MESU SURFY1; 
+SZ00 = LX0 * LY0;
+SZ0 = MESU SURFZ0; 
+SZ1 = MESU SURFZ1; 
+*
+*  Application des contraintes
+*================================
+test = 0;
+SI ((SXZ NEG 0.) OU (SYZ NEG 0.) OU (SZZ NEG 0.));
+FZ1 = FSUR MASS MOD0 SURFZ1 (SXZ SYZ SZZ);
+FZ0 = FSUR MASS MOD0 SURFZ0 
+         ((0. - SXZ) (0. - SYZ) (0. - SZZ));
+FZ0 = FZ0 * (SZ00 / SZ0);
+FZ1 = FZ1 * (SZ00 / SZ1);
+
+FCLP0 = FZ0 ET FZ1;
+test=1;
+FINSI;
+*
+SI ((SXY NEG 0.) OU (SYY NEG 0.) OU (SYZ NEG 0.));
+FY1 = FSUR MASS MOD0 SURFY1 (SXY SYY SYZ);
+FY0 = FSUR MASS MOD0 SURFY0 
+         ((0. - SXY) (0. - SYY) (0. - SYZ));
+FY0 = FY0 * (SY00 / SY0);
+FY1 = FY1 * (SY00 / SY1);
+
+SI (test EGA 1); 
+FCLP0 = FCLP0 ET (FY0 ET FY1);
+SINON;
+FCLP0 = FY0 ET FY1;
+test=1;
+FINSI;
+FINSI;
+*
+SI ((SXX NEG 0.) OU (SXY NEG 0.) OU (SXZ NEG 0.));
+FX1 = FSUR MASS MOD0 SURFX1 (SXX SXY SXZ);
+FX0 = FSUR MASS MOD0 SURFX0 
+         ((0. - SXX) (0. - SXY) (0. - SXZ));
+FX0 = FX0 * (SX00 / SX0);
+FX1 = FX1 * (SX00 / SX1);
+
+
+SI (test EGA 1); 
+FCLP0 = FCLP0 ET (FX0 ET FX1);
+SINON;
+FCLP0 = FX0 ET FX1;
+FINSI;
+FINSI;
+*
+*  Blocage du mvt de corps rigide
+*===========================================
+BL1 = BLOQUE UX UY UZ A1;
+BL2 = BLOQUE UY UZ A2;
+BL3 = BLOQUE UZ A4;
+BL0 = BL1 ET (BL2 ET BL3); 
+*BL0 = @CORIGI MAIL0;
+*
+FINPROC BL0 FCLP0;
+*********************************************
+* FIN DE LA PROCEDURE CLCH
+*********************************************
+$$$$
+
+
+
+$$$$ @CFLUX
+*23456789123456789123456789123456789123456789123456789123456789123456789
+************************************************************************
+************************************************************************
+*
+*  PROCEDURE DE CALCUL DU FLUX DE CHALEUR
+*
+*  L. GELEBART 07/01/2009
+*
+************************************************************************
+************************************************************************
+DEBPROC @CFLUX MOD1*MMODEL MAT1*MCHAML TEMP1*CHPOINT; 
+*
+GRADT0 = CHAN TYPE (GRAD MOD1 TEMP1) FLUXCHAL;
+*GRADT0 = GRAD MOD1 TEMP1;
+GRADT0X = EXCO  T,X GRADT0 ;
+GRADT0Y = EXCO  T,Y GRADT0 ;
+GRADT0Z = EXCO  T,Z GRADT0 ;
+*
+* test sur l'anisotropie des materiaux
+* (on se limite aux elements massifs 3D)
+*
+NBCOEF0 = DIME (EXTR MOD1 MATE);
+* 
+*                       cas des materiaux isotropes
+*==================================================
+SI (NBCOEF0 EGA 4);
+K0 = CHAN TYPE (EXCO K MAT1 SCAL) FLUXCHAL;
+
+* calcul des flux de chaleurs (q=-K.grad(T))
+*---------------------------------------------
+FLUX0X = K0 * GRADT0X; 
+FLUX0Y = K0 * GRADT0Y; 
+FLUX0Z = K0 * GRADT0Z; 
+FLUX0 = ((0. * FLUX0X) - FLUX0X)
+     + ((0. * FLUX0Y) - FLUX0Y)
+     + ((0. * FLUX0Z) - FLUX0Z);
+FINSI;
+* 
+*                       cas des materiaux anisotropes
+*====================================================
+SI ( OU (NBCOEF0 EGA 12) (NBCOEF0 EGA 15));
+
+* Identification des axes du repere local
+*----------------------------------------
+V1X0 = CHAN TYPE (EXCO V1X MAT1 SCAL) FLUXCHAL;
+V1Y0 = CHAN TYPE (EXCO V1Y MAT1 SCAL) FLUXCHAL;
+V1Z0 = CHAN TYPE (EXCO V1Z MAT1 SCAL) FLUXCHAL;
+V2X0 = CHAN TYPE (EXCO V2X MAT1 SCAL) FLUXCHAL;
+V2Y0 = CHAN TYPE (EXCO V2Y MAT1 SCAL) FLUXCHAL;
+V2Z0 = CHAN TYPE (EXCO V2Z MAT1 SCAL) FLUXCHAL;
+V3X0 = (V1Y0 * V2Z0) - (V1Z0 * V2Y0);
+V3Y0 = (V1Z0 * V2X0) - (V1X0 * V2Z0);
+V3Z0 = (V1X0 * V2Y0) - (V1Y0 * V2X0);
+
+* Identification de la matrice de conductivite dans les axes locaux
+*-------------------------------------------------------------------
+SI (NBCOEF0 EGA 12);
+K110 = CHAN TYPE (EXCO 'K1' MAT1 SCAL) FLUXCHAL;
+K220 = CHAN TYPE (EXCO 'K2' MAT1 SCAL) FLUXCHAL;
+K330 = CHAN TYPE (EXCO 'K3' MAT1 SCAL) FLUXCHAL;
+K120 = 0.; K130 = 0.; K210 = 0.; K230 = 0.; K310 = 0.; K320 = 0.;
+FINSI;
+*
+SI (NBCOEF0 EGA 15);
+K110 = CHAN TYPE (EXCO K11 MAT1 SCAL) FLUXCHAL;
+K220 = CHAN TYPE (EXCO K22 MAT1 SCAL) FLUXCHAL;
+K330 = CHAN TYPE (EXCO K33 MAT1 SCAL) FLUXCHAL;
+K210 = CHAN TYPE (EXCO K21 MAT1 SCAL) FLUXCHAL; K120 = K210;
+K310 = CHAN TYPE (EXCO K31 MAT1 SCAL) FLUXCHAL; K130 = K310;
+K320 = CHAN TYPE (EXCO K32 MAT1 SCAL) FLUXCHAL; K230 = K320;
+FINSI;
+
+* initialisation des matrices :
+*       passage, transposee, initiale, inter, resultat
+*------------------------------------------------------
+P0 = TABLE; P0T = TABLE; INI0 = TABLE; INT0 = TABLE; RES0 = TABLE;
+i = 1;
+REPETE BOUI0 3;
+P0 . i = TABLE; P0T . i = TABLE; INI0 . i = TABLE;
+INT0 . i = TABLE; RES0 . i = TABLE;
+j=1;
+REPETE BOUJ0 3;
+P0 . i . j = 0.* K110; P0T . i . j = 0. * k110; 
+INI0 . i . j = 0. * K110; INT0 . i . j = 0. * K110; 
+RES0 . i . j = 0. * K110; 
+j = j + 1;
+FIN BOUJ0;
+i = i + 1;
+FIN BOUI0;
+
+* affectation des matrices de passage et de conductivite
+*--------------------------------------------------------
+P0 . 1 . 1 = V1X0; INI0 . 1 . 1 = K110;
+P0 . 2 . 1 = V1Y0; INI0 . 1 . 2 = K120;
+P0 . 3 . 1 = V1Z0; INI0 . 1 . 3 = K130;
+P0 . 1 . 2 = V2X0; INI0 . 2 . 1 = K210;
+P0 . 2 . 2 = V2Y0; INI0 . 2 . 2 = K220;
+P0 . 3 . 2 = V2Z0; INI0 . 2 . 3 = K230;
+P0 . 1 . 3 = V3X0; INI0 . 3 . 1 = K310;
+P0 . 2 . 3 = V3Y0; INI0 . 3 . 2 = K320;
+P0 . 3 . 3 = V3Z0; INI0 . 3 . 3 = K330;
+
+* determination de la matrice transposee
+*----------------------------------------
+i = 1;
+REPETE BOUI0 3;
+j = 1;
+REPETE BOUJ0 3;
+P0T . i . j = P0 . j . i ; 
+j = j + 1;
+FIN BOUJ0;
+i = i + 1;
+FIN BOUI0;
+
+* calcul de la matrice intermediaire
+*------------------------------------------
+i = 1; 
+REPETE BOUI0 3;
+j = 1;
+REPETE BOUJ0 3;
+k = 1;
+REPETE BOUK0 3;
+INT0 . i . j = (INT0 . i . j) + ((INI0 . i . k) * (P0 . k . j));
+k = k + 1;
+FIN BOUK0;
+j = j + 1;
+FIN BOUJ0;
+i = i + 1;
+FIN BOUI0;
+
+* calcul de la matrice de conductivite resultat
+*----------------------------------------------
+i = 1; 
+REPETE BOUI0 3;
+j = 1;
+REPETE BOUJ0 3;
+k = 1;
+REPETE BOUK0 3;
+RES0 . i . j = (RES0 . i . j) + ((P0T . i . k) * (INT0 . k . j));
+k = k + 1;
+FIN BOUK0;
+j = j + 1;
+FIN BOUJ0;
+i = i + 1;
+FIN BOUI0;
+
+* calcul des flux de chaleurs (q=-K.grad(T))
+*---------------------------------------------
+GRADT0X = NOMC SCAL GRADT0X;
+GRADT0Y = NOMC SCAL GRADT0Y;
+GRADT0Z = NOMC SCAL GRADT0Z;
+
+FLUX0X = ((RES0 . 1 . 1) * GRADT0X) + 
+         ((RES0 . 1 . 2) * GRADT0Y) + ((RES0 . 1 . 3) * GRADT0Z);
+FLUX0Y = ((RES0 . 2 . 1) * GRADT0X) + 
+         ((RES0 . 2 . 2) * GRADT0Y) + ((RES0 . 2 . 3) * GRADT0Z);
+FLUX0Z = ((RES0 . 3 . 1) * GRADT0X) + 
+         ((RES0 . 3 . 2) * GRADT0Y) + ((RES0 . 3 . 3) * GRADT0Z);
+FLUX0X = NOMC T,X FLUX0X;
+FLUX0Y = NOMC T,Y FLUX0Y;
+FLUX0Z = NOMC T,Z FLUX0Z;
+
+FLUX0 = ((0. * FLUX0X) - FLUX0X)
+     + ((0. * FLUX0Y) - FLUX0Y)
+     + ((0. * FLUX0Z) - FLUX0Z);
+*
+* FINSI materiaux anisotropes
+*------------------------------
+FINSI;
+*
+FINPROC FLUX0;
+************************************************************************
+* FIN DE LA PROCEDURE @CFLUX
+************************************************************************
+$$$$
+
+$$$$ @REPLOC
+*23456789123456789123456789123456789123456789123456789123456789123456789
+*=======================================================================
+*
+* PROCEDURE DE TRANSFERT D'UN REPERE LOCAL EXPRIME DANS LE REPERE MACRO
+*  VERS LE REPERE DES ELEMENTS (UTILISE POUR LES MATERIAU ANISOTROPE)
+*
+*    L.GELEBART CEA Saclay - DEN/DMN/SRMA Juin 2010
+*=======================================================================
+DEBPROC @REPLOC MOD0*MMODEL V1X0*MCHAML V1Y0*MCHAML  V1Z0*MCHAML
+                V2X0*MCHAML V2Y0*MCHAML V2Z0*MCHAML T0*TABLE;
+*
+*  definition du passage repere macro -> repere element
+*
+NCONS = EXTR ((EXTR V1X0 CONS)) 1;
+VOL0 = EXTR MOD0 MAIL;
+P1 = 1. 0. 0.;
+P2 = 0. 1. 0.;
+MAT0 = MOD0 MATE DIRECTION P1 P2 PARALLELE 
+D11 1. D21 1. D31 1. D41 1. D51 1. D61 1. 
+D22 1. D32 1. D42 1. D52 1. D62 1. 
+D33 1. D43 1. D53 1. D63 1. D44 1. 
+D54 1. D64 1. D55 1. D65 1. D66 1.;
+MAT0 = CHAN CONS MAT0 NCONS;
+*
+V1X1 = EXCO V1X MAT0 SCAL;
+V1Y1 = EXCO V1Y MAT0 SCAL;
+V1Z1 = EXCO V1Z MAT0 SCAL;
+V2X1 = EXCO V2X MAT0 SCAL;
+V2Y1 = EXCO V2Y MAT0 SCAL;
+V2Z1 = EXCO V2Z MAT0 SCAL;
+V3X1 = (V1Y1 * V2Z1) - (V1Z1 * V2Y1);
+V3Y1 = (V1Z1 * V2X1) - (V1X1 * V2Z1);
+V3Z1 = (V1X1 * V2Y1) - (V1Y1 * V2X1);
+*
+*  passage dans le repere local 
+*
+R1X1 = (V1X1 * V1X0) + (V2X1 * V1Y0) + (V3X1 * V1Z0);
+R1Y1 = (V1Y1 * V1X0) + (V2Y1 * V1Y0) + (V3Y1 * V1Z0);
+R1Z1 = (V1Z1 * V1X0) + (V2Z1 * V1Y0) + (V3Z1 * V1Z0);
+*
+R2X1 = (V1X1 * V2X0) + (V2X1 * V2Y0) + (V3X1 * V2Z0);
+R2Y1 = (V1Y1 * V2X0) + (V2Y1 * V2Y0) + (V3Y1 * V2Z0);
+R2Z1 = (V1Z1 * V2X0) + (V2Z1 * V2Y0) + (V3Z1 * V2Z0);
+*
+R1X1 = NOMC V1X R1X1;
+R1Y1 = NOMC V1Y R1Y1;
+R1Z1 = NOMC V1Z R1Z1;
+R2X1 = NOMC V2X R2X1;
+R2Y1 = NOMC V2Y R2Y1;
+R2Z1 = NOMC V2Z R2Z1;
+*
+* definition du materiau anisotrope
+*
+S11 = MANU CHML MOD0 D11 (T0 . 1) 
+    TYPE 'CARACTERISTIQUES' RIGIDITE;
+S21 = MANU CHML MOD0 D21 (T0 . 2)
+    TYPE 'CARACTERISTIQUES' RIGIDITE;
+S31 = MANU CHML MOD0 D31 (T0 . 3) 
+    TYPE 'CARACTERISTIQUES' RIGIDITE;
+S41 = MANU CHML MOD0 D41 (T0 . 4) 
+    TYPE 'CARACTERISTIQUES' RIGIDITE;
+S51 = MANU CHML MOD0 D51 (T0 . 5) 
+    TYPE 'CARACTERISTIQUES' RIGIDITE;
+S61 = MANU CHML MOD0 D61 (T0 . 6)
+    TYPE 'CARACTERISTIQUES' RIGIDITE;
+S22 = MANU CHML MOD0 D22 (T0 . 7) 
+    TYPE 'CARACTERISTIQUES' RIGIDITE;
+S32 = MANU CHML MOD0 D32 (T0 . 8)
+    TYPE 'CARACTERISTIQUES' RIGIDITE;
+S42 = MANU CHML MOD0 D42 (T0 . 9) 
+    TYPE 'CARACTERISTIQUES' RIGIDITE;
+S52 = MANU CHML MOD0 D52 (T0 . 10) 
+    TYPE 'CARACTERISTIQUES' RIGIDITE;
+S62 = MANU CHML MOD0 D62 (T0 . 11) 
+    TYPE 'CARACTERISTIQUES' RIGIDITE;  
+S33 = MANU CHML MOD0 D33 (T0 . 12) 
+    TYPE 'CARACTERISTIQUES' RIGIDITE;
+S43 = MANU CHML MOD0 D43 (T0 . 13)
+    TYPE 'CARACTERISTIQUES' RIGIDITE;
+S53 = MANU CHML MOD0 D53 (T0 . 14) 
+    TYPE 'CARACTERISTIQUES' RIGIDITE;
+S63 = MANU CHML MOD0 D63 (T0 . 15) 
+    TYPE 'CARACTERISTIQUES' RIGIDITE;
+S44 = MANU CHML MOD0 D44 (T0 . 16) 
+    TYPE 'CARACTERISTIQUES' RIGIDITE;
+S54 = MANU CHML MOD0 D54 (T0 . 17)
+    TYPE 'CARACTERISTIQUES' RIGIDITE;
+S64 = MANU CHML MOD0 D64 (T0 . 18) 
+    TYPE 'CARACTERISTIQUES' RIGIDITE;
+S55 = MANU CHML MOD0 D55 (T0 . 19)
+    TYPE 'CARACTERISTIQUES' RIGIDITE;
+S65 = MANU CHML MOD0 D65 (T0 . 20) 
+    TYPE 'CARACTERISTIQUES' RIGIDITE;
+S66 = MANU CHML MOD0 D66 (T0 . 21) 
+    TYPE 'CARACTERISTIQUES' RIGIDITE;
+S11 = CHAN CONS S11 NCONS;
+S21 = CHAN CONS S21 NCONS;
+S31 = CHAN CONS S31 NCONS;
+S41 = CHAN CONS S41 NCONS;
+S51 = CHAN CONS S51 NCONS;
+S61 = CHAN CONS S61 NCONS;
+S22 = CHAN CONS S22 NCONS;
+S32 = CHAN CONS S32 NCONS;
+S42 = CHAN CONS S42 NCONS;
+S52 = CHAN CONS S52 NCONS;
+S62 = CHAN CONS S62 NCONS;
+S33 = CHAN CONS S33 NCONS;
+S43 = CHAN CONS S43 NCONS;
+S53 = CHAN CONS S53 NCONS;
+S63 = CHAN CONS S63 NCONS;
+S44 = CHAN CONS S44 NCONS;
+S54 = CHAN CONS S54 NCONS;
+S64 = CHAN CONS S64 NCONS;
+S55 = CHAN CONS S55 NCONS;
+S65 = CHAN CONS S65 NCONS;
+S66 = CHAN CONS S66 NCONS;
+
+*
+MAT0 = S11 ET S21 ET S31 ET S41 ET S51 ET S61 
+ET S22 ET S32 ET S42 ET S52 ET S62 
+ET S33 ET S43 ET S53 ET S63
+ET S44 ET S54 ET S64 ET S55 ET S65 ET S66
+ET R1X1 ET R1Y1 ET R1Z1 ET R2X1 ET R2Y1 ET R2Z1;
+
+FINPROC MAT0;
+************************************************************************
+* FIN DE LA PROCEDURE @REPLOC
+************************************************************************
+$$$$
+
+
+
+
+$$$$ UPER0
+*******************************************************************
+* Procedures Uper0 : relations de periodicite a deformation       *
+*                    ou contrainte imposee                        *
+*            Uper1 : chargements associes aux relations           *
+*                                                                 *
+*******************************************************************
+* 
+* juin 2010 : DEC/SESC (J.PACUKE et E.CASTELIER, TRANSMIS PAR V.BLANC)
+* Juin 2012 : version "epuree"
+*
+* LIMITATION : VER "CUBIQUE"
+*
+*******************************************************************
+*
+*-----------------------------------------------------------------------
+*  ENTREES UPER0
+*  -------------
+*  mesh      TABLE     Table des objets MAILLAGE (un grain par indice)
+*
+*-----------------------------------------------------------------------
+*
+*  SORTIES UPER0
+*  -------------
+*  reltot    RIGIDITE   relations de periodicite
+*
+*  + AJOUTS D'INDICES A LA TABLE mesh
+*  
+*-----------------------------------------------------------------------
+'DEBPROC' UPER0  mesh     * 'TABLE';
+
+'MENAGE' ;                 
+*
+*                       INFORMATIONS GEOMETRIQUES  
+*================================================    
+ncel = 'DIME' mesh;
+mat = 'INDEX' mesh ;
+*'REPETER' bcl ('DIME' mat);
+'REPETER' bcl ncel;
+   'SI' ('EGA' &bcl 1);
+*      vtot = mesh. (mat . &bcl);
+      vtot = mesh. &bcl;
+   'SINON';
+*      vtot = vtot 'ET' (mesh. (mat . &bcl));
+      vtot = vtot 'ET' (mesh. &bcl);
+   'FINSI';
+'FIN' bcl;
+*
+
+VOLTOT = ('MESURE' vtot) ;
+vercote = ( VOLTOT '**' (1./3.)) ;
+'MESSAGE' 'LVER =' vercote ;
+
+eps11 = vercote '/' (1.e6);
+'MESSAGE' 'espilon : ' eps11 ;
+elim eps11 vtot;
+
+
+fv0 = 0.;
+*'REPETER' bcl ('DIME' mat);
+'REPETER' bcl ncel;
+*      fvi = ('MESURE' (mesh. (mat. &bcl))) '/' VOLTOT;
+      fvi = ('MESURE' (mesh. &bcl)) '/' VOLTOT;
+      'MESSAGE' ' fraction phase ' &bcl ' : ' fvi ;
+      fv0 = fv0 + fvi;
+'FIN' bcl;
+list fv0;
+*
+*          gestion d'erreurs en entree  
+*-------------------------------------         
+'SI' ('EXISTE' mesh  'PDIAG');
+   'ERREUR' 'UPER0 : PDIAG est un nom de maillage réservé';
+'FINSI';
+'SI' ('EXISTE' mesh  'PCIS');
+   'ERREUR' 'UPER0 : PCIS est un nom de maillage réservé';
+'FINSI';
+'SI' ('EXISTE' mesh  'mesure_vtot');
+   msg = 'CHAINE' 'UPER0 : mesure_vtot est un nom réservé, '
+                  'il ne doit pas être utilisé dans les '
+                  'noms de maillages';
+   'ERREUR'  msg;
+'FINSI';
+'SI' ('EXISTE' mesh  'vercote');
+   msg = 'CHAINE' 'UPER0 : vercote est un nom réservé, '
+                  'il ne doit pas être utilisé dans les '
+                  'noms de maillages';
+   'ERREUR'  msg;
+'FINSI';
+*
+*          sauvegarde dans la table mesh
+*---------------------------------------
+*mesh. 'PDIAG' = ((10.*vercote) (10.*vercote) (10.*vercote));
+*mesh. 'PCIS'  = ((10.*vercote) 0.  (10.*vercote));
+mesh. 'PDIAG' = (vercote vercote vercote);
+mesh. 'PCIS'  = (vercote 0.  vercote);
+mesh. 'vercote'     = vercote;
+mesh. 'mesure_vtot' = 'MESURE' vtot;
+*
+*                  DEFINITION DES SURFACES A LIER
+*                    DANS BORDURE  
+*================================================    
+*               Directions de periodicite
+*----------------------------------------
+PERIO = 'TABLE' ;
+PERIO . 0 = (0 0 0) ;
+PERIO . 1 = vercote*(1 0 0) ;
+PERIO . 2 = vercote*(0 1 0) ;
+PERIO . 3 = vercote*(0 0 1) ;
+PERIO . 4 = vercote*(1 1  0) ;
+PERIO . 5 = vercote*(1 -1 0) ;
+PERIO . 6 = vercote*(1 0  1) ;
+PERIO . 7 = vercote*(1 0  -1) ;
+PERIO . 8 = vercote*(0 1  1) ;
+PERIO . 9 = vercote*(0 1  -1) ;
+PERIO . 10 = vercote*(1 1 1) ;
+PERIO . 11 = vercote*(-1 1 1) ;
+PERIO . 12 = vercote*(1 -1 1) ;
+PERIO . 13 = vercote*(1 1 -1) ;
+PERIO . 14 = -1.E0*(vercote)*(1 0 0) ;
+PERIO . 15 = -1.E0*(vercote)*(0 1 0) ;
+PERIO . 16 = -1.E0*(vercote)*(0 0 1) ;
+PERIO . 17 = -1.E0*(vercote)*(1 1  0) ;
+PERIO . 18 = -1.E0*(vercote)*(1 -1 0) ;
+PERIO . 19 = -1.E0*(vercote)*(1 0  1) ;
+PERIO . 20 = -1.E0*(vercote)*(1 0  -1) ;
+PERIO . 21 = -1.E0*(vercote)*(0 1  1) ;
+PERIO . 22 = -1.E0*(vercote)*(0 1  -1) ;
+PERIO . 23 = -1.E0*(vercote)*(1 1 1) ;
+PERIO . 24 = -1.E0*(vercote)*(-1 1 1) ;
+PERIO . 25 = -1.E0*(vercote)*(1 -1 1) ;
+PERIO . 26 = -1.E0*(vercote)*(1 1 -1) ;
+
+*                         Surfaces a lier
+*----------------------------------------
+SU = 'CHANGER' POI1 ('ENVELOPPE' vtot);
+BORDURE = 'TABLE' ;
+
+'REPETER' bcla (13) ;
+  SYM = SU  'PLUS' (PERIO . &bcla) ;
+  'MESSAGE' ' direction de periodicite n:' &bcla ;
+  'ELIMINATION' SYM SU eps11 ;
+  SUPL =  SYM 'INTERSECTION' SU 'NOVERIF' ;
+  'MESSAGE' 'nombre de noeuds' ('NBNO' SUPL) ;
+  tt = ('ENVELOPPE' vtot) 'ELEM' 'APPU' 'STRI' SUPL noverif;
+  'SI'(('NBEL ' tt) '>' 0) ;
+    BORDURE . &bcla = 'TABLE' ;
+    SUMO = SUPL 'MOIN' PERIO . &bcla ;
+   'ELIMINATION' SUMO SU eps11 ;
+    BORDURE . &bcla . 1 = ('ENVELOPPE' vtot) 'ELEM' 'APPU' 'STRI' SUPL ;
+    BORDURE . &bcla . 2 = ('ENVELOPPE' vtot) 'ELEM' 'APPU' 'STRI' SUMO ;
+  'FINSI' ;
+'FIN' bcla ;
+
+* Reconstruction de la frontière du VER
+* pour verification
+*----------------------------------------
+
+'REPETER' bclb (26) ;
+ 'SI' ('EXISTE' BORDURE &bclb) ;
+     'SI' ('ABS'(((PERIO . &bclb) 'COORDONNEE' 1)) 'EGA' vercote);
+      'SI' (&bclb 'EGA' 1);    
+         SX2 = BORDURE . &bclb . 2;
+         SX1 = BORDURE . &bclb . 1;         
+      'SINON';
+        'SI' (((PERIO . &bclb) 'COORDONNEE' 1) '>' 0);
+           SX2 = SX2 'ET' BORDURE . &bclb . 2;
+           SX1 = SX1 'ET' BORDURE . &bclb . 1;
+        'SINON' ;
+           SX2 = SX2 'ET' BORDURE . &bclb . 1;
+           SX1 = SX1 'ET' BORDURE . &bclb . 2;
+        'FINSI' ;       
+      'FINSI' ;
+    'FINSI' ;    
+
+    'SI' ('ABS'(((PERIO . &bclb) 'COORDONNEE' 2)) 'EGA' vercote);
+      'SI' (&bclb 'EGA' 2);
+         SY2 =  BORDURE . &bclb . 2;
+         SY1 =  BORDURE . &bclb . 1;
+      'SINON';
+        'SI' (((PERIO . &bclb) 'COORDONNEE' 2) '>' 0);
+           SY2 = SY2 'ET' BORDURE . &bclb . 2;
+           SY1 = SY1 'ET' BORDURE . &bclb . 1;
+        'SINON' ;
+           SY2 = SY2 'ET' BORDURE . &bclb . 1;
+           SY1 = SY1 'ET' BORDURE . &bclb . 2;
+        'FINSI' ;       
+      'FINSI' ;
+    'FINSI' ;    
+
+    'SI' ('ABS'(((PERIO . &bclb) 'COORDONNEE' 3)) 'EGA' vercote);
+      'SI' (&bclb 'EGA' 3);
+         SZ2 =  BORDURE . &bclb . 2;
+         SZ1 =  BORDURE . &bclb . 1;
+      'SINON';
+        'SI' (((PERIO . &bclb) 'COORDONNEE' 3) '>' 0);
+           SZ2 = SZ2 'ET' BORDURE . &bclb . 2;
+           SZ1 = SZ1 'ET' BORDURE . &bclb . 1;
+        'SINON' ;
+           SZ2 = SZ2 'ET' BORDURE . &bclb . 1;
+           SZ1 = SZ1 'ET' BORDURE . &bclb . 2;
+        'FINSI' ;       
+      'FINSI' ;
+    'FINSI' ;          
+ 'FINSI' ;
+'FIN' bclb;
+SX1 = SX1 COUL ROUGE;
+SY1 = SY1 COUL ROUGE;
+SZ1 = SZ1 COUL ROUGE;
+
+* certaines surfaces apparaissent de maniere etrange
+*opti trac open;
+*trac (SX1 ET SX2 ET SY1 ET SY2 ET SZ1 ET SZ2) CACH;
+
+*
+*                  DEFINITION DES RIGIDITES
+*================================================    
+R1BUX = 'TABLE' ;
+R1BUY = 'TABLE' ;
+R1BUZ = 'TABLE' ;
+
+'REPETER' j (13);
+ 'SI' (existe bordure &j);
+    PX2 = 'CHANGER' POI1 (BORDURE . &j . 2);
+  'REPETER' jj ('NBNO' PX2);
+    PPX2 = (PX2) 'POIN' &jj;
+    PPX2 = BORDURE . &j . 2 'POIN' 'PROC' PPX2;
+    PPX1 =  BORDURE . &j . 1
+            'POIN' 'PROC' (PPX2 'PLUS' (PERIO . &j));
+    VERIF = 'DROIT' 1 PPX1 PPX2  ;
+    'SI' (('MESURE' VERIF) '>' (vercote*(3**0.5) '+' eps11));
+        'MESSAGE' 'WARNING : noeuds pas en vis à vis';
+        'LISTE' &j;
+        'LISTE' &jj;        
+    'FINSI' ;
+    relx = 'RELA' 'UX' PPX1 '-' 'UX' PPX2
+                  '-' ((PERIO . &j 'COORDONNEE' 1)) 'UX' (mesh. 'PDIAG')
+                  '-' ((PERIO . &j 'COORDONNEE' 2)) 'UX' (mesh. 'PCIS')
+                  '-' ((PERIO . &j 'COORDONNEE' 3)) 'UY' (mesh. 'PCIS');
+
+    rely = 'RELA' 'UY' PPX1 '-' 'UY' PPX2
+                  '-' ((PERIO . &j 'COORDONNEE' 1)) 'UX' (mesh. 'PCIS')
+                 '-' ((PERIO . &j 'COORDONNEE' 2)) 'UY' (mesh. 'PDIAG')
+                 '-' ((PERIO . &j 'COORDONNEE' 3)) 'UZ' (mesh. 'PCIS');
+                                                    
+    relz = 'RELA' 'UZ' PPX1 '-' 'UZ' PPX2         
+                  '-' ((PERIO . &j 'COORDONNEE' 1)) 'UY' (mesh. 'PCIS')
+                  '-' ((PERIO . &j 'COORDONNEE' 2)) 'UZ' (mesh. 'PCIS')
+                 '-' ((PERIO . &j 'COORDONNEE' 3)) 'UZ' (mesh. 'PDIAG');
+
+    'SI'(&jj 'EGA' 1);
+       R1BUX . &j = relx;
+       R1BUY . &j = rely;
+       R1BUZ . &j = relz;
+    'SINON' ;
+       R1BUX . &j = (R1BUX. &j) 'ET' relx ;
+       R1BUY . &j = (R1BUY. &j) 'ET' rely ;
+       R1BUZ . &j = (R1BUZ. &j) 'ET' relz ;
+    'FINSI' ;
+  'FIN' jj ;
+  VERIF2 = 'EXTRAIRE' R1BUX . &j 'MAIL';
+  'SI'(('NBNO' VERIF2) 'NEG' (3*('NBNO' PX2) '+' 2));
+    'MESSAGE' 'WARNING : tous les noeuds ne sont pas couverts';
+  'FINSI' ;
+  VERIF3 = 'EXTRAIRE' R1BUY . &j 'MAIL';
+  'SI'(('NBNO' VERIF3) 'NEG' (3*('NBNO' PX2) '+' 2));
+    'MESSAGE' 'WARNING : tous les noeuds ne sont pas couverts';
+  'FINSI' ;
+  VERIF4 = 'EXTRAIRE' R1BUZ . &j 'MAIL';
+  'SI'(('NBNO' VERIF4) 'NEG' (3*('NBNO' PX2) '+' 2));
+    'MESSAGE' 'WARNING : tous les noeuds ne sont pas couverts';
+  'FINSI' ;
+
+ 'FINSI' ;
+'FIN' j ;
+
+* Creation de la rigidite globale
+
+'REPETER' jjj (13);
+ 'SI' (existe bordure &jjj);
+    'SI'(&jjj 'EGA' 1);
+       RBU0 = R1BUX . &jjj;
+       RBU0 = RBU0 'ET' (R1BUY . &jjj) 'ET' (R1BUZ . &jjj);
+    'SINON' ;
+       RBU0 = RBU0 'ET' (R1BUX . &jjj)
+                   'ET' (R1BUY . &jjj)
+                   'ET' (R1BUZ . &jjj);
+    'FINSI' ;
+ 'FINSI' ;
+'FIN' jjj; 
+
+* Condition de bloquage assurant
+* l'unicité de la solution :
+****************************
+POI01 = vtot 'POIN' 'PROCHE' (0. 0. 0.) ;
+CLM1 =  'BLOQUE'  'DEPL' POI01 ;
+reltot = rbu0 'ET' CLM1;
+
+'FINPROC' reltot ;
+************************************************************************
+* FIN DE LA PROCEDURE UPER0
+************************************************************************
+$$$$
+
+
+$$$$ UPER1 
+***********************************************************************
+*-----------------------------------------------------------------------
+*  ENTREES UPER1
+*  -------------
+*  mesh      TABLE     Table des objets MAILLAGE (un grain par indice
+*                      + indices rajoutes par UPER0)
+*  loadings  TABLE     Table des chargements
+*  ti        FLOTTANT  Instant initial du calcul
+*  te        FLOTTANT  Instant final   du calcul
+
+*-----------------------------------------------------------------------
+*
+*  SORTIES UPER1
+*  -------------
+*  tab       TABLE      indices 'CHARGEMENT' 
+*                       indices 'BLOCAGES' (si deformation impose)
+*  
+*-----------------------------------------------------------------------
+
+
+'DEBPROC' UPER1  mesh     * 'TABLE'
+                 loadings * 'TABLE'
+                 ti       * 'FLOTTANT'
+                 tf       * 'FLOTTANT' ;
+                
+* Definition de la table de sortie
+***********************************
+tab ='TABLE' ;
+* Definition de la table des temps
+***********************************
+ttemps = 'TABLE';
+ttemps. 0 = ti '*' (1. '-' 1.e-7);
+ttemps. 1 = tf '*' (1. '+' 1.e-7);
+*ttemps. 0 = ti ;
+*ttemps. 1 = tf ;
+                 
+* Definition des deplacements
+******************************
+'SI' ('EXISTE' loadings 'EXX');
+   E11 = 'BLOQUE' mesh. 'PDIAG' 'UX';
+   Dx0 = 'DEPIMPOSE' E11 (loadings. EXX. 0) ;
+   Dx1 = 'DEPIMPOSE' E11 (loadings. EXX. 1) ;
+   tdxx = 'TABLE';
+   tdxx. 0 = Dx0;
+   tdxx. 1 = Dx1;
+   'SI' ('EXISTE' tab 'BLOCAGES');
+      tab. 'BLOCAGES' = (tab. 'BLOCAGES') 'ET' E11 ;
+   'SINON' ;
+      tab. 'BLOCAGES' = E11 ;
+   'FINSI' ;
+   'SI' ('EXISTE' tab 'CHARGEMENTS');
+      tab. 'CHARGEMENTS' = (tab. 'CHARGEMENTS') 'ET'
+                           ('CHARGEMENT' 'DIMP' ttemps tdxx) ;
+   'SINON' ;
+      tab. 'CHARGEMENTS' = ('CHARGEMENT' 'DIMP' ttemps tdxx) ;
+   'FINSI' ;
+'FINSI' ;
+
+'SI' ('EXISTE' loadings 'EYY');
+   E22 = 'BLOQUE' mesh. 'PDIAG' 'UY';
+   Dy0 = 'DEPIMPOSE' E22 (loadings. EYY. 0) ;
+   Dy1 = 'DEPIMPOSE' E22 (loadings. EYY. 1) ;
+   tdyy = 'TABLE';
+   tdyy. 0 = Dy0;
+   tdyy. 1 = Dy1;
+   'SI' ('EXISTE' tab 'BLOCAGES');
+      tab. 'BLOCAGES' = (tab. 'BLOCAGES') 'ET' E22 ;
+   'SINON' ;
+      tab. 'BLOCAGES' = E22 ;
+   'FINSI' ;
+   'SI' ('EXISTE' tab 'CHARGEMENTS');
+      tab. 'CHARGEMENTS' = (tab. 'CHARGEMENTS') 'ET'
+                           ('CHARGEMENT' 'DIMP' ttemps tdyy) ;
+   'SINON' ;
+      tab. 'CHARGEMENTS' = ('CHARGEMENT' 'DIMP' ttemps tdyy) ;
+   'FINSI' ;
+'FINSI' ;
+
+'SI' ('EXISTE' loadings 'EZZ');
+   E33 = 'BLOQUE' mesh. 'PDIAG' 'UZ';
+   Dz0 = 'DEPIMPOSE' E33 (loadings. EZZ. 0) ;
+   Dz1 = 'DEPIMPOSE' E33 (loadings. EZZ. 1) ;
+   tdzz = 'TABLE';
+   tdzz. 0 = Dz0;
+   tdzz. 1 = Dz1;
+   'SI' ('EXISTE' tab 'BLOCAGES');
+      tab. 'BLOCAGES' = (tab. 'BLOCAGES') 'ET' E33 ;
+   'SINON' ;
+      tab. 'BLOCAGES' = E33 ;
+   'FINSI' ;
+   'SI' ('EXISTE' tab 'CHARGEMENTS');
+      tab. 'CHARGEMENTS' = (tab. 'CHARGEMENTS') 'ET'
+                           ('CHARGEMENT' 'DIMP' ttemps tdzz) ;
+   'SINON' ;
+      tab. 'CHARGEMENTS' = ('CHARGEMENT' 'DIMP' ttemps tdzz) ;
+   'FINSI' ;
+'FINSI' ;
+
+'SI' ('EXISTE' loadings 'EXY');
+   E12 = 'BLOQUE' mesh. 'PCIS' 'UX';
+   Dxy0 = 'DEPIMPOSE' E12 (loadings. EXY. 0) ;
+   Dxy1 = 'DEPIMPOSE' E12 (loadings. EXY. 1) ;
+   tdxy = 'TABLE';
+   tdxy. 0 = Dxy0;
+   tdxy. 1 = Dxy1;
+   'SI' ('EXISTE' tab 'BLOCAGES');
+      tab. 'BLOCAGES' = (tab. 'BLOCAGES') 'ET' E12 ;
+   'SINON' ;
+      tab. 'BLOCAGES' = E12 ;
+   'FINSI' ;
+   'SI' ('EXISTE' tab 'CHARGEMENTS');
+      tab. 'CHARGEMENTS' = (tab. 'CHARGEMENTS') 'ET'
+                           ('CHARGEMENT' 'DIMP' ttemps tdxy) ;
+   'SINON' ;
+      tab. 'CHARGEMENTS' = ('CHARGEMENT' 'DIMP' ttemps tdxy) ;
+   'FINSI' ;
+'FINSI' ;
+
+'SI' ('EXISTE' loadings 'EXZ');
+   E13 = 'BLOQUE' mesh. 'PCIS' 'UY';
+   Dxz0 = 'DEPIMPOSE' E13 (loadings. EXZ. 0) ;
+   Dxz1 = 'DEPIMPOSE' E13 (loadings. EXZ. 1) ;
+   tdxz = 'TABLE';
+   tdxz. 0 = Dxz0;
+   tdxz. 1 = Dxz1;
+   'SI' ('EXISTE' tab 'BLOCAGES');
+      tab. 'BLOCAGES' = (tab. 'BLOCAGES') 'ET' E13 ;
+   'SINON' ;
+      tab. 'BLOCAGES' = E13 ;
+   'FINSI' ;
+   'SI' ('EXISTE' tab 'CHARGEMENTS');
+      tab. 'CHARGEMENTS' = (tab. 'CHARGEMENTS') 'ET'
+                           ('CHARGEMENT' 'DIMP' ttemps tdxz) ;
+   'SINON' ;
+      tab. 'CHARGEMENTS' = ('CHARGEMENT' 'DIMP' ttemps tdxz) ;
+   'FINSI' ;
+'FINSI' ;
+
+'SI' ('EXISTE' loadings 'EYZ');
+   E23 = 'BLOQUE' mesh. 'PCIS' 'UZ';
+   Dyz0 = 'DEPIMPOSE' E23 (loadings. EYZ. 0) ;
+   Dyz1 = 'DEPIMPOSE' E23 (loadings. EYZ. 1) ;
+   tdyz = 'TABLE';
+   tdyz. 0 = Dyz0;
+   tdyz. 1 = Dyz1;
+   'SI' ('EXISTE' tab 'BLOCAGES');
+      tab. 'BLOCAGES' = (tab. 'BLOCAGES') 'ET' E23 ;
+   'SINON' ;
+      tab. 'BLOCAGES' = E23 ;
+   'FINSI' ;
+   'SI' ('EXISTE' tab 'CHARGEMENTS');
+      tab. 'CHARGEMENTS' = (tab. 'CHARGEMENTS') 'ET'
+                           ('CHARGEMENT' 'DIMP' ttemps tdyz) ;
+   'SINON' ;
+      tab. 'CHARGEMENTS' = ('CHARGEMENT' 'DIMP' ttemps tdyz) ;
+   'FINSI' ;
+'FINSI' ;
+
+* Definition des chargements suivant xx yy zz
+**********************************************
+VV = mesh. 'mesure_vtot';
+* Correction en volume (voir publis de JC.Michel) :
+'SI'('EXISTE' loadings 'FXX');
+   FXXmod0 = (loadings. FXX. 0) '*' VV;
+   FXXmod1 = (loadings. FXX. 1) '*' VV;
+   ffxx = 'TABLE';
+   ffxx. 0 = 'FORC' (FXXmod0 0. 0.) mesh. 'PDIAG' ;
+   ffxx. 1 = 'FORC' (FXXmod1 0. 0.) mesh. 'PDIAG' ;
+   'SI' ('EXISTE' tab 'CHARGEMENTS');
+      tab. 'CHARGEMENTS' = (tab. 'CHARGEMENTS') 'ET'
+                           ('CHARGEMENT' 'MECA' ttemps ffxx) ;
+   'SINON' ;
+      tab. 'CHARGEMENTS' = ('CHARGEMENT' 'MECA' ttemps ffxx) ;
+   'FINSI' ;
+'FINSI';
+
+'SI'('EXISTE' loadings 'FYY');
+   FYYmod0 = (loadings. FYY. 0) '*' VV;
+   FYYmod1 = (loadings. FYY. 1) '*' VV;
+   ffyy = 'TABLE';
+   ffyy. 0 = 'FORC' (0. FYYmod0 0.) mesh. 'PDIAG' ;
+   ffyy. 1 = 'FORC' (0. FYYmod1 0.) mesh. 'PDIAG' ;
+   'SI' ('EXISTE' tab 'CHARGEMENTS');
+      tab. 'CHARGEMENTS' = (tab. 'CHARGEMENTS') 'ET'
+                           ('CHARGEMENT' 'MECA' ttemps ffyy) ;
+   'SINON' ;
+      tab. 'CHARGEMENTS' = ('CHARGEMENT' 'MECA' ttemps ffyy) ;
+   'FINSI' ;
+'FINSI';
+
+'SI'('EXISTE' loadings 'FZZ');
+   FZZmod0 = (loadings. FZZ. 0) '*' VV ;
+   FZZmod1 = (loadings. FZZ. 1) '*' VV ;
+   ffzz = 'TABLE';
+   ffzz. 0 = 'FORC' (0. 0. FZZmod0) mesh. 'PDIAG' ;
+   ffzz. 1 = 'FORC' (0. 0. FZZmod1) mesh. 'PDIAG' ;
+   'SI' ('EXISTE' tab 'CHARGEMENTS');
+      tab. 'CHARGEMENTS' = (tab. 'CHARGEMENTS') 'ET'
+                           ('CHARGEMENT' 'MECA' ttemps ffzz) ;
+   'SINON' ;
+      tab. 'CHARGEMENTS' = ('CHARGEMENT' 'MECA' ttemps ffzz) ;
+   'FINSI' ;
+'FINSI';
+'SI'('EXISTE' loadings 'FXY');
+   FXYmod0 = (loadings. FXY. 0) '*' 2. * VV ;
+   FXYmod1 = (loadings. FXY. 1) '*' 2. * VV ;
+   ffxy = 'TABLE';
+   ffxy. 0 = 'FORC' (FXYmod0 0. 0.) mesh. 'PCIS' ;
+   ffxy. 1 = 'FORC' (FXYmod1 0. 0.) mesh. 'PCIS' ;
+   'SI' ('EXISTE' tab 'CHARGEMENTS');
+      tab. 'CHARGEMENTS' = (tab. 'CHARGEMENTS') 'ET'
+                           ('CHARGEMENT' 'MECA' ttemps ffxy) ;
+   'SINON' ;
+      tab. 'CHARGEMENTS' = ('CHARGEMENT' 'MECA' ttemps ffxy) ;
+   'FINSI' ;
+'FINSI';
+'SI'('EXISTE' loadings 'FXZ');
+   FXZmod0 = (loadings. FXZ. 0) '*' 2. * VV ;
+   FXZmod1 = (loadings. FXZ. 1) '*' 2. * VV ;
+   ffxz = 'TABLE';
+   ffxz. 0 = 'FORC' (0. FXZmod0 0.) mesh. 'PCIS' ;
+   ffxz. 1 = 'FORC' (0. FXZmod1 0.) mesh. 'PCIS' ;
+   'SI' ('EXISTE' tab 'CHARGEMENTS');
+      tab. 'CHARGEMENTS' = (tab. 'CHARGEMENTS') 'ET'
+                           ('CHARGEMENT' 'MECA' ttemps ffxz) ;
+   'SINON' ;
+      tab. 'CHARGEMENTS' = ('CHARGEMENT' 'MECA' ttemps ffxz) ;
+   'FINSI' ;
+'FINSI';
+'SI'('EXISTE' loadings 'FYZ');
+   FYZmod0 = (loadings. FYZ. 0) '*' 2. * VV ;
+   FYZmod1 = (loadings. FYZ. 1) '*' 2. * VV ;
+   ffyz = 'TABLE';
+   ffyz. 0 = 'FORC' (0. 0. FYZmod0) mesh. 'PCIS' ;
+   ffyz. 1 = 'FORC' (0. 0. FYZmod1) mesh. 'PCIS' ;
+   'SI' ('EXISTE' tab 'CHARGEMENTS');
+      tab. 'CHARGEMENTS' = (tab. 'CHARGEMENTS') 'ET'
+                           ('CHARGEMENT' 'MECA' ttemps ffyz) ;
+   'SINON' ;
+      tab. 'CHARGEMENTS' = ('CHARGEMENT' 'MECA' ttemps ffyz) ;
+   'FINSI' ;
+'FINSI';
+
+'FINPROC' tab ;
+************************************************************************
+* FIN DE LA PROCEDURE UPER1
+************************************************************************
+$$$$
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

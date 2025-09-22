@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Materials>
+
+<!-- REFERENCE MATERIAL -->
+<Reference_Material Lambda0="5.7692e+11" Mu0="3.8462e+11"/>
+
+<!-- MATERIAL 1 -->
+<Material numM="1" Lib="" Law="elasiso" >
+                <Coeff Index="1" Type="Constant" Value="5.7692e+11"/>
+                <Coeff Index="2" Type="Constant" Value="3.8462e+11"/>
+</Material>
+
+<!-- MATERIAL 2 -->
+<Material numM="2" Lib="" Law="elasiso">
+               <Coeff Index="1" Type="Constant" Value="5.7692e+11"/>
+               <Coeff Index="2" Type="Constant" Value="3.8462e+11"/>
+</Material>
+
+
+</Materials>
+

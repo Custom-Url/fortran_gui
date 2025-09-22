@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Loading_Output>
+
+<!-- OUPUT QUANTITIES -->
+<Output>
+    <vtk_StressStrain Strain = "1" Stress = "1"/>
+    <!--<vtk_IntVarList numM="1"> -->
+    <!--</vtk_IntVarList> -->
+    <Zone numM="1">
+       <VarIntList> 1 </VarIntList>
+    </Zone>
+    <Zone numM="2">
+       <VarIntList> 1 </VarIntList>
+    </Zone>
+    <Zone numM="3">
+       <VarIntList> 1 </VarIntList>
+    </Zone>
+    <Zone numM="4">
+       <VarIntList> 1 </VarIntList>
+    </Zone>
+</Output>
+
+<!-- SUCCESSIVE LOADINGS AND OUTPUT TIMES -->
+<Loading Tag="1">
+    <Time_Discretization Discretization="Linear" Nincr="1" Tfinal="100"/>
+    <Output_zone Number = "1"/>
+    <xx Driving="Strain" Evolution="Linear" Value="0.1" />
+    <yy Driving="Strain" Evolution="Linear" Value="0.2" />
+    <zz Driving="Strain" Evolution="Linear" Value="0.3" />
+    <xy Driving="Strain" Evolution="Linear" Value="0.4" />
+    <xz Driving="Strain" Evolution="Linear" Value="0.5" />
+    <yz Driving="Strain" Evolution="Linear" Value="0.6" />
+</Loading>
+
+<Loading Tag="2">
+    <Time_Discretization Discretization="Linear" Nincr="1" Tfinal="200"/>
+    <Output_zone Number = "1"/>
+    <xx Driving="Stress" Evolution="Linear" Value="7e+8" />
+    <yy Driving="Stress" Evolution="Linear" Value="8e+8" />
+    <zz Driving="Stress" Evolution="Linear" Value="9e+8" />
+    <xy Driving="Stress" Evolution="Linear" Value="10e+8" />
+    <xz Driving="Stress" Evolution="Linear" Value="11e+8" />
+    <yz Driving="Stress" Evolution="Linear" Value="12e+8" />
+</Loading>
+
+
+</Loading_Output>

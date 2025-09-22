@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Materials>
+
+<!-- REFERENCE MATERIAL -->
+<Reference_Material Lambda0="140" Mu0="28"/>
+
+<!-- MATERIAL 1 -->
+<Material numM="1" Lib="behavior/libUmatAmitex.so" Law="martensite_Kochmann2016_3">
+               <!-- same for all zones here -->
+
+               <!-- application du modele 2D presente dans -->
+               <!-- [Kochmann2016] J. Kochmann et al. / comput. Methods Appl. Mech. Engrg. 305 (2016) 89-110 -->
+               <!-- resultats p. ### Fig. # -->
+
+               <!-- 9 orhtotropic elastic coefficient for C matrix in main phase --> 
+               <!-- here FCC phase -->
+               <!-- in local base -->
+               <!-- GPa -->
+               <!-- C(1,1)  -->   <Coeff Index="1" Type="Constant" Value="140."/>
+               <!-- C(1,2)  -->   <Coeff Index="2" Type="Constant" Value="84."/>
+               <!-- C(1,3)  -->   <Coeff Index="3" Type="Constant" Value="84."/>
+               <!-- C(2,2)  -->   <Coeff Index="4" Type="Constant" Value="140."/>
+               <!-- C(2,3)  -->   <Coeff Index="5" Type="Constant" Value="84."/>
+               <!-- C(3,3)  -->   <Coeff Index="6" Type="Constant" Value="140."/>
+               <!-- C(4,4)  -->   <Coeff Index="7" Type="Constant" Value="28."/>
+               <!-- C(5,5)  -->   <Coeff Index="8" Type="Constant" Value="28."/>
+               <!-- C(6,6)  -->   <Coeff Index="9" Type="Constant" Value="28."/>
+
+               <!-- 1rst 2 vectors of cubic base of FCC grain relative to main sys base -->
+               <!-- e(1,1)  -->   <Coeff Index="10" Type="Constant_Zone " File="microstructures/martensite_Kochmann2016_polygrain_e11.ascii" Format="ASCII"/>
+               <!-- e(1,2)  -->   <Coeff Index="11" Type="Constant_Zone " File="microstructures/martensite_Kochmann2016_polygrain_e12.ascii" Format="ASCII"/>
+               <!-- e(1,3)  -->   <Coeff Index="12" Type="Constant" Value="0."/>
+               <!-- e(2,1)  -->   <Coeff Index="13" Type="Constant_Zone " File="microstructures/martensite_Kochmann2016_polygrain_e21.ascii" Format="ASCII"/>
+               <!-- e(2,2)  -->   <Coeff Index="14" Type="Constant_Zone " File="microstructures/martensite_Kochmann2016_polygrain_e22.ascii" Format="ASCII"/>
+               <!-- e(2,3)  -->   <Coeff Index="15" Type="Constant" Value="0."/>
+
+               <!-- Coefficients relative to phase 1 --> 
+               <!-- here martensite BCC phase -->
+
+               <!-- elastic matrix in local base -->
+               <!-- GPa -->
+               <!-- C1(1,1) -->   <Coeff Index="16" Type="Constant" Value="154."/>
+               <!-- C1(1,2) -->   <Coeff Index="17" Type="Constant" Value="92.4"/>
+               <!-- C1(1,3) -->   <Coeff Index="18" Type="Constant" Value="92.4"/>
+               <!-- C1(2,2) -->   <Coeff Index="19" Type="Constant" Value="154."/>
+               <!-- C1(2,3) -->   <Coeff Index="20" Type="Constant" Value="92.4"/>
+               <!-- C1(3,3) -->   <Coeff Index="21" Type="Constant" Value="154."/>
+               <!-- C1(4,4) -->   <Coeff Index="22" Type="Constant" Value="30.8"/>
+               <!-- C1(5,5) -->   <Coeff Index="23" Type="Constant" Value="30.8"/>
+               <!-- C1(6,6) -->   <Coeff Index="24" Type="Constant" Value="30.8"/>
+
+               <!-- intrinsic strain / bain strain relative phase transformation 1 -->
+               <!-- ER1_11  -->   <Coeff Index="25" Type="Constant" Value="0.04"/>
+               <!-- ER1_22  -->   <Coeff Index="26" Type="Constant" Value="0.04"/>
+               <!-- ER1_33  -->   <Coeff Index="27" Type="Constant" Value="0."/>
+               <!-- ER1_12  -->   <Coeff Index="28" Type="Constant" Value="0.1"/>
+               <!-- ER1_13  -->   <Coeff Index="29" Type="Constant" Value="0."/>
+               <!-- ER1_23  -->   <Coeff Index="30" Type="Constant" Value="0."/>
+
+               <!--  "alpha" in user_Kochman3/non_local_user_mod.f90 / Psy_G0 in [Kochmann2016] p.100 table 1 +consideration p103 part 5.3-->  
+               <Coeff Index="31" Type="Constant" Value="0.010904"/>
+               
+               <!-- "Kinetic" in user_Kochman3/non_local_user_mod.f90 / m_0 in [Kochmann2016] p.100 table 1--> 
+               <Coeff Index="32" Type="Constant" Value="5."/>
+
+
+               <!-- State variables relative to phase 1 --> 
+
+               <!-- driving force df/dEta (Nloc, see IndexVarNloc) --> 
+
+               <IntVar Index="1" Type="Constant" Value="0"/>
+
+               <!-- phase field variable (GNloc, last Ngnloc variable(s), with Ngnloc=1 below in Non_local_modeling) --> 
+               <IntVar Index="2" Type="Constant" Value="0."/>
+
+
+               <!--Indices of non local variables nloc and coefficients for the Non local model -->
+
+               <IndexCoeffNloc NLocMod_num="1"> 31 32   </IndexCoeffNloc>
+               <IndexVarNloc   NLocMod_num="1"> 1    </IndexVarNloc>
+
+
+</Material>
+
+<!-- NON-LOCAL MODELING -->
+       <!-- Each Non-local model (NlocMod_num) : --> 
+       <!--                  takes internal variables (nloc) as input        -->
+       <!--                  gives back internal variables (gnloc) as output -->
+                <!-- Nnloc : number of input internal variables (nloc),                                               -->
+                <!--         their index are given in material.xml, see <IndexVarNloc NlocMod_num="1"/>               -->
+                
+                <!-- Ngnloc : number of output internal variables (gnloc),                                            -->
+                <!--         their index are the last Ngnloc indices of the internal vector (IntVar in material.xml)  -->
+               
+      <!-- here, the non-local model is implemented in user_nloc1 (i.e. user_nloc_before1, user_nloc_after1 and init_user_nloc_variables1) -->
+      <!-- it uses 1 variable as input () and 1 as output () and two coeff -->
+      <!-- it is based on Nmat=1 material with numM = 1 -->
+
+
+  <Non_local_modeling NLocMod_num="1" Modelname= "user_nloc1" Nnloc="1" Ngnloc="1" Ncoeff_nloc="2" >    
+       <numM Nmat="1"> 1 </numM>
+  </Non_local_modeling>
+
+
+
+</Materials>
+

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Materials>
+
+<!-- REFERENCE MATERIAL -->
+<Reference_MaterialD K0="14"/>
+
+<!-- MATERIAL 1 -->
+<!--<Material numM="1" LibK="/home/lgelebart/amitex_fftp/libAmitex/src/materiauxK/libUmatAmitexK.so" LawK="Fourier_iso">-->
+<Material numM="1" LibK="" LawK="Fourier_iso">
+                <CoeffK Index="1" Type="Constant_Zone" File="materiaux/coefficients/coeffK.txt" Format="ASCII"/>
+</Material>
+
+<!--
+<Material numM="1" LibK="/home/lgelebart/amitex_fftp/libAmitex/src/materiauxK/libUmatAmitexK.so" LawK="Fourier_iso">
+                <CoeffK Index="1" Type="Constant_Zone" >
+                       <Zone numZ="1" Value="1." />
+                       <Zone numZ="2" Value="2." />
+                       <Zone numZ="3" Value="3" />
+                       <Zone numZ="4" Value="4." />
+                       <Zone numZ="5" Value="5." />
+                       <Zone numZ="6" Value="6." />
+                       <Zone numZ="7" Value="7." />
+                       <Zone numZ="8" Value="8." />
+                       <Zone numZ="9" Value="9." />
+                       <Zone numZ="10" Value="10." />
+                       <Zone numZ="11" Value="11." />
+                       <Zone numZ="12" Value="12." />
+                       <Zone numZ="13" Value="13." />
+                       <Zone numZ="14" Value="14." />
+                       <Zone numZ="15" Value="15." />
+                       <Zone numZ="16" Value="16." />
+                       <Zone numZ="17" Value="17." />
+                       <Zone numZ="18" Value="18." />
+                       <Zone numZ="19" Value="19." />
+                       <Zone numZ="20" Value="20." />
+                       <Zone numZ="21" Value="21." />
+                       <Zone numZ="22" Value="22." />
+                       <Zone numZ="23" Value="23." />
+                       <Zone numZ="24" Value="24." />
+                       <Zone numZ="25" Value="25." />
+                       <Zone numZ="26" Value="26." />
+                       <Zone numZ="27" Value="27." />
+                </CoeffK>
+</Material>
+-->
+
+</Materials>
+

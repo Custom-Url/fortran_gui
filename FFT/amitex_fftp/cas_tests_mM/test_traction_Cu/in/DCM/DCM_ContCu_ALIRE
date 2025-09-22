@@ -1,0 +1,74 @@
+F           Mode_deformation_key  True: MicroMegas has the control of the applied deformation
+0           Mode_deformation  0 constant strain rate; 1=make carto; 2=run carto; 3=stress rate; 4=cst stress; 5=fatigue; 6=metalofute; 7=metalofute2; 8 constant st
+ress field  (FE_Sig file) superposed to the FE one, 9=creep; !parameter used only if  Mode_deformation_key = T
+
+2           Echelle           Reference scale, i.e. size of elementary screw vectors in BVD.XXX (Burgers vector unit)
+-> Facteur pour definir la taille du pas de grille micromegas (par défaut,, facteur d'echelle 1, taille = taille du plus petit vecteur de burgers dans la direction 100)
+
+21.0        Sigma0            Initial stress (MPa)                        (mode_deformation=0)  !parameter used only if  Mode_deformation_key = T
+2.0D10      SigmaPoint        Elementary stress increments (MPa s-1)      (mode_deformation=3,6,7,10) !parameter used only if  Mode_deformation_key = T
+20.         EpsilonPoint      Imposed strain rate (s-1)                   (mode_deformation=0,5,6,7,9) !parameter used only if  Mode_deformation_key = T
+1.5         RAID              Apparent Young modulus                      (mode_deformation=0,5,6,7) !parameter used only if  Mode_deformation_key = T
+3.0D-5      EPSMAX            Maximum plastic strain per cycles           (mode_deformation=5) !parameter used only if  Mode_deformation_key = T
+1.D0        FSIG              loading sign for the first cycle            (mode_deformation=5,6,7) !parameter used only if  Mode_deformation_key = T
+-> Pas utile couplage AMITEX
+
+2           LINTEN            Line tension definition:  0->Friedel;    1->DeWit;   2->Foreman;    3->Tabulated;  4->Mohles
+T           GLDEV             Cross slip activation key : True = cross-slip active
+F           NUCL              Nucleation activation key : True = nucleation active (control parameters are found the in nucl_init file )
+F           infline          status of PBC induced infinite lines : True = The applied stress is not considered for the infinite line
+F           key_crack         Add the stress field of a sharp crack in the simulated volume  (T/F=on/off)
+
+0 0 1       Tensile_axis      Tensile or compression uniaxial test direction (Miller indices) (mode_deformation=0)
+-> pour sortie resultats
+300.        Temperature       Temperature (Kelvin)
+100         Facteur_Depmax    Maximum segment displacement in a simulation step (Burgers vector unit)
+-> laisser 100 pour l'instant!
+
+50          NstatControl      Number of steps accounted for in the simulation control procedure (mode_deformation = 0)
+-> chargement MM
+
+0           relax_TL          Number of steps ascribed to initial relaxation when involving line tension only
+0           relax_INT         Number of steps ascribed to initial relaxation under no applied load and with no contact reactions allowed
+0           relax_reac        Number of steps ascribed to initial relaxation under no applied loading
+-> pas très utile : c'est mieux de le prevoir dans AMITEX (1er chargement nul -> ordre de grandeur 100 pas)
+
+0.01         Ldis_act          Segment length (micron) at which line discretization is systematically tested  (micron).
+0.01         Ldis_nact         Same as above for segments belonging to an inactive slip systems (micron).
+-> IMPORTANT : (~ libre parcours moyen (1/rac(ro)) ~ distance entre obstacle ) / 10 
+
+10          Period            Number of steps before force on waiting (quasi-immobile) segments is recalculated
+-> Astuce pour gagner du temps (inutile de calculer les forces sur segments immobiles)
+
+-1.0        L_Boite           Linear mean size of domain decomposition (micron), dynamically defined if negative
+-> Multipole: utile ici pour la détection des obstacles (pas pour le calcul des forces a longue distance => AMITEX)
+-> si valeur >0 : taille de la boite (doit etre < à h, Rayon du filtre de Cai) 
+
+5           DCFJ              Maximum Distance at which stress is calculated on the segments connected to a junction (unit: Burgers vector)
+-> A CORRELER AVEC Ldis (conserver le raio 0.01µm/5B avec b ici = 2.5e-10m)
+
+0           GB                interface and surface definitions: 0-> inactivates, 1-> planes, 2->spherical, 3->regular 3D network (polycristal)
+-> Utile pour definir des CL
+
+10000       TauINT_LIMITE     Critical stress at which segments are considered as in a singular field (MPa)
+-> A FIXER A ~ 10-100 x ORDRE DE GRANDEUR DE LA CONTRAINTE APPLIQUEE  (trop haut ici)
+
+10         KISAUVE           Write periodicity of segment configurations and information needed to restart computation
+1          KSTATS            Write periodicity of results
+1          KKIM              Write periodicity of the trajectory film
+-> KISAUVE : attention tres gros fichier pour le restart (=> A CONNECTER A AMITEX pour sauvegarder le champ de def Plastique)
+-> KSTATS : sortie sigma, densite de dislo ...
+-> KKIM : position des segments
+
+10          KPREDRAW          Periodicity of refreshment of the graphical interface in gmm mode
+-> Utile si interface graphique, notamment pour tester les parametres sur des petits cas 
+
+0           shift_rotation    Key for translation and rotation of the simulated volume (see the shift_rotation file)
+-> peut-être pour polycristaux
+
+-1          iterinfo          Step of debugging (no debugging if negative)
+-2          sysinfo           Slip system of interest in debugging procedure (needed in simulations with many segments)
+
+
+100         halfthickness     half-thickness of the inclusion in which the plastic eigenstrain is loaded (!!!! useful onnly in  MDC calculations !!!!)
+-> Rayon du filtre de Cai - unite de grille mM

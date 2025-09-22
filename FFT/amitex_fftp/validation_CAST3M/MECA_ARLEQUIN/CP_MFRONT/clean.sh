@@ -1,0 +1,2 @@
+rm *.trace
+rm UTILPROC

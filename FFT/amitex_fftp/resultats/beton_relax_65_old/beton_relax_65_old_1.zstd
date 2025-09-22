@@ -1,0 +1,11 @@
+# Le fichier est ecrit avec les zones a la suite des autres
+# Exemple en gnuplot pour tracer la contrainte moyenne xx en fonction de la deformation moyenne xx dans la zone i
+# plot "fichier.zstd" every nbZone::i-1 u 8:2
+# ou nbZone est le nombre de zones dans le materiau
+#   1ere colonne : le temps
+#   2-7e colonne : la contrainte moyenne en xx,yy,zz,xy,xz,yz
+#  8-13e colonne : la deformation moyenne en xx,yy,zz,xy,xz,yz
+# 14-19e colonne : l'ecart type de la contrainte moyenne en xx,yy,zz,xy,xz,yz
+# 20-25e colonne : l'ecart type de la deformation moyenne en xx,yy,zz,xy,xz,yz
+# 26e colonne : la valeur moyenne de la variable interne 1
+# 27e colonne : l'ecart type de la variable interne 1

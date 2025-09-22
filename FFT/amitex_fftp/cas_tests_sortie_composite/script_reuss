@@ -1,0 +1,68 @@
+#!/bin/bash
+
+
+cd /home/jduverge/amitex_fftp_dev/cas_tests
+
+
+REP_TRAVAIL="/home/jduverge/Developpement/validation_sortie_composite/"
+
+
+################################################################
+# Cas test 4 materiaux, une zone par materiau
+
+REP_COURANT="4_materiaux/"
+FICHIER_MAT=$REP_TRAVAIL$REP_COURANT"mat_20_vox_comp_reuss.xml"
+FICHIER_CHAR=$REP_TRAVAIL$REP_COURANT"char_traction_1_composite.xml"
+FICHIER_ALGO=$REP_TRAVAIL$REP_COURANT"algo_default.xml"
+FICHIER_NUMM=$REP_TRAVAIL$REP_COURANT"cellule_composite_2.vtk"
+FICHIER_NUMZ=""
+
+mpirun -np 2 ./amitex_fftp -nm $FICHIER_NUMM -m $FICHIER_MAT -c $FICHIER_CHAR -a $FICHIER_ALGO -s $REP_TRAVAIL$REP_COURANT"resultats/test_reuss"
+
+
+################################################################
+# Cas test 5 materiaux, dont 1 materiau d'interphase, avec une zone par materiau
+
+REP_COURANT="5_materiaux/"
+FICHIER_MAT=$REP_TRAVAIL$REP_COURANT"mat_20_vox_comp_reuss.xml"
+FICHIER_CHAR=$REP_TRAVAIL$REP_COURANT"char_traction_1_composite.xml"
+FICHIER_ALGO=$REP_TRAVAIL$REP_COURANT"algo_default.xml"
+FICHIER_NUMM=$REP_TRAVAIL$REP_COURANT"cellule.vtk"
+FICHIER_NUMZ=""
+
+mpirun -np 2 ./amitex_fftp -nm $FICHIER_NUMM -m $FICHIER_MAT -c $FICHIER_CHAR -a $FICHIER_ALGO -s $REP_TRAVAIL$REP_COURANT"resultats/test_reuss"
+
+
+################################################################
+# Cas test 1 materiau, 4 zones
+
+REP_COURANT="4_zones/"
+FICHIER_MAT=$REP_TRAVAIL$REP_COURANT"mat_20_vox_comp_reuss.xml"
+FICHIER_CHAR=$REP_TRAVAIL$REP_COURANT"char_traction_1_composite.xml"
+FICHIER_ALGO=$REP_TRAVAIL$REP_COURANT"algo_default.xml"
+FICHIER_NUMM=""
+FICHIER_NUMZ=$REP_TRAVAIL$REP_COURANT"cellule_composite_2.vtk"
+
+mpirun -np 2 ./amitex_fftp -nz $FICHIER_NUMZ -m $FICHIER_MAT -c $FICHIER_CHAR -a $FICHIER_ALGO -s $REP_TRAVAIL$REP_COURANT"resultats/test_reuss"
+
+
+################################################################
+# Cas test 1 materiau d'interphase, et 2 materiaux de 2 zones chacun
+
+REP_COURANT="3_mat_zones/"
+FICHIER_MAT=$REP_TRAVAIL$REP_COURANT"mat_20_vox_comp_reuss.xml"
+FICHIER_CHAR=$REP_TRAVAIL$REP_COURANT"char_traction_1_composite.xml"
+FICHIER_ALGO=$REP_TRAVAIL$REP_COURANT"algo_default.xml"
+FICHIER_NUMM=$REP_TRAVAIL$REP_COURANT"materiaux.vtk"
+FICHIER_NUMZ=$REP_TRAVAIL$REP_COURANT"zones.vtk"
+
+mpirun -np 2 ./amitex_fftp -nm $FICHIER_NUMM -nz $FICHIER_NUMZ -m $FICHIER_MAT -c $FICHIER_CHAR -a $FICHIER_ALGO -s $REP_TRAVAIL$REP_COURANT"resultats/test_reuss"
+
+
+
+
+
+cd /home/jduverge/Developpement/validation_sortie_composite/
+
+
+

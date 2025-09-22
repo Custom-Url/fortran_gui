@@ -1,0 +1,11 @@
+#   1ere colonne : le temps
+#   2-7e colonne : la contrainte de Cauchy moyenne en xx,yy,zz,xy,xz,yz
+#  8-16e colonne : la contrainte de Piola-Kirchhoff moyenne en xx,yy,zz,xy,xz,yz,yx,zx,zy
+# 17-22e colonne : la deformation de Green-Lagrange moyenne en xx,yy,zz,xy,xz,yz
+# 23-31e colonne : le gradient de u moyen en xx,yy,zz,xy,xz,yz,yx,zx,zy
+# 32-37e colonne : l'ecart type de la contrainte de Cauchy  xx,yy,zz,xy,xz,yz
+# 38-46e colonne : l'ecart type de la contrainte de Piola-Kirchhoff  xx,yy,zz,xy,xz,yz,yx,zx,zy
+# 47-52e colonne : l'ecart type de la deformation de Green-Lagrange  xx,yy,zz,xy,xz,yz
+# 53-61e colonne : l'ecart type du gradient de u  xx,yy,zz,xy,xz,yz,yx,zx,zy
+#    62e colonne : nombre d'iterations necessaires pour ce pas de chargement
+ 0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00 0.00000000E+00 0.00000000E+00 0.00000000E+00 0.00000000E+00 0.00000000E+00 0.00000000E+00 0.00000000E+00 0.00000000E+00 0.00000000E+00 0.00000000E+00 0.00000000E+00 0.00000000E+00 0.00000000E+00 0.00000000E+00 0.00000000E+00 0.00000000E+00 0.00000000E+00 0.00000000E+00 0.00000000E+00 0.00000000E+00 0.00000000E+00 0.00000000E+00 0.00000000E+00 0.00000000E+00 0.00000000E+00 0.00000000E+00 0.00000000E+00 0.00000000E+00 0.00000000E+00   0

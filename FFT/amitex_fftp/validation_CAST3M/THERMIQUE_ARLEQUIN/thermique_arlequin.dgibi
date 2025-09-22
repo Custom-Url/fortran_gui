@@ -1,0 +1,79 @@
+*23456789*23456789*23456789*23456789*23456789*23456789*23456789*23456789
+*=======================================================================
+'OPTION' 'DIME' 3 'MODELISER' TRID;
+'OPTION' 'ELEM' CU20;
+
+
+nfich0 = 'r5quad.txt';
+
+NG = 3;
+NEL = 5;
+NX = NG * NEL;
+
+Klist = PROG 1. PAS 1. 27.;
+
+
+*                                           creation des maillages 
+*=================================================================
+O1 = 0. 0. 0. ;
+X1 = (1.) 0. 0. ;
+Y1 = 0. (1.) 0. ;
+Z1 = 0. 0. (1.) ;
+VOL0 = ((O1 'DROI' NG X1) 'TRAN' NG Y1) 'VOLU' 'TRAN' NG Z1 ;
+VOL1 = ((O1 'DROI' NX X1) 'TRAN' NX Y1) 'VOLU' 'TRAN' NX Z1 ;
+*trac (vol0 coul rouge) CACH;
+*trac (vol1 coul vert) CACH;
+
+MOD0 = MODE VOL0 THERMIQUE ISOTROPE;
+MOD1 = MODE VOL1 THERMIQUE ISOTROPE;
+
+*                 repartition des donnees sur le maillage grossier
+*=================================================================
+K0 = MANU 'CHML' MOD0 REPA 'K' Klist NOEUD;
+
+*                                   projection sur le maillage fin
+*=================================================================
+K1 = PROI MOD1 K0 'STRESSES'; 
+MAT1 = MATE MOD1 K K1 ;
+COND1 = COND MOD1 MAT1;
+*                                           CONDITIONS AUX LIMITES
+*=================================================================
+CTAB = TABLE;
+CTAB . 1 = 1.; CTAB . 2 = 2.; CTAB . 3 = 3.;
+RIGCL1 DEPI1 = @CLIMT @CLPT VOL1 CTAB;
+
+*                                                       RESOLUTION
+*=================================================================
+DEPT = RESOU (RIGCL1 ET COND1) DEPI1;
+
+*                                                             POST
+*=================================================================
+V0 = MESU VOL1;
+
+*GRADT moyen
+GRADT0 = GRAD MOD1 DEPT;
+GRADT0X = (INTG (EXCO  T,X GRADT0) MOD1) / V0 ;
+GRADT0Y = (INTG (EXCO  T,Y GRADT0) MOD1) / V0 ;
+GRADT0Z = (INTG (EXCO  T,Z GRADT0) MOD1) / V0 ;
+
+*FLUX moyen
+FLUX0 = @CFLUX MOD1 MAT1 DEPT;
+FLX0 = (INTG (EXCO T,X FLUX0) MOD1) / V0; 
+FLY0 = (INTG (EXCO T,Y FLUX0) MOD1) / V0; 
+FLZ0 = (INTG (EXCO T,Z FLUX0) MOD1) / V0; 
+
+*trac GRADT0 MOD1;
+*trac FLUX0 MOD1;
+
+*   
+*                                                      SORTIE FICHIER
+*====================================================================
+ii = VALE IMPR;
+OPTI ECHO 0;
+OPTI IMPR 30 IMPR NFICH0;
+MESS GRADT0X GRADT0Y GRADT0Z;
+MESS FLX0 FLY0 FLZ0; 
+OPTI IMPR ii;
+OPTI ECHO 1;
+
+

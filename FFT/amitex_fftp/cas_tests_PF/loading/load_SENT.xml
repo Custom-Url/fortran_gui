@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Loading_Output>
+
+<!-- OUPUT QUANTITIES -->
+<Output>
+    <vtk_StressStrain Strain = "0" Stress = "0"/>
+    <vtk_IntVarList numM="1"> 1 </vtk_IntVarList>
+    <vtk_IntVarList numM="2"> 1 </vtk_IntVarList>
+</Output>
+
+<!-- SUCCESSIVE LOADINGS AND OUTPUT TIMES -->
+<Loading Tag="1">
+    <Time_Discretization Discretization="Linear" Nincr="100" Tfinal="100" />
+    <Output_vtkList>  </Output_vtkList>
+    <xx Driving="Stress" Evolution="Constant" Value="0."/>
+    <yy Driving="Strain" Evolution="Linear" Value="0.005" />
+    <zz Driving="Stress" Evolution="Constant" Value="0."/>
+    <xy Driving="Stress" Evolution="Constant" Value="0."/>
+    <xz Driving="Stress" Evolution="Constant" Value="0."/>
+    <yz Driving="Stress" Evolution="Constant" Value="0."/>
+
+</Loading>
+
+<Loading Tag="2">
+    <Time_Discretization Discretization="Linear" Nincr="10000" Tfinal="10100" />
+    <!--Output_vtkList> 1000 1200 1400 1600 1800 2000 2200 2500 3000 3500 4000 4500 5000 </Output_vtkList-->
+
+    <xx Driving="Stress" Evolution="Constant" Value="0."/>
+    <yy Driving="Strain" Evolution="Linear" Value="0.01" />
+    <zz Driving="Stress" Evolution="Constant" Value="0."/>
+    <xy Driving="Stress" Evolution="Constant" Value="0."/>
+    <xz Driving="Stress" Evolution="Constant" Value="0."/>
+    <yz Driving="Stress" Evolution="Constant" Value="0."/>
+</Loading>
+
+
+</Loading_Output>

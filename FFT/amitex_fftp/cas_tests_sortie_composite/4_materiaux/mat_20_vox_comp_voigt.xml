@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Materials>
+
+<!-- REFERENCE MATERIAL -->
+<Reference_Material Lambda0="2.5e+11" Mu0="2.5e+11"/>
+
+<!-- MATERIAL 1 -->
+<Material numM="1" Lib="/home/jduverge/amitex_fftp_dev/libAmitex/src/materiaux/libUmatAmitex.so" Law="elasiso">
+               <Coeff Index="1" Type="Constant" Value="4.0e+11" />
+               <Coeff Index="2" Type="Constant" Value="4.0e+11" />
+               <IntVar Index = "1" Type = "Constant" Value = "4.0e+11"/>
+               <Coeff_composite Index="1" Type="Constant" Value="4.0e+11" />
+               <Coeff_composite Index="2" Type="Constant" Value="4.0e+11" />
+</Material>
+
+<!-- MATERIAL 2 -->
+<Material numM="2" Lib="/home/jduverge/amitex_fftp_dev/libAmitex/src/materiaux/libUmatAmitex.so" Law="elasiso">
+               <Coeff Index="1" Type="Constant" Value="3.0e+11" />
+               <Coeff Index="2" Type="Constant" Value="3.0e+11" />
+               <IntVar Index = "1" Type = "Constant" Value = "3.0e+11"/>
+               <Coeff_composite Index="1" Type="Constant" Value="3.0e+11" />
+               <Coeff_composite Index="2" Type="Constant" Value="3.0e+11" />
+</Material>
+
+<!-- MATERIAL 3 -->
+<Material numM="3" Lib="/home/jduverge/amitex_fftp_dev/libAmitex/src/materiaux/libUmatAmitex.so" Law="elasiso">
+               <Coeff Index="1" Type="Constant" Value="2.0e+11" />
+               <Coeff Index="2" Type="Constant" Value="2.0e+11" />
+               <IntVar Index = "1" Type = "Constant" Value = "2.0e+11"/>
+               <Coeff_composite Index="1" Type="Constant" Value="2.0e+11" />
+               <Coeff_composite Index="2" Type="Constant" Value="2.0e+11" />
+</Material>
+
+<!-- MATERIAL 4 -->
+<Material numM="4" Lib="/home/jduverge/amitex_fftp_dev/libAmitex/src/materiaux/libUmatAmitex.so" Law="elasiso">
+               <Coeff Index="1" Type="Constant" Value="1.0e+11" />
+               <Coeff Index="2" Type="Constant" Value="1.0e+11" />
+               <IntVar Index = "1" Type = "Constant" Value = "1.0e+11"/>
+               <Coeff_composite Index="1" Type="Constant" Value="1.0e+11" />
+               <Coeff_composite Index="2" Type="Constant" Value="1.0e+11" />
+</Material>
+
+<!-- MATERIAUX COMPOSITES -->
+<Material_composite   > 
+               <Coeff_composite directory="/home/jduverge/Developpement/validation_sortie_composite/4_materiaux/Composite2_voigt/"/> 
+</Material_composite>
+
+</Materials>

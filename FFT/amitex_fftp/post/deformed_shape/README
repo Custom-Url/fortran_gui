@@ -1,0 +1,3 @@
+# Exemples utilisation
+mpirun ./deformedShape 10 ~/amitex_fftp/resultats/polyxGD_traction/polyxGD_traction -M1_varInt1
+mpirun ./deformedShape 10 ~/amitex_fftp/resultats/polyxGD_traction/polyxGD_traction -sig

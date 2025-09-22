@@ -1,0 +1,93 @@
+/*!
+ * \file   FCC_charpagne_njac_v2.mfront
+ * \author Guillaume Protin + LG
+ * \date   02/07/21
+ */
+ 
+@DSL		ImplicitFiniteStrain;
+@Behaviour	FCCCharpagnev2;
+@Author GP;
+@Description{
+  "Implémentation de la loi PC présente dans publication de Charpagne"
+  "Pour comparaison numérique de leur résultats expé 3D "
+}
+
+//@UMATGenerateMTestFileOnFailure true;
+//@UMATUseTimeSubStepping[umat] true;
+//@UMATMaximumSubStepping 100;
+
+
+
+@Brick FiniteStrainSingleCrystal;
+@CrystalStructure FCC;
+@SlidingSystem <0,1,-1>{1,1,1};
+@InteractionMatrix{0.1,0.1,0.1,0.1,0.1,0.1,0.1};
+
+@Algorithm NewtonRaphson; //résolution  itérative NR avec nécessité de donner la matrice jacobienne
+//@Algorithm NewtonRaphson_NumericalJacobian;
+@Theta 1.;                //choix de partition implixite|explicite, theta=1 donne schéma totalement implicite, la tangeante est définie sur N+1 et pas N. utilisé en plasticité pk?
+@Epsilon 1.e-12;          // -12 critère d'arrêt sur la variation à chaque itération de la variation de la solution (on rappelle que NR résout N+1 par rapport a N, donc un dN, et qu'il fait cela en plsusiuers étapes)
+//@IterMax 1000;
+
+@MaterialProperty real gamma0;
+@MaterialProperty real n;
+@MaterialProperty real g0;
+@MaterialProperty real b;
+@MaterialProperty real rho0;
+@MaterialProperty real K;
+@MaterialProperty real yc;
+@MaterialProperty real mu;   //module de cisaillement
+
+@StateVariable real rho[Nss];
+
+@Integrator{
+
+real sum_a_rho[Nss];
+
+  for(unsigned short i=0;i!=Nss;i++){
+    sum_a_rho[i] = 0.;
+    for(unsigned short j=0;j!=Nss;j++){
+      sum_a_rho[i] += ss.him(i,j)*(rho0 + rho[j]+theta*drho[j]);
+    }
+  }
+
+  for(unsigned short i=0;i!=Nss;i++){
+    const stress  tau  = ss.mu[i] | M;
+//    const stress  ga = g0+b*mu*sqrt(sum_a_rho[i]);
+    const stress  ga = g0+mu*sqrt(sum_a_rho[i]); // on utilise rho adimensionne par b^2
+        
+    const real    sgn  = (tau>0) ? 1 : -1;
+    const strain  dp   = abs(dg[i]);
+    const real    sgndp = (dg[i]>0) ? 1 : ((dg[i]<0) ? -1 : 0);
+    
+    const real    Hsi = dt*gamma0*pow(abs(tau)/ga,n-1)*(n/ga);
+
+    real dgi = dt*gamma0*pow(abs(tau)/ga,n)*sgn; //gamma0 !
+    
+    
+    fg[i] -= dgi;
+
+//    frho[i] = drho[i]-dp*(sqrt(sum_a_rho[i])/K-2*yc*(rho0+rho[i]+theta*drho[i]))/b; 
+    frho[i] = drho[i]-dp*(sqrt(sum_a_rho[i])/K-2*(yc/b)*(rho0+rho[i]+theta*drho[i])); // on utilise rho adimensionne par b^2
+    frho[i] = frho[i] / rho0;  // normaliser le residu semble accelerer la resolution (A CONFIRMER)
+
+
+    dfg_ddeel(i) = -Hsi*(ss.mu[i]|dM_ddeel);
+    for(unsigned short j=0;j!=Nss;j++){
+    if (j==i){ 
+       dfg_ddrho(i,i) = - dt*n*gamma0*sgn*pow(abs(tau),n)*pow((1/ga),(n+1))*mu*ss.him(i,i)/(2*sqrt(sum_a_rho[i]));
+       dfg_ddg(i,i) = 1;
+       dfrho_ddg(i,i) = (-sgndp*(sqrt(sum_a_rho[i])/K-(2*yc/b)*(rho0+rho[i]+theta*drho[i])))/rho0;        
+       dfrho_ddrho(i,i) = (1 -dp*((1/(2*K))*ss.him(i,i)*(1./(sqrt(sum_a_rho[i])))-(2*yc/b)))/rho0;
+    } else { 
+       dfg_ddrho(i,j) = - dt*n*gamma0*sgn*pow(abs(tau),n)*pow((1/ga),(n+1))*mu*ss.him(i,j)/(2*sqrt(sum_a_rho[i]));
+       dfg_ddg(i,j) = 0;
+       dfrho_ddg(i,j) = 0;    
+       dfrho_ddrho(i,j) = (-dp*((1/(2*K))*ss.him(i,j)*(1./(sqrt(sum_a_rho[i])))))/rho0; 
+    }
+    }
+  }
+}
+
+
+

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Materials>
+
+<!-- REFERENCE MATERIAL -->
+<Reference_Material Lambda0="2.5e+11" Mu0="2.5e+11"/>
+
+<!-- MATERIAL 1 -->
+<Material numM="1" Lib="/home/jduverge/amitex_fftp_dev/libAmitex/src/materiaux/libUmatAmitex.so" Law="elasiso">
+               <Coeff Index="1" Type="Constant_Zone">
+                 <Zone numZ="1" Value="4.0e+11" />
+                 <Zone numZ="2" Value="3.0e+11" />
+                 <Zone numZ="3" Value="2.0e+11" />
+                 <Zone numZ="4" Value="1.0e+11" />
+	       </Coeff>
+               <Coeff Index="2" Type="Constant_Zone">
+                 <Zone numZ="1" Value="4.0e+11" />
+                 <Zone numZ="2" Value="3.0e+11" />
+                 <Zone numZ="3" Value="2.0e+11" />
+                 <Zone numZ="4" Value="1.0e+11" />
+	       </Coeff>
+
+               <IntVar Index="1" Type="Constant_Zone">
+                 <Zone numZ="1" Value="4.0e+11" />
+                 <Zone numZ="2" Value="3.0e+11" />
+                 <Zone numZ="3" Value="2.0e+11" />
+                 <Zone numZ="4" Value="1.0e+11" />
+	       </IntVar>
+
+               <Coeff_composite Index="1" Type="Constant_Zone">
+                 <Zone numZ="1" Value="4.0e+11" />
+                 <Zone numZ="2" Value="3.0e+11" />
+                 <Zone numZ="3" Value="2.0e+11" />
+                 <Zone numZ="4" Value="1.0e+11" />
+               </Coeff_composite>
+               <Coeff_composite Index="2" Type="Constant_Zone">
+                 <Zone numZ="1" Value="4.0e+11" />
+                 <Zone numZ="2" Value="3.0e+11" />
+                 <Zone numZ="3" Value="2.0e+11" />
+                 <Zone numZ="4" Value="1.0e+11" />
+               </Coeff_composite>
+</Material>
+
+<!-- MATERIAUX COMPOSITES -->
+<Material_composite   > 
+               <Coeff_composite directory="/home/jduverge/Developpement/validation_sortie_composite/4_zones/Composite2zones_laminate/"/> 
+</Material_composite>
+
+</Materials>

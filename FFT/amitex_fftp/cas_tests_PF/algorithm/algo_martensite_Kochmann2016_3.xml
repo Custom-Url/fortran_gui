@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Algorithm_Parameters>
+    <Algorithm Type="Basic_Scheme">                     <!-- "Default" (Basic_Scheme) ou "Basic_Scheme" -->
+        <Convergence_Criterion Value="Default"/>        <!-- "Default" (1e-4) ou valeur réelle positive <1e-3 -->
+        <Convergence_Acceleration Value="true"/>        <!-- "True" ou "False" -->
+    </Algorithm>
+
+    <Mechanics>    
+        <Filter Type="no_filter"/>                            <!-- "Default" (hexa) ou "no_filter" ou "hexa" ou "octa" -->
+        <Small_Perturbations Value="true"/>                 <!-- "True" ou "False" --> 
+    </Mechanics>
+
+   <Non_local_algorithm NLocMod_num="1"  Algo="explicit">
+       <P_real Index="1" Value="0" />                     <!-- entree algo reelle bidon (pas utilisee dans user_Kochman3) --> 
+       <P_string Index="1" Value="bidon" />               <!-- entree algo string bidon (pas utilisee dans user_Kochman3) -->
+   </Non_local_algorithm>   
+                                         
+</Algorithm_Parameters>
+

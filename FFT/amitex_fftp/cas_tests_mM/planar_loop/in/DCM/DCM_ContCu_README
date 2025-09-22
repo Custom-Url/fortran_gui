@@ -1,0 +1,97 @@
+T           Mode_deformation_key  True: MicroMegas has the control of the applied deformation
+-> T : must be T just for 'statistics outputs' (loading is applied by AMITEX)
+
+0           Mode_deformation  0 constant strain rate; 1=make carto; 2=run carto; 3=stress rate; 4=cst stress; 5=fatigue; 6=metalofute; 7=metalofute2; 8 constant st
+ress field  (FE_Sig file) superposed to the FE one, 9=creep; !parameter used only if  Mode_deformation_key = T
+-> Not used with DCM
+
+2           Echelle           Reference scale, i.e. size of elementary screw vectors in BVD.XXX (Burgers vector unit)
+-> Facteur pour definir la taille du pas de grille micromegas (par défaut,, facteur d'echelle 1, taille = taille du plus petit vecteur de burgers dans la direction 100)
+-> voir explicatin dans New_con_README
+
+21.0        Sigma0            Initial stress (MPa)                        (mode_deformation=0)  !parameter used only if  Mode_deformation_key = T
+2.0D10      SigmaPoint        Elementary stress increments (MPa s-1)      (mode_deformation=3,6,7,10) !parameter used only if  Mode_deformation_key = T
+20.         EpsilonPoint      Imposed strain rate (s-1)                   (mode_deformation=0,5,6,7,9) !parameter used only if  Mode_deformation_key = T
+1.5         RAID              Apparent Young modulus                      (mode_deformation=0,5,6,7) !parameter used only if  Mode_deformation_key = T
+3.0D-5      EPSMAX            Maximum plastic strain per cycles           (mode_deformation=5) !parameter used only if  Mode_deformation_key = T
+1.D0        FSIG              loading sign for the first cycle            (mode_deformation=5,6,7) !parameter used only if  Mode_deformation_key = T
+-> Not used with DCM
+
+2           LINTEN            Line tension definition:  0->Friedel;    1->DeWit;   2->Foreman;    3->Tabulated;  4->Mohles
+-> 3 For anisotropic calculations to be associated to input files for line tension (see ~/mM/dd/trunk/in/mM_Data_files)
+T           GLDEV             Cross slip activation key : True = cross-slip active
+-> to be associated to input file DCM_Cs
+F           NUCL              Nucleation activation key : True = nucleation active (control parameters are found the in nucl_init file )
+-> to be associated to input files for nucleation (see ~/mM/dd/trunk/in/mM_Def_files)
+F           infline           status of PBC induced infinite lines : True = The applied stress is not considered for the infinite line
+-> Controle les dilocation qui sont rendues infinies par la periodicite (peu frequent si on a bcp de dislocation)
+F           key_crack         Add the stress field of a sharp crack in the simulated volume  (T/F=on/off)
+-> to be associated to input files for crack (see ~/mM/dd/trunk/in/mM_Def_files) 
+-> surfaces and BC must alos be defined
+
+0 0 1       Tensile_axis      Tensile or compression uniaxial test direction (Miller indices) (mode_deformation=0)
+-> Not used in DCM, except for 'statistics outputs'
+
+
+300.        Temperature       Temperature (Kelvin)
+100         Facteur_Depmax    Maximum segment displacement in a simulation step (Burgers vector unit)
+-> laisser 100 pour l'instant!
+-> pour traiter les cas extrêmes, comme des dislo TRES proches avec des contraintes ENORMES
+-> de plus, en général, les deplacements sont limités par les collisions entre dislo
+
+50          NstatControl      Number of steps accounted for in the simulation control procedure (mode_deformation = 0)
+-> Not used with DCM (MM loading crontrl)
+
+0           relax_TL          Number of steps ascribed to initial relaxation when involving line tension only (LT)
+0           relax_INT         Number of steps ascribed to initial relaxation under no applied load and with no contact reactions allowed (contrainte interne + LT)
+0           relax_reac        Number of steps ascribed to initial relaxation under no applied loading (contrainte interne + tensin de igne + reaction)
+-> Initial relaxation, can be done in AMITEX with a 1st preliminary nul loading -> approximately 100 steps
+
+0.01         Ldis_act          Segment length (micron) at which line discretization is systematically tested  (micron).
+0.01         Ldis_nact         Same as above for segments belonging to an inactive slip systems (micron) (rendus inactifs dans New_conf, 1ere ligne)
+-> IMPORTANT : < (Longueur caract du syst / 10)
+->             < (~ libre parcours moyen (1/rac(ro)) ~ distance entre obstacle ) / 10 
+
+10          Period            Number of steps before force on waiting (quasi-immobile) segments is recalculated
+-> Trick to save time (no need to evaluate forces on immobiles segments) - 10 valeur standard
+
+-1.0        L_Boite           Linear mean size of domain decomposition (micron), dynamically defined if negative
+-> Multipole: usefull for obstacles detection and, IF NOT DCM, forces evaluations
+-> If value >0 : mean size of the box (must be < h, Cai radius filter) 
+
+
+0           GB                interface and surface definitions: 0-> inactivates, 1-> planes, 2->spherical, 3->regular 3D network (polycristal)
+-> Utile pour definir des CL
+-> to be associated to input files for crack (see ~/mM/dd/trunk/in/mM_Def_files) 
+->                               1 -> b_domains_def / 2 -> b_spher_def  / 3 -> b_poly_def
+
+10000       TauINT_LIMITE     Critical stress at which segments are considered as in a singular field (MPa)
+-> on limite les valeurs trop hautes de la contrainte
+-> ~ 10-100 x applied stress  (trop haut ici)
+
+10         KISAUVE           Write periodicity of segment configurations and information needed to restart computation
+1          KSTATS            Write periodicity of results
+1          KKIM              Write periodicity of the trajectory film
+-> KISAUVE: out/bigsave.bin file for restart 
+-> KSTATS : out/*.txt statistical results (average stress,dislocationi densities etc...)
+-> KKIM   : out/film.bin 
+
+10         KPREDRAW          Periodicity of refreshment of the graphical interface in gmm mode
+-> If using, gmm (graphical interface), for small cases 
+-> Not used with DCM
+
+0          shift_rotation    Key for translation and rotation of the simulated volume (see the shift_rotation file)
+-> not clear
+-> peut-être pour polycristaux
+
+-1         iterinfo          Step of debugging (no debugging if negative)
+-2         sysinfo           Slip system of interest in debugging procedure (needed in simulations with many segments)
+
+
+100        halfthickness     half-thickness of the inclusion in which the plastic eigenstrain is loaded (!!!! useful onnly in  MDC calculations !!!!)
+-> Cai filter radius (le a de la publi) - mM grid unit
+-> au moins (Nx_mM / Nx_AMITEX)*6
+
+
+
+

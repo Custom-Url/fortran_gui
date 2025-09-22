@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Algorithm_Parameters>
+    <Algorithm Type="Basic_Scheme">                     <!-- "Default" (Basic_Scheme) or "Basic_Scheme" -->
+        <Convergence_Criterion Value="Default"/>        <!-- "Default" (1e-4) or positive real value < 1e-3 -->
+        <Convergence_Acceleration Value="true"/>        <!-- "True" or "False" -->
+    </Algorithm>
+
+    <Mechanics>    
+        <Filter Type="Default"/>                        <!-- "Default" (hexa) or "no_filter" or "hexa" or "octa" -->
+        <Small_Perturbations Value="true"/>             <!-- "True" or "False" --> 
+    </Mechanics>
+                                                        <!-- To activate resolution_user (Algo="user") or user procedure in the standard algorithm (Algo="standard") -->
+    <User Algo="standard">                                              <!-- Set of parameters for a user-defined algorithm :             --> 
+         <P_real Index="1" Value="1."/>                 <!--    values put in algo_user%p_real(i) and algo_user%p_string(:) -->
+         <P_real Index="2" Value="1.e-4"/>              
+         <P_string Index="1" Value="TotO0!"/> 
+         <P_string Index="2" Value="gd$jhdzegzeeeeeeeeeeeeeeeeefveeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeetO0!"/> 
+    </User>
+</Algorithm_Parameters>
+
+<!-- AUTRE PROPOSITION : Algo="user" ou "default" : "user" : l'algo est user, si "default" des fonctions peuvent etre appelees avant et apres unpas_meca
+    <User Algo="user">                                  
+         <P_real Index="1" Value="1."/>                 
+         <P_real Index="2" Value="1.e-4"/>              
+         <P_string Index="1" Value="TotO0!"/> 
+         <P_string Index="2" Value="gd$jhdzegzeeeeeeeeeeeeeeeeefveeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeetO0!"/> 
+    </User>
+-->

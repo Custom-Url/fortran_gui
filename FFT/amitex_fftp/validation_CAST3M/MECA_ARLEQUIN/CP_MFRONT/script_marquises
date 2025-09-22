@@ -1,0 +1,12 @@
+#!/bin/bash
+#PBS -S /bin/bash
+#PBS -N amitex 
+##PBS -l select=1:ncpus=28:mpiprocs=28
+#PBS -l nodes=marquises23:ppn=28
+# nombre de nœuds, nombre de processus par nœuds
+# temps maximal de l’execution (h:m:s)
+#PBS -q qrisk
+
+ cd $PBS_O_WORKDIR
+ ./script.sh
+

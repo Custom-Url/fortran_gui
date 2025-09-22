@@ -1,0 +1,32 @@
+MISE EN PLACE CALCUL ARLEQUIN : 1 EL = 1 OR
+objectifs : - comparaison integration reduite/full sur calcul cristallin
+            - validation FFT / integration réduite
+
+ATTENTION : Comportement plastique MFRONT,depuis CAST3M version 2021 : 
+  utiliser mfront --obuild --interface=castem21 loi.mfront
+
+
+
+* Ne pas oublier castem21 utilproc.dgibi pour charger les CL Périodiques  
+
+* Calcul Intégration Réduite : copier l'exécutable depuis Cast3M_2021_cub8ri
+
+1 - Calculs CAST3M CUB8 : 
+castem2021 utilproc.dgibi
+lancer arlequin_cpmfront.dgibi pour differentes valeurs de N
+
+2 - Calculs CAST3M CUB8RI
+dans ../Cast3m_2021_cub8ri : compilcast21 elquoi.eso + essaicast21
+deplaer l'executable dans le repertoire
+Lancer les mêmes cacluls CAST3M ( avec differentes valeurs de N)
+
+3 - .Script.sh pour lancer les simus AMITEX
+
+4 - gnuplot plot.gp pour tracer les comparaisons
+
+RESULTATS :
+
+=> OK marche bien, PB indetermination pour cas pairs (OK normal)
+=> comparaison FFT - CUB8IR : OK
+=> Effet CUB8 vs CUB8IR sur arlequin : important
+ 

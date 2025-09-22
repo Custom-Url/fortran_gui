@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Materials>
+
+<!-- REFERENCE MATERIAL -->
+<Reference_Material Lambda0="22.21175e+10" Mu0="14.80765e+10"/>
+
+<!-- MATERIAL 1 -->
+<!--<Material numM="2" Lib="/home/lgelebart/amitex_fftp/libAmitex/src/materiaux/libUmatAmitex.so" Law="elasiso" >-->
+<Material numM="2" Lib="" Law="elasiso" >
+                <Coeff Index="1" Type="Constant" Value="4.0385e+10"/>
+                <Coeff Index="2" Type="Constant" Value="2.6923e+10"/>
+</Material>
+
+<!-- MATERIAL 2 -->
+<!--<Material numM="1" Lib="/home/lgelebart/amitex_fftp/libAmitex/src/materiaux/libUmatAmitex.so" Law="elasiso">-->
+<Material numM="1" Lib="" Law="elasiso">
+               <Coeff Index="1" Type="Constant" Value="4.0385e+11"/>
+               <Coeff Index="2" Type="Constant" Value="2.6923e+11"/>
+</Material>
+
+
+</Materials>
+

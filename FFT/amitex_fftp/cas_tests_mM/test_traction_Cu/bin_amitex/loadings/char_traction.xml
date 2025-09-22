@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Loading_Output>
+
+<!-- OUPUT QUANTITIES -->
+<Output>
+    <vtk_StressStrain Strain = "1" Stress = "1"/>
+    <vtk_IntVarList numM="1"> 
+    1 2 3 4 5 6
+    </vtk_IntVarList> 
+</Output>
+
+<!-- SUCCESSIVE LOADINGS AND OUTPUT TIMES -->
+<Loading Tag="1">
+    <Time_Discretization Discretization="Linear" Nincr="10" Tfinal="2.d-8"/>
+    <Output_vtkList > 1 10 </Output_vtkList>
+    <xx Driving="Stress" Evolution="Linear" Value="0.e0" />
+    <yy Driving="Stress" Evolution="Linear" Value="0.e0" />
+    <zz Driving="Stress" Evolution="Linear" Value="0.e0" /> 
+    <xy Driving="Stress" Evolution="Linear" Value="0.e0" />
+    <xz Driving="Stress" Evolution="Linear" Value="0.e0" />
+    <yz Driving="Stress" Evolution="Linear" Value="0.e0" />
+</Loading>
+
+
+<!-- SUCCESSIVE LOADINGS AND OUTPUT TIMES -->
+<Loading Tag="2">
+    <Time_Discretization Discretization="Linear" Nincr="10000" Tfinal="2.d-5"/> <!-- dt_amitex=2e-9 et dt_mm=2e-10 car tim step_ratio=10, cf algo_noacv_user.xml -->
+    <Output_vtkList > 2000 6000 10000  </Output_vtkList>
+    <Output_cell Number="1000"/>
+    <xx Driving="Stress" Evolution="Constant" />
+    <yy Driving="Stress" Evolution="Constant" />
+    <zz Driving="Strain" Evolution="Linear" Value="4.0e-4"/> 
+    <xy Driving="Stress" Evolution="Constant" />
+    <xz Driving="Stress" Evolution="Constant" />
+    <yz Driving="Stress" Evolution="Constant" />
+</Loading>
+
+
+</Loading_Output>

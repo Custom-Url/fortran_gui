@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Loading_Output>
+
+<!-- OUPUT QUANTITIES -->
+<Output>
+    <vtk_StressStrain Strain = "1" Stress = "1"/>
+</Output>
+
+<!-- Initialization external parameters ? -->
+<!-- SUCCESSIVE LOADINGS AND OUTPUT TIMES -->
+
+<!-- application du modele 2D presente dans -->
+<!-- [Kochmann2016] J. Kochmann et al. / comput. Methods Appl. Mech. Engrg. 305 (2016) 89-110 -->
+<!-- resultats p. 102 Fig. 6 -->
+
+<Loading Tag="1">
+
+  <!-- <Time_Discretization Discretization="linear" Nincr="1000" Tfinal="0.01" /> --> <!-- Fig. 6, 500 mm/s -->
+  <!-- <Time_Discretization Discretization="linear" Nincr="1000" Tfinal="0.1"/> --> <!-- Fig. 6, 50 mm/s --> 
+  <!-- <Time_Discretization Discretization="linear" Nincr="1000" Tfinal="1."/> --> <!-- Fig. 6, 5 mm/s -->
+  <Time_Discretization Discretization="linear" Nincr="1000" Tfinal="10"/> <!-- Fig. 6, 0.5 mm/s -->
+  <Output_vtkList>
+  1 1000
+  </Output_vtkList>
+  <xx Driving="Strain" Evolution="Linear" Value="0.05"/> <!-- 5% def at the end -->
+  <yy Driving="Strain" Evolution="Linear" Value="0" />
+  <zz Driving="Strain" Evolution="Linear" Value="0" />
+  <xy Driving="Strain" Evolution="Linear" Value="0" />
+  <xz Driving="Strain" Evolution="Linear" Value="0" />
+  <yz Driving="Strain" Evolution="Linear" Value="0" />
+
+</Loading>
+
+</Loading_Output>

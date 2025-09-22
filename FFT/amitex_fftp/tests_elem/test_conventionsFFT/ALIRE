@@ -1,0 +1,16 @@
+TESTS DES CONVENTIONS POUR :
+	calcul des moyennes
+	calculs de somme de x^2
+
+pour compiler 
+	make
+pour executer
+	mpirun -np 4 ./conventions_2decomp_fftw
+
+
+CONCLUSIONS : 
+	moy(a)=af(1,1,1)/ntot
+	som(a2) = som(af2) / ntot
+	
+
+ATTENTION : prendre en compte que la TF d'un signal reel est defini sur un demi-espace (1:nx/2.1,1:ny,1:nz)

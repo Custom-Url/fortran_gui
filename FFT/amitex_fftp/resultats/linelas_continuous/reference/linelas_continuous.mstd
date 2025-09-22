@@ -1,0 +1,11 @@
+# Le fichier est ecrit avec les materiaux a la suite des autres
+# Exemple en gnuplot pour tracer la contrainte moyenne xx en fonction de la deformation moyenne xx dans le materiau i
+# plot "fichier.mstd" every nbMat::i-1 u 8:2
+# ou nbMat est le nombre de materiaux dans le domaine
+#   1ere colonne : le temps
+#   2-7e colonne : la contrainte moyenne en xx,yy,zz,xy,xz,yz
+#  8-13e colonne : la deformation moyenne en xx,yy,zz,xy,xz,yz
+# 14-19e colonne : l'ecart type de la contrainte moyenne en xx,yy,zz,xy,xz,yz
+# 20-25e colonne : l'ecart type de la deformation moyenne en xx,yy,zz,xy,xz,yz
+ 0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00 0.00000000E+00 0.00000000E+00 0.00000000E+00 0.00000000E+00 0.00000000E+00 0.00000000E+00 0.00000000E+00 0.00000000E+00 0.00000000E+00 0.00000000E+00 0.00000000E+00
+ 0.10000000E+03  0.13738436E+00 -0.94555160E-08 -0.23904085E-07  0.27050410E-12  0.25939863E-10 -0.10573671E-12  0.10000000E-01 -0.24999427E-02 -0.24998974E-02 -0.15185211E-11 -0.14683995E-09  0.47721506E-12  0.64950329E-01 0.22029381E-03 0.22444637E-03 0.74750294E-05 0.58096109E-04 0.16396714E-05 0.53716171E-04 0.64874294E-06 0.52501534E-05 0.26022108E-05 0.22480509E-04 0.42482762E-06

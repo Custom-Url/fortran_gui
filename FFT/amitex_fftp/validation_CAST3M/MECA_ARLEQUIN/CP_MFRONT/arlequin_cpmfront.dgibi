@@ -1,0 +1,454 @@
+*23456789*23456789*23456789*23456789*23456789*23456789*23456789*23456789
+*=======================================================================
+'OPTION' 'DIME' 3 'MODELISER' TRID;
+'OPTION' 'ELEM' CUB8;
+
+* nbre de grain par cote et d'elements par cote de grain
+NG = 10;
+NEL = 1;
+NX = NG * NEL;
+
+*LOI MFRONT (compilee --obuild --interface=castem21)
+LIBSO = CHAINE 'Behaviour/cast3m21/src/libUmatBehaviour.so';
+
+NOMSO = 'umatfcccharpagnev2';
+
+*REPERTOIRE ORIENTATION
+REPOR0 =
+'/usr/local/AMITEX/AMITEX_FFT/MICROSTRUCTURES/vec_orient_ISOfdo_21^3/';
+
+
+*FICHIER DE SORTIE
+NFICH0 = CHAINE TYPE '_' NG '_' NEL '.txt';
+
+
+*DEFORMATION_MAX
+EXXMAX=0.01;
+*
+*VITESSE DEFORMATION
+VEXX1 = 1.E-4;
+*
+* DISCRETISATION CHARGEMENT
+ti = 0. ; tf = EXXMAX/VEXX1 ;
+* Delta epsilon (S : SAUV, C : CALC)
+DEPSS = 1.e-4;
+DEPSC = 1.e-4;
+
+* CAS HOMOGENE OU HETEROGENE
+HETERO0 = 1;
+
+*-----------------------------------------------------------------
+* FICHIERS ORIENTATIONS
+FICX1= CHAINE REPOR0 'X1.txt';
+FICX2= CHAINE REPOR0 'X2.txt';
+FICX3= CHAINE REPOR0 'X3.txt';
+FICY1= CHAINE REPOR0 'Y1.txt';
+FICY2= CHAINE REPOR0 'Y2.txt';
+FICY3= CHAINE REPOR0 'Y3.txt';
+
+*                                           creation des maillages 
+*=================================================================
+O1 = 0. 0. 0. ;
+X1 = (1.) 0. 0. ;
+Y1 = 0. (1.) 0. ;
+Z1 = 0. 0. (1.) ;
+VOL0 = ((O1 'DROI' NG X1) 'TRAN' NG Y1) 'VOLU' 'TRAN' NG Z1 ;
+VOL1 = ((O1 'DROI' NX X1) 'TRAN' NX Y1) 'VOLU' 'TRAN' NX Z1 ;
+*trac (vol0 coul rouge) CACH;
+*trac (vol1 coul vert) CACH;
+
+*                                             creation des modeles 
+*=================================================================
+*
+MOD0 = VOL0 MODE MECANIQUE ELASTIQUE;
+
+*-----------------------MODELE MFRONT
+
+*
+* \file   FCC_charpagne_v2.mfront
+* \brief  example of how to use the FCCCharpagnev2 behaviour law
+* in the Cast3M finite element solver
+* \author GP
+* \date
+*
+
+** Tridimensional example
+** 'OPTION' 'DIMENSION' 3 'MODELISER' 'TRID' ;
+
+ coel = 'MOTS' 'YG1' 'YG2' 'YG3' 'NU12' 'NU23' 'NU13' 'G12' 'G23' 'G13'
+'V1X' 'V1Y' 'V1Z' 'V2X' 'V2Y' 'V2Z' 'RHO' 'ALP1' 'ALP2' 'ALP3' 
+'TALP' 'TREF' 'GAMM' 'N' 'G00' 'B' 'RHO00' 'K' 'YC' 'MU';
+
+ statev = 'MOTS' 'G0' 'G1' 'G2' 'G3' 'G4' 'G5' 'G6' 'G7' 'G8' 'G9'
+'G10' 'G11' 'RHO0' 'RHO1' 'RHO2' 'RHO3' 'RHO4' 'RHO5' 'RHO6' 'RHO7'
+'RHO8' 'RH9' 'RH10' 'RH11' 'FEXX' 'FEYY' 'FEZZ' 'FEXY' 'FEYX' 'FEXZ'
+'FEZX' 'FEYZ' 'FEZY';
+
+ params = 'MOTS' 'T' ;
+
+MOD1 = 'MODELISER' VOL1 'MECANIQUE' 'ELASTIQUE' 'ORTHOTROPE' 
+'NON_LINEAIRE' 'UTILISATEUR' 'LIB_LOI' LIBSO
+'FCT_LOI' NOMSO 'C_MATERIAU' coel 'C_VARINTER' statev
+'PARA_LOI' params ;
+*'CONS' M;
+
+
+*                                              lecture des donnees 
+*=================================================================
+*V1X
+OPTI ACQU FICX1;
+I=0;
+REPETE BOU0 (NG ** 3);
+I = I + 1;
+ACQU TMP*LISTREEL 1;
+SI (I EGA 1);
+V1X = EXTR 1 TMP;
+SINON;
+V1X = V1X ET (EXTR 1 TMP);
+FINSI;
+FIN BOU0;
+
+*V1Y
+OPTI ACQU FICX2;
+I=0;
+REPETE BOU0 (NG ** 3);
+I = I + 1;
+ACQU TMP*LISTREEL 1;
+SI (I EGA 1);
+V1Y = EXTR 1 TMP;
+SINON;
+V1Y = V1Y ET (EXTR 1 TMP);
+FINSI;
+FIN BOU0;
+
+*V1Z
+OPTI ACQU FICX3;
+I=0;
+REPETE BOU0 (NG ** 3);
+I = I + 1;
+ACQU TMP*LISTREEL 1;
+SI (I EGA 1);
+V1Z = EXTR 1 TMP;
+SINON;
+V1Z = V1Z ET (EXTR 1 TMP);
+FINSI;
+FIN BOU0;
+
+*V2X
+OPTI ACQU FICY1;
+I=0;
+REPETE BOU0 (NG ** 3);
+I = I + 1;
+ACQU TMP*LISTREEL 1;
+SI (I EGA 1);
+V2X = EXTR 1 TMP;
+SINON;
+V2X = V2X ET (EXTR 1 TMP);
+FINSI;
+FIN BOU0;
+
+*V2Y
+OPTI ACQU FICY2;
+I=0;
+REPETE BOU0 (NG ** 3);
+I = I + 1;
+ACQU TMP*LISTREEL 1;
+SI (I EGA 1);
+V2Y = EXTR 1 TMP;
+SINON;
+V2Y = V2Y ET (EXTR 1 TMP);
+FINSI;
+FIN BOU0;
+
+*V2Z
+OPTI ACQU FICY3;
+I=0;
+REPETE BOU0 (NG ** 3);
+I = I + 1;
+ACQU TMP*LISTREEL 1;
+SI (I EGA 1);
+V2Z = EXTR 1 TMP;
+SINON;
+V2Z = V2Z ET (EXTR 1 TMP);
+FINSI;
+FIN BOU0;
+
+
+*                 repartition des donnees sur le maillage grossier
+*=================================================================
+V1X0 = MANU 'CHML' MOD0 REPA 'V1X' V1X NOEUD;
+V1Y0 = MANU 'CHML' MOD0 REPA 'V1Y' V1Y NOEUD;
+V1Z0 = MANU 'CHML' MOD0 REPA 'V1Z' V1Z NOEUD;
+V2X0 = MANU 'CHML' MOD0 REPA 'V2X' V2X NOEUD;
+V2Y0 = MANU 'CHML' MOD0 REPA 'V2Y' V2Y NOEUD;
+V2Z0 = MANU 'CHML' MOD0 REPA 'V2Z' V2Z NOEUD;
+
+*                                   projection sur le maillage fin
+*=================================================================
+V1X1 = PROI MOD1 V1X0 'RIGIDITE'; 
+V1Y1 = PROI MOD1 V1Y0 'RIGIDITE'; 
+V1Z1 = PROI MOD1 V1Z0 'RIGIDITE'; 
+V2X1 = PROI MOD1 V2X0 'RIGIDITE'; 
+V2Y1 = PROI MOD1 V2Y0 'RIGIDITE'; 
+V2Z1 = PROI MOD1 V2Z0 'RIGIDITE'; 
+*trac V2Z1 MOD1;
+
+*                              Affectation des proprietes materiau
+*=================================================================
+* en utilisant mfront --interface=castem21, ajoute TALP et TREF 
+*                                  requis par CAST3M en 2021
+*
+xyg1 = 200000.;
+xyg2 = 200000.;
+xyg3 = 200000.;
+xnu12 = 0.3;
+xnu23 = 0.3;
+xnu13 = 0.3;
+xg12 = 76923.;
+xg23 = 76923.;
+xg13 = 76923.;
+xrho = 1.;
+xalp1 = 0.;
+xalp2 = 0.;
+xalp3 = 0.;
+xtalp = 273.15;
+xtref = 273.15;
+xgamma0 = 0.001;
+xn = 20.;
+xg0 = 400.;
+xb = 0.257e-6;
+xrho0 = 0.090735e-6;
+xk = 10.;
+xyc = 2.57e-6;
+xmu = 76923.;
+
+*-----------------------------------------------------------------------
+* ne fonctionnait pas, pas compris pourquoi...
+*YG1f  = MANU CHML MOD1 'YG1' xyg1 TYPE 'CARACTERISTIQUES' RIGIDITE;
+*YG2f  = MANU CHML MOD1 'YG2' xyg2 TYPE 'CARACTERISTIQUES' RIGIDITE;
+*YG3f  = MANU CHML MOD1 'YG3' xyg3 TYPE 'CARACTERISTIQUES' RIGIDITE;
+*NU12f = MANU CHML MOD1 'NU12' xnu12 TYPE 'CARACTERISTIQUES' RIGIDITE;
+*NU23f = MANU CHML MOD1 'NU23' xnu23 TYPE 'CARACTERISTIQUES' RIGIDITE;
+*NU13f = MANU CHML MOD1 'NU13' xnu13 TYPE 'CARACTERISTIQUES' RIGIDITE;
+*G12f = MANU CHML MOD1 'G12' xg12 TYPE 'CARACTERISTIQUES' RIGIDITE;
+G23f = MANU CHML MOD1 'G23' xg23 TYPE 'CARACTERISTIQUES' RIGIDITE;
+*G13f = MANU CHML MOD1 'G13' xg13 TYPE 'CARACTERISTIQUES' RIGIDITE;
+*RHOf = MANU CHML MOD1 'RHO' xrho TYPE 'CARACTERISTIQUES' RIGIDITE;
+*ALP1f  = MANU CHML MOD1 'ALP1' xalp1 TYPE 'CARACTERISTIQUES' RIGIDITE;
+*ALP2f  = MANU CHML MOD1 'ALP2' xalp2 TYPE 'CARACTERISTIQUES' RIGIDITE;
+*ALP3f  = MANU CHML MOD1 'ALP3' xalp3 TYPE 'CARACTERISTIQUES' RIGIDITE;
+*TALPf  = MANU CHML MOD1 'TALP' xtalp TYPE 'CARACTERISTIQUES' RIGIDITE;
+*TREFf  = MANU CHML MOD1 'TREF' xtref TYPE 'CARACTERISTIQUES' RIGIDITE;
+**TALPf  = MANU CHML MOD1 'TALP' xtalp TYPE 'TEMPERATURES' RIGIDITE;
+**TREFf  = MANU CHML MOD1 'TREF' xtref TYPE 'TEMPERATURES' RIGIDITE;
+*GAMMf = MANU CHML MOD1 'GAMM' xgamma0 TYPE 'CARACTERISTIQUES' RIGIDITE;
+*Nf = MANU CHML MOD1 'N' xn TYPE 'CARACTERISTIQUES' RIGIDITE;
+*G00f = MANU CHML MOD1 'G00' xg0 TYPE 'CARACTERISTIQUES' RIGIDITE;
+*Bf = MANU CHML MOD1 'B' xb TYPE 'CARACTERISTIQUES' RIGIDITE;
+*RHO00f = MANU CHML MOD1 'RHO00' xrho0 TYPE 'CARACTERISTIQUES' RIGIDITE;
+*Kf = MANU CHML MOD1 'K' xk TYPE 'CARACTERISTIQUES' RIGIDITE;
+*YCf = MANU CHML MOD1 'YC' xyc TYPE 'CARACTERISTIQUES' RIGIDITE;
+*Muf = MANU CHML MOD1 'MU' xmu TYPE 'CARACTERISTIQUES' RIGIDITE;
+*MAT1 =  YG1f ET YG2f ET YG3f ET NU12f ET NU23f ET NU13f
+*     ET RHOf ET ALP1f ET ALP2f ET ALP3f ET TALPf ET TREFf
+*     ET GAMMf ET Nf ET G00f ET Bf ET RHO00f ET Kf ET YCf ET MUf;
+*MAT1 = MAT1 ET V1X1 ET V1Y1 ET V1Z1 ET V2X1 ET V2Y1 ET V2Z1;
+*-----------------------------------------------------------------------
+
+* creation d'un modele monocrystal (une seule orientation)
+MAT1 = 'MATERIAU' MOD1 'YG1' xyg1 'YG2' xyg2 'YG3' xyg3 'NU12' xnu12
+'NU23' xnu23 'NU13' xnu13 'G12' xg12 'G23' xg23 'G13' xg13 'RHO' xrho
+'ALP1' xalp1 'ALP2' xalp2 'ALP3' xalp3 'TALP' xtalp 'TREF' xtref 'GAMM'
+xgamma0 'N' xn 'G00' xg0 'B' xb 'RHO00' xrho0 'K' xk 'YC' xyc 'MU' xmu
+'DIRECTION' (1 0 0) (0 1 0) 'PARALLELE';
+
+SI (HETERO0 EGA 1);
+* on annule les vecteurs directions homogenes
+MAT1 = (MAT1 - (MANU CHML MOD1 'V1X' 1. RIGIDITE))
+             - (MANU CHML MOD1 'V2Y' 1. RIGIDITE);
+* on ajoute les champs de vecteur direction
+MAT1 = MAT1 + V1X1 + V1Y1 + V1Z1 + V2X1 + V2Y1 + V2Z1;
+FINSI;
+
+
+*                             Chargement et conditions aux limites
+*=================================================================
+VOLT1 = TABLE;
+VOLT1 . 1 = VOL1;
+RIG0 = UPER0 VOLT1;
+
+* chargement de traction
+*--------------------------
+char1 = 'TABLE' ;
+char1 . FXX = 'TABLE';char1 . FXX . 0  = 0.;char1 . FXX . 1  = 0. ;
+char1 . FYY = 'TABLE';char1 . FYY . 0  = 0.;char1 . FYY . 1  = 0. ;
+*char1 . FZZ = 'TABLE';char1 . FZZ . 0  = 0.;char1 . FZZ . 1  = 0. ;
+char1 . FXY = 'TABLE';char1 . FXY . 0  = 0.;char1 . FXY . 1  = 0. ;
+char1 . FXZ = 'TABLE';char1 . FXZ . 0  = 0.;char1 . FXZ . 1  = 0. ;
+char1 . FYZ = 'TABLE';char1 . FYZ . 0  = 0.;char1 . FYZ . 1  = 0. ;
+*
+*char1 . EXX = 'TABLE';char1 . EXX . 0  = 0.;char1 . EXX . 1  = EXXMAX ;
+*char1 . EYY = 'TABLE';char1 . EYY . 0  = 0.;char1 . EYY . 1  = 2.e0 ;
+char1 . EZZ = 'TABLE';char1 . EZZ . 0  = 0.;char1 . EZZ . 1  = EXXMAX ;
+*char1 . EXY = 'TABLE';char1 . EXY . 0  = 0.;char1 . EXY . 1  = 4.e0 ;
+*char1 . EXZ = 'TABLE';char1 . EXZ . 0  = 0.;char1 . EXZ . 1  = 5.e0 ;
+*char1 . EYZ = 'TABLE';char1 . EYZ . 0  = 0.;char1 . EYZ . 1  = 6.e0 ;
+
+tabl1 = UPER1 VOLT1 char1 ti tf ;
+*
+'SI' ('EXISTE' tabl1 'BLOCAGES' ) ;
+   blo1 = (RIG0 'ET'  tabl1. 'BLOCAGES') ;
+'SINON'  ;
+    blo1 = (RIG0) ;
+'FINSI' ;
+*
+* MODIF
+*
+*LISTPC = PROG 0. 1.5e-3 PAS 1.e-4 5.E-3 PAS 1.e-3 EXXMAX;
+LISTPC = PROG 0. PAS DEPSC EXXMAX;
+LISTPC = LISTPC/VEXX1;
+LISTPS = PROG 0. PAS DEPSS EXXMAX;
+LISTPS = LISTPS/VEXX1;
+
+RIG1 F1 = @CLPMZ VOL1 EXXMAX;
+evol0 = EVOL MANU 'temps' (PROG ti (tf+(1e-13))) 'char' (PROG 0. 1.);
+CHAR1 = CHAR MECA F1 evol0;
+
+*                                                    appel pasapas
+*=================================================================
+TEK = 273.15;
+EV2 = 'EVOL' 'MANUEL' ('PROG' ti (tf+(1e-13))) ('PROG' 1. 1.);
+CHAT = 'MANUEL' CHPO VOL1 1 'T' TEK;
+CHARTHER = 'CHARGEMENT' 'T' CHAT EV2;
+
+
+TAB1 = 'TABLE'  ;
+TAB1.'MODELE' = MOD1;
+TAB1.'CARACTERISTIQUES' = MAT1;
+*TAB1 . 'RIGIDITE_CONSTANTE' = RIGI MOD1 MAT1;
+*TAB1.'CHARGEMENT' = tabl1 . 'CHARGEMENTS' ;
+*TAB1.'BLOCAGES_MECANIQUES' = blo1 ;
+TAB1.'CHARGEMENT' = CHAR1 ET CHARTHER;
+TAB1.'BLOCAGES_MECANIQUES' = RIG1 ;
+TAB1.'PRECISION' = 1e-4;
+*
+TAB1.'TEMPS_CALCULES' = LISTPC ;
+TAB1.'TEMPS_SAUVES' = LISTPS ;
+*
+TAB1.'TEMPERATURES' = TABLE;
+TAB1.'TEMPERATURES' . 0 = CHAT;
+TAB1.'VARIABLES_INTERNES' = TABLE;
+*===============================INITIALISATION DES VARINT A CORRIGER
+TAB1.'VARIABLES_INTERNES' . 0 = (ZERO MOD1 'VARINTER')
+  + ( MANU CHML MOD1 'FEXX' 1. STRESSES )
+  + ( MANU CHML MOD1 'FEYY' 1. STRESSES )
+  + ( MANU CHML MOD1 'FEZZ' 1. STRESSES );
+
+TAB1.'GRANDS_DEPLACEMENTS'= VRAI;
+TAB1.'PROCESSEURS' = MOT 'COMPORTEMENT';
+TEMPS ZERO;
+pasapas tab1 ;
+TEMPS;
+
+
+
+*   
+*                                                     POST-TRAITEMENT
+*====================================================================
+
+VV = MESU VOL1;
+NINCR0 = (DIME (TAB1 . DEPLACEMENTS)) - 1;
+*
+* CONTRAINTES ET DEFORMATIONS MOYENNES
+*===============================================
+SXX = TABLE;
+SYY = TABLE;
+SZZ = TABLE;
+SXY = TABLE;
+SXZ = TABLE;
+SYZ = TABLE;
+EXX = TABLE;
+EYY = TABLE;
+EZZ = TABLE;
+EXY = TABLE;
+EXZ = TABLE;
+EYZ = TABLE;
+I = 0;
+REPETE BOUH0 NINCR0;
+I = I + 1;
+S1 = TAB1 . contraintes . I ;
+SXX . I = ('INTG'  ('EXCO' s1 smxx) MOD1)'/' (VV) ;
+SYY . I = ('INTG'  ('EXCO' s1 smyy) MOD1)'/' (VV) ;
+SZZ . I = ('INTG'  ('EXCO' s1 smzz) MOD1)'/' (VV) ;
+SXY . I = ('INTG'  ('EXCO' s1 smxy) MOD1)'/' (VV) ;
+SYZ . I = ('INTG'  ('EXCO' s1 smyz) MOD1)'/' (VV) ;
+SXZ . I = ('INTG'  ('EXCO' s1 smxz) MOD1)'/' (VV) ;
+
+E1 = EPSI MOD1 MAT1 (TAB1 . DEPLACEMENTS . I) 'LINE';
+EXX . I = ('INTG'  ('EXCO' E1 epxx) MOD1)'/' (VV) ;
+EYY . I = ('INTG'  ('EXCO' E1 epyy) MOD1)'/' (VV) ;
+EZZ . I = ('INTG'  ('EXCO' E1 epzz) MOD1)'/' (VV) ;
+EXY . I = 0.5*('INTG'  ('EXCO' E1 gaxy) MOD1)'/' (VV) ;
+EYZ . I = 0.5*('INTG'  ('EXCO' E1 gayz) MOD1)'/' (VV) ;
+EXZ . I = 0.5*('INTG'  ('EXCO' E1 gaxz) MOD1)'/' (VV) ;
+FIN BOUH0;
+'MESSAGE' 'SXX' SXX . I;
+'MESSAGE' 'SYY' SYY . I;
+'MESSAGE' 'SZZ' SZZ . I;
+'MESSAGE' 'SXY' SXY . I;
+'MESSAGE' 'SXZ' SXZ . I;
+'MESSAGE' 'SYZ' SYZ . I;
+'MESSAGE' ' ';
+'MESSAGE' 'EXX' EXX . I;
+'MESSAGE' 'EYY' EYY . I;
+'MESSAGE' 'EZZ' EZZ . I;
+'MESSAGE' 'EXY' EXY . I;
+'MESSAGE' 'EXZ' EXZ . I;
+'MESSAGE' 'EYZ' EYZ . I;
+
+
+*   
+*                                                      SORTIE FICHIER
+*====================================================================
+ii = VALE IMPR;
+OPTI ECHO 0;
+OPTI IMPR 30 IMPR NFICH0;
+K=0;
+MESS 0. ' ' 0. ' ' 0. ' ' 0. ' ' 0. ' ' 0. ;
+REPETE BOU0 NINCR0;
+K = K + 1;
+*MESS (EXX . K) (EYY . K) (EZZ . K) (EYZ . K) (EXZ . K) (EXY . K) 
+*     (SXX . K) (SYY . K) (SZZ . K) (SYZ . K) (SXZ . K) (SXY . K);
+MESS (EXX . K) ' ' (EYY . K) ' ' (EZZ . K) ' ' 
+     (SXX . K) ' ' (SYY . K) ' ' (SZZ . K); 
+FIN BOU0;
+OPTI IMPR ii;
+OPTI ECHO 1;
+FIN;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

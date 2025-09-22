@@ -1,0 +1,11 @@
+# Ignorer les objets et les archives
+*.[oa]
+
+*~
+*.png
+*.trace
+*.vtu
+*.pvd
+UTILNOTI
+UTILPROC
+

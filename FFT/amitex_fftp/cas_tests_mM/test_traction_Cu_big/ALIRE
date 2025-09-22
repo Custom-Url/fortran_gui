@@ -1,0 +1,26 @@
+ANALYSE DE PB REMONTE PAR RICCARDO : le calcul elastique ne converge pas  pour 920x1016x1232 sur 80+4 proc (3 noeuds)
+=====================================================================================================================
+
+1 - ATTENTION plantage NaN => modif char_traction : ne pas utiliser 0MPa en contrainte imposee
+	=> 0MPa, ça doit surement planter à la 1ere iteration (calcul du critere sur champ homogene nul!).
+
+2 - PROBLEME AVEC LE COUPLAGE : 
+
+	=> plantage du calcul systématiquement sur 3 noeuds! (80 amitex + 4 mM)
+
+	=> solution (???) : le calcul passe sur 4 noeuds (108 amitex + 4mM)!!
+
+=> Une journée de perdue à trouver l'origine du plantage sans succès!!!
+	=> pas de message clair autre que 'un proc s'est arreté'...
+		=> GRRRRR!!!
+
+BILAN : 
+	=> Sur 4 noeuds, le calcul tourne 
+	=> sur 3 noeuds, le calcul tourne avec 
+		NX="805"
+		NY="889"
+		NZ="1078"
+	=> L'origine du plantage sur 3 noeuds reste mal comprise 
+	(le code va plus loin si on commente l'actualisation de Varint dans behavior... puis plante un peu plus loin!)
+
+

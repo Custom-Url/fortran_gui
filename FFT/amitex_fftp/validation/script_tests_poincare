@@ -1,0 +1,52 @@
+#!/bin/bash
+#@ class            = clallmds
+#@ job_name         = amitex_fftp
+#@ total_tasks      = 16
+#@ node             = 1
+#@ wall_clock_limit = 1:30:00
+#@ output           = $(job_name).$(jobid).log
+#@ error            = $(job_name).$(jobid).err
+#@ environment      = COPY_ALL
+#@ env_copy         = all
+#@ job_type         = mpich
+#@ node_usage       = not_shared
+#@as_limit 	    = 1.7gb
+#@ queue
+
+
+module purge
+
+# compilateur utilisé
+FC=gfortran
+
+if [[ $FC = "ifort" ]]
+then  
+  # cas intel 15
+    module load intel-env/15.0.0
+    module load intelmpi/5.0.1
+    module load fftw/3.3.3_intel
+    #export PATH=/gpfshome/mds/staff/lgelebart/tfel-2.0.3-intel15/bin:$PATH
+    #export LD_LIBRARY_PATH=/gpfshome/mds/staff/lgelebart/tfel-2.0.3-intel15/lib:$LD_LIBRARY_PATH
+    #alias mfront='CC=icc CXX=icpc FC=ifort F77=ifort mfront'
+elif [[ $FC = "gfortran" ]]
+then
+  # cas gnu
+    #module load gnu-env/4.8.4
+    #module load openmpi/1.6.3_gnu48
+    #module load fftw/3.3.3_gnu47
+    module load gnu-env/5.1.0
+    module load openmpi/1.8.4_gnu51
+    module load fftw/3.3.3_gnu51_openmpi184
+    #export PATH=/gpfshome/mds/staff/lgelebart/tfel-2.0.3-gnu484/bin:$PATH
+    #export LD_LIBRARY_PATH=/gpfshome/mds/staff/lgelebart/tfel-2.0.3-gnu484/lib:$LD_LIBRARY_PATH
+else
+    echo Fortran compiler not set
+    exit 1
+fi
+
+module load gnuplot/5.0.1
+
+
+  cd /u/q/dg765/amitex_fftp/validation
+
+./script_tests.sh

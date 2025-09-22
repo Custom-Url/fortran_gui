@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Materials>
+
+<!-- REFERENCE MATERIAL -->
+<Reference_Material Lambda0="2.8846e+10" Mu0="1.9231e+10"/>
+
+<!-- MATERIAL 1 -->
+<!--<Material numM="1" Lib="/home/lgelebart/amitex_fftp/libAmitex/src/materiaux/libUmatAmitex.so" Law="elasiso">-->
+<Material numM="1" Lib="" Law="elasiso">
+               <Coeff Index="1" Type="Constant_Zone">
+                 <Zone numZ="1" Value="5.7692e+10" />
+		 <Zone numZ="2" Value="0." />
+		 <Zone numZ="3" Value="0." />
+		 <Zone numZ="4" Value="5.7692e+10" />
+	       </Coeff>
+               <Coeff Index="2" Type="Constant_Zone">
+                 <Zone numZ="1" Value="3.8462e+10" />
+		 <Zone numZ="2" Value="0." />
+		 <Zone numZ="3" Value="0." />
+		 <Zone numZ="4" Value="3.8462e+10" />
+	       </Coeff>
+</Material>
+
+
+</Materials>
+

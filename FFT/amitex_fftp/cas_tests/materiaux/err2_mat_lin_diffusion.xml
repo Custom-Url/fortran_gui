@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Materials>
+
+<!-- REFERENCE MATERIAL -->
+<Reference_MaterialD K0="1.4ee+1"/> <!-- faute de frappe dans un champ xml -->
+
+<!-- MATERIAL 1 -->
+
+<Material numM="1" LibK="/home/gelebart/amitex_fftp/libAmitex/src/materiauxK/libUmatAmitexK.so" LawK="Fourier_iso">
+                <CoeffK Index="1" Type="Constant_Zone" File="materiaux/coefficients/coeffK.txt" Format="ASCII"/>
+</Material>
+
+
+</Materials>
+

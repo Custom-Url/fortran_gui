@@ -1,0 +1,95 @@
+#########################################
+
+CAS-TESTS  : lot's of comments in
+
+		planar_loop
+		test_traction_Cu
+		test_traction_precipitate_Cu
+
+#########################################
+
+planar_loop      	: ok, a loop used to check the stresses (almost no movement)
+
+			+ test RESTART (ok)
+
+test_traction_Cu_pureDD : ok, the reference test coming with mM 
+
+test_traction_Cu 	: ok, the same, working with AMITEX coupling
+
+test_traction_precipitate_Cu	: not ok, but should work (works in pure dd)!
+
+		place bon_domain_def to define boundaries
+		warning : remove segments (loops?) touched by surfaces
+
+FrankRead_source	: not yet
+
+test_trac_Cu_2_1024	: big simulation 
+                          => warning1 1 : increase the number of nodes!!
+			     -> no clear interruption messages with low number of nodes
+			  => warening 2 : do not use sigma=0Mpa for an applied stress (NaN criterion)
+
+
+#######################################
+MISE EN PLACE CALCUL
+
+ATTENTION AUX parametres 'liés'
+
+1 - half_thickness de DCM/DCM_ContCu depend de NX amitex
+2 - KISAUVE de DCM/DCM_ContCu depend des parametres 1 et 5 de sauvegarde de algo_noacv_user.xml
+3 - Parametres NX,NY,NZ proportionnels à la grille mM
+4 - Attention au dt de la simulation dd (=dt_amitex/time_step_ratio)
+
+
+########################################
+PRE-TRAITEMENT  CREATION MICROSTRUCTURE INITIALE
+
+recuperer et ajuster : confinit_def
+
+module load python/2.17.6 (on marquises, to use bin/volume.py)
+
+mM --initconf
+
+
+########################################
+POST-TRAITEMENT
+
+
+
+STATISTIQUE
+===========
+dans out
+gnuplot resul.gp
+
+
+VISUALISATION (ne marche pas pour l'instant pb interface graphique)
+===============
+
+Dans bin_amitex : ~/mM/dd/trunk/bin/cam
+0 0 0
+1
+1
+1
+CREATION FICHIERS VTK
+=====================
+
+Dans bin_amitex : ~/mM/dd/trunk/bin/film2para
+0 0 0
+thin foil dir
+0 0 1
+thickness (grand pour avoir tout)
+100
+Distance
+0
+1
+1
+100000
+0
+13
+
+
+WARNING:
+ The standard value of nsegmax was modified in this film : STOP !
+-> PAS GENANT : mM et film2para n'on pas la même valeur de parametre nsegmax
+
+
+

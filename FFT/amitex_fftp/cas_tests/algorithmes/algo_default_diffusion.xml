@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Algorithm_Parameters>
+
+<!-- CAS GENERAL  --> 
+   <Algorithm Type="Basic_Scheme">                     <!-- "Default" (Basic_Scheme) ou "Basic_Scheme" -->
+       <Convergence_Criterion Value="Default"/>        <!-- "Default" (1e-4) ou valeur réelle positive <1e-3 -->
+       <Convergence_Acceleration Value="True"/>        <!-- "True" ou "False" -->
+   </Algorithm>
+
+<!-- CAS DIFFUSION  --> 
+   <Diffusion>    
+       <Filter Type="Default"/>                            <!-- "Default" (hexa) ou "no_filter" ou "hexa" ou "octa" -->
+       <Stationary Value="true"/>                          <!-- "Tue" ou "False" pour un calcul de diffusion stationaire, ou non -->
+       <!-- <Number_of_variables Value="2"/> -->           <!-- TODO Nombre d'especes diffusantes -->
+   </Diffusion>
+
+<!-- CAS MECANIQUE 
+   <Mechanics>    
+        <Filter Type="Default"/>                            
+        <Small_Perturbations Value="true"/>                 
+   </Mechanics>
+--> 
+
+<!--TODO PREVISION DE COUPLAGES
+   <Coupling>
+       <Q1 Coupled_with="TEMP"/>
+       <Q2 Coupled_with="PREDEF(1)"/>    
+   </Coupling>
+-->
+</Algorithm_Parameters>
+

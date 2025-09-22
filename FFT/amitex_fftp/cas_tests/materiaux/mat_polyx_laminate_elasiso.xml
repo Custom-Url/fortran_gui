@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Materials>
+
+<!-- REFERENCE MATERIAL -->
+<Reference_Material Lambda0="5.76923076923077e8" Mu0="3.84615384615385e8"/>
+
+
+<!-- MATERIAL 1 -->
+<!--<Material numM="1" Lib="/home/lgelebart/amitex_fftp/libAmitex/src/materiaux/libUmatAmitex.so" Law="elasiso" > -->
+<Material numM="1" Lib="" Law="elasiso" > 
+
+               <Coeff Index="1" Type="Constant_Zone" File="materiaux/coefficients/Lambda1_polyx27G_R21.bin" Format="binary"/>
+               <Coeff Index="2" Type="Constant_Zone" File="materiaux/coefficients/Mu1_polyx27G_R21.bin" Format="binary"/>
+
+	       <Coeff_composite Index="1" Type="Constant_Zone" File="materiaux/coefficients/Lambda1_polyx27G_R21.bin" Format="binary" />  
+	       <Coeff_composite Index="2" Type="Constant_Zone" File="materiaux/coefficients/Mu1_polyx27G_R21.bin" Format="binary"/>  
+</Material>
+
+<!-- DEFINITION OF COMPOSITE VOXELS (can be commented to perform a simulation without composite voxels) -->
+<Material_composite   > 
+               <Coeff_composite directory="microstructures/voxcomp/polyX_27G_R21_laminate"/> 
+</Material_composite>
+
+</Materials>

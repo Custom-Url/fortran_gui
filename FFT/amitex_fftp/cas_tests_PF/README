@@ -1,0 +1,13 @@
+IMPLEMENTATIONS OF VARIOUS PHASE FILEDS IN THE AMITEX_FFTP "NON-LOCAL" FRAMEWORK (number "3" at the end of filenames)
+---------------------------------------------------------------------------------------------------------------------
+
+WARNING : 
+The following phase-field model implementations are first examples, they are probably not optimized 
+
+
+Cahn-Hilliard : Cahn-Hilliard model, one field, with mechanical coupling (used in the 'elast' case)
+
+Grain-Growth  : Gindzburg-Laundau model, 10 fields (one per grain), no mechanical coupling
+
+Kochman       : Gindzburg-Laundau model, one field, with mechanical coupling
+	

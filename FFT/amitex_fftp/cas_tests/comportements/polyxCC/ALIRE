@@ -1,0 +1,13 @@
+CE REPERTOIRE PRESENTE DEUX POSSIBILITES D'AMITEX:
+
+Création d'une librairie .so contenant le comportement du matériau (exemple d'une loi cristalline):
+	cd comportement_umat
+	make
+
+
+APPEL DE LA LOI DANS LE FICHIER fichier_materiau.xml DE DESCRIPTION DES MATERIAUX
+
+PAR EXEMPLE :
+
+<Material numM="1" Lib="/home/lgelebart/amitex_fftp/cas_tests/comportements/polyxCC/comportement_umat/libUmatBehaviour.so" Law="umatBCCHPP" >
+

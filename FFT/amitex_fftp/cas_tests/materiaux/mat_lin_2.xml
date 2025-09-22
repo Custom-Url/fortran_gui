@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Materials>
+
+<!-- REFERENCE MATERIAL -->
+<Reference_Material Lambda0="22.21175e+10" Mu0="14.80765e+10"/>
+
+<!-- MATERIAL 1 -->
+<!--<Material numM="1" Lib="/home/lgelebart/amitex_fftp/libAmitex/src/materiaux/libUmatAmitex.so" Law="elasiso">-->
+<Material numM="1" Lib="" Law="elasiso">
+               <Coeff Index="1" Type="Constant_Zone">
+		 <!-- valeur du coefficient lambda pour la zone 1 -->
+                 <Zone numZ="1" Value="4.0385e+11" />
+		 <!-- valeur du coefficient lammda pour la zone 2 -->
+		 <Zone numZ="2" Value="4.0385e+10" />
+	       </Coeff>
+               <Coeff Index="2" Type="Constant_Zone">
+		 <!-- valeur du coefficient mu pour la zone 1 -->
+                 <Zone numZ="1" Value="2.6923e+11" />
+		 <!-- valeur du coefficient mu pour la zone 2 -->
+		 <Zone numZ="2" Value="2.6923e+10" />
+	       </Coeff>
+</Material>
+
+
+</Materials>

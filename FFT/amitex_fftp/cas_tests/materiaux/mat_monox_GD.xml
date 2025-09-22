@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Materials>
+
+  <!-- REFERENCE MATERIAL -->
+  <Reference_Material Lambda0=" 2.0431e+5" Mu0="0.8756e+5"/>
+
+  <!-- MATERIAL 1 -->
+  <Material numM="1" Lib="/home/gelebart/amitex_fftp/cas_tests/comportements/polyxGD/comportement_umat/libUmatAmitex.so" Law="umatBCCGD" >
+    <Coeff Index="1" Type="Constant" Value="236.412E3"/>
+    <Coeff Index="2" Type="Constant" Value="0.35"/>
+    <Coeff Index="3" Type="Constant" Value="275.2E3"/>
+    <Coeff Index="4" Type="Constant" Value="112.4E3"/>
+    <Coeff Index="5" Type="Constant" Value="87.56E3"/>
+    <Coeff Index="6" Type="Constant" Value="363."/>
+    <Coeff Index="7" Type="Constant" Value="410."/>
+    <Coeff Index="8" Type="Constant" Value="480."/>
+    <Coeff Index="9" Type="Constant" Value="0."/>
+    <Coeff Index="10" Type="Constant" Value="1000."/>
+    <Coeff Index="11" Type="Constant" Value="10e-6"/>
+    <Coeff Index="12" Type="Constant" Value="1e11"/>
+    <Coeff Index="13" Type="Constant" Value="2.481e-7"/>
+    <Coeff Index="14" Type="Constant" Value="100"/>
+    <Coeff Index="15" Type="Constant" Value="3."/>
+    <Coeff Index="16" Type="Constant" Value="2.e-6"/>
+    <Coeff Index="17" Type="Constant" Value="0.84"/>
+    <Coeff Index="18" Type="Constant" Value="5e4"/>
+    <Coeff Index="19" Type="Constant" Value="5e4"/>
+    <Coeff Index="20" Type="Constant" Value="1e-6"/>
+    <Coeff Index="21" Type="Constant" Value="50"/>
+    <Coeff Index="22" Type="Constant" Value="0"/>
+    <Coeff Index="23" Type="Constant" Value="0.04"/>
+    <Coeff Index="24" Type="Constant" Value="0."/>
+    <Coeff Index="25" Type="Constant" Value="50"/>
+    <Coeff Index="26" Type="Constant" Value="1."/>
+    <Coeff Index="27" Type="Constant" Value="2."/>
+    <Coeff Index="28" Type="Constant" Value="3."/>
+
+    <!--
+    <Coeff Index="26" Type="Constant_Zone" File="materiaux/coefficients/Coeff25" />
+    <Coeff Index="27" Type="Constant_Zone" File="materiaux/coefficients/Coeff26" />
+    <Coeff Index="28" Type="Constant_Zone" File="materiaux/coefficients/Coeff27" />
+    -->
+    <IntVar Index="1" Type="Constant" Value="0."/>
+    <IntVar Index="2" Type="Constant" Value="0."/>
+    <IntVar Index="3" Type="Constant" Value="0."/>
+    <IntVar Index="4" Type="Constant" Value="0."/>
+    <IntVar Index="5" Type="Constant" Value="0."/>
+    <IntVar Index="6" Type="Constant" Value="0."/>
+    <IntVar Index="7" Type="Constant" Value="0."/>
+    <IntVar Index="8" Type="Constant" Value="0."/>
+    <IntVar Index="9" Type="Constant" Value="0."/>
+    <IntVar Index="10" Type="Constant" Value="0."/>
+    <IntVar Index="11" Type="Constant" Value="0."/>
+    <IntVar Index="12" Type="Constant" Value="0."/>
+    <IntVar Index="13" Type="Constant" Value="0."/>
+    <IntVar Index="14" Type="Constant" Value="0."/>
+    <IntVar Index="15" Type="Constant" Value="0."/>
+    <IntVar Index="16" Type="Constant" Value="0."/>
+    <IntVar Index="17" Type="Constant" Value="0."/>
+    <IntVar Index="18" Type="Constant" Value="0."/>
+    <IntVar Index="19" Type="Constant" Value="0."/>
+    <IntVar Index="20" Type="Constant" Value="0."/>
+    <IntVar Index="21" Type="Constant" Value="0."/>
+    <IntVar Index="22" Type="Constant" Value="0."/>
+    <IntVar Index="23" Type="Constant" Value="0."/>
+    <IntVar Index="24" Type="Constant" Value="0."/>
+    <IntVar Index="25" Type="Constant" Value="0."/>
+    <IntVar Index="26" Type="Constant" Value="0."/>
+    <IntVar Index="27" Type="Constant" Value="0."/>
+    <IntVar Index="28" Type="Constant" Value="0."/>
+    <IntVar Index="29" Type="Constant" Value="0."/>
+    <IntVar Index="30" Type="Constant" Value="0."/>
+    <IntVar Index="31" Type="Constant" Value="0."/>
+    <IntVar Index="32" Type="Constant" Value="0."/>
+    <IntVar Index="33" Type="Constant" Value="0."/>
+    <IntVar Index="34" Type="Constant" Value="0."/>
+    <IntVar Index="35" Type="Constant" Value="0."/>
+    <IntVar Index="36" Type="Constant" Value="0."/>
+    <IntVar Index="37" Type="Constant" Value="0."/>
+    <IntVar Index="38" Type="Constant" Value="0."/>
+    <IntVar Index="39" Type="Constant" Value="0."/>
+    <IntVar Index="40" Type="Constant" Value="0."/>
+    <IntVar Index="41" Type="Constant" Value="0."/>
+    <IntVar Index="42" Type="Constant" Value="0."/>
+    <IntVar Index="43" Type="Constant" Value="0."/>
+    <IntVar Index="44" Type="Constant" Value="0."/>
+    <IntVar Index="45" Type="Constant" Value="0."/>
+    <IntVar Index="46" Type="Constant" Value="0."/>
+    <IntVar Index="47" Type="Constant" Value="0."/>
+    <IntVar Index="48" Type="Constant" Value="0."/>
+    <IntVar Index="49" Type="Constant" Value="0."/>
+    <IntVar Index="50" Type="Constant" Value="0."/>
+    <IntVar Index="51" Type="Constant" Value="0."/>
+    <IntVar Index="52" Type="Constant" Value="0."/>
+    <IntVar Index="53" Type="Constant" Value="0."/>
+    <IntVar Index="54" Type="Constant" Value="0."/>
+    <IntVar Index="55" Type="Constant" Value="0."/>
+    <IntVar Index="56" Type="Constant" Value="0."/>
+    <IntVar Index="57" Type="Constant" Value="0."/>
+    <IntVar Index="58" Type="Constant" Value="0."/>
+    <IntVar Index="59" Type="Constant" Value="0."/>
+    <IntVar Index="60" Type="Constant" Value="0."/>
+    <IntVar Index="61" Type="Constant" Value="0."/>
+    <IntVar Index="62" Type="Constant" Value="0."/>
+    <IntVar Index="63" Type="Constant" Value="0."/>
+    <IntVar Index="64" Type="Constant" Value="0."/>
+    <IntVar Index="65" Type="Constant" Value="0."/>
+    <IntVar Index="66" Type="Constant" Value="0."/>
+    <IntVar Index="67" Type="Constant" Value="0."/>
+    <IntVar Index="68" Type="Constant" Value="0."/>
+    <IntVar Index="69" Type="Constant" Value="0."/>
+    <IntVar Index="70" Type="Constant" Value="0."/>
+    <IntVar Index="71" Type="Constant" Value="0."/>
+    <IntVar Index="72" Type="Constant" Value="0."/>
+    <IntVar Index="73" Type="Constant" Value="0."/>
+    <IntVar Index="74" Type="Constant" Value="0."/>
+    <IntVar Index="75" Type="Constant" Value="0."/>
+    <IntVar Index="76" Type="Constant" Value="0."/>
+    <IntVar Index="77" Type="Constant" Value="0."/>
+    <IntVar Index="78" Type="Constant" Value="0."/>
+    <IntVar Index="79" Type="Constant" Value="0."/>
+    <IntVar Index="80" Type="Constant" Value="0."/>
+    <IntVar Index="81" Type="Constant" Value="0."/>
+    <IntVar Index="82" Type="Constant" Value="0."/>
+    <IntVar Index="83" Type="Constant" Value="0."/>
+    <IntVar Index="84" Type="Constant" Value="0."/>
+    <IntVar Index="85" Type="Constant" Value="0."/>
+    <IntVar Index="86" Type="Constant" Value="0."/>
+    <IntVar Index="87" Type="Constant" Value="0."/>
+    <IntVar Index="88" Type="Constant" Value="0."/>
+    <IntVar Index="89" Type="Constant" Value="0."/>
+    <IntVar Index="90" Type="Constant" Value="0."/>
+    <IntVar Index="91" Type="Constant" Value="0."/>
+    <IntVar Index="92" Type="Constant" Value="0."/>
+    <IntVar Index="93" Type="Constant" Value="0."/>
+    <IntVar Index="94" Type="Constant" Value="0."/>
+    <IntVar Index="95" Type="Constant" Value="0."/>
+    <IntVar Index="96" Type="Constant" Value="0."/>
+    <IntVar Index="97" Type="Constant" Value="0."/>
+    <IntVar Index="98" Type="Constant" Value="0."/>
+    <IntVar Index="99" Type="Constant" Value="0."/>
+    <IntVar Index="100" Type="Constant" Value="0."/>
+    <IntVar Index="101" Type="Constant" Value="0."/>
+    <IntVar Index="102" Type="Constant" Value="0."/>
+    <IntVar Index="103" Type="Constant" Value="0."/>
+    <IntVar Index="104" Type="Constant" Value="0."/>
+    <IntVar Index="105" Type="Constant" Value="0."/>
+    <IntVar Index="106" Type="Constant" Value="0."/>
+    <IntVar Index="107" Type="Constant" Value="0."/>
+  </Material>			
+  
+  
+  
+</Materials>			
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Algorithm_Parameters>
+    <Algorithm Type="basic_scheme">                         <!-- "Default" (Basic_Scheme) or "Basic_Scheme" -->
+        <Convergence_Criterion Value="1e-4"/>               <!-- "Default" (1e-4) or positive value <1e-3   -->
+        <Convergence_Acceleration Value="true"/>            <!-- "True" or "False" -->
+    </Algorithm>
+
+    <Mechanics>    
+        <Filter Type="Default"/>                            <!-- "Default" (hexa) or "no_filter" or "hexa" or "octa" -->
+        <Small_Perturbations Value="true"/>                 <!-- "True" or "False" --> 
+    </Mechanics>
+
+    <User Algo="standard">                                  
+         <P_real Index="1" Value="1.e-6"/>                  <!-- convergence criterion for solving Damage field           -->
+         <P_real Index="2" Value="1000"/>                   <!-- maximum number of iterations for solving Damage field    -->
+         <P_string Index="1" Value="true"/>                 <!-- Convergence Acceleration for solving Damage field -->
+    </User>
+
+</Algorithm_Parameters>
+

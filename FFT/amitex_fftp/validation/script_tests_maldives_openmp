@@ -1,0 +1,42 @@
+#!/bin/bash
+#PBS -S /bin/bash
+#PBS N amitex # nom du job a executer
+#PBS -l nodes=1:ppn=12:q96G # nombre de nœuds, nombre de processus par nœuds
+#PBS l walltime=1:00:0 # temps maximal de l’execution (h:m:s)
+
+module purge
+
+# compilateur utilisé
+FC=gfortran
+
+if [[ $FC = "ifort" ]]
+then  
+  # cas intel 15
+    module load intel/15.0.0.090
+    module load impi/5.0.1.035
+    #module load openmpi/1.8/intel-150
+    #export AMITEX=/home/gelebart/amitex_fftp
+elif [[ $FC = "gfortran" ]]
+then
+  # cas gnu
+    module load gcc/4.8.2
+#    module load openmpi/1.6.5/gnu-482
+    module load openmpi/1.8/gnu-482
+    #export AMITEX=/home/gelebart/amitex_fftp
+else
+    echo Fortran compiler not set
+    exit 1
+fi
+
+  cd /u/q/dg765/amitex_fftp/validation
+
+NPROC=`wc -l < $PBS_NODEFILE`
+export NPROC=$NPROC
+export TASKS_PER_NODE=`echo $LOADL_PROCESSOR_LIST|sed -e s/" "/\\n/g|uniq|wc -l`
+
+echo $TASK_PER_NODE
+echo $LOADL_TOTAL_TASKS
+
+./script_tests.sh
+
+

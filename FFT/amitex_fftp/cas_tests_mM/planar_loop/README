@@ -1,0 +1,178 @@
+TEST TO CHECK STRESS FIELDS vs ANALYTICS -> NO MOVEMENT OF DISLOCATIONS
+########################################################################
+
+
+TESTS (avec version 8.10.0, commit a66345)
+#####
+On marquises with 196Go and 28 proc per node
+
+Start/restart: 	NX=256 - OK en interactif 
+--------------	NX=256 - OK en batch sur 1 noeud (mem_used ~13Go)
+		NX=512 - OK en batch sur 1 noeud (mem_used ~72Go)
+		NX=1024- PB en batch sur 2 noeuds - plante avant allocation des champs 
+			-> conforme prévision : 8x72=576 > 2*192=384
+		NX=1024- PB en batch sur 3 noeuds (3*192=576... DE JUSTESSE)
+			 mem_used : SWAP sur 2 noeuds
+		NX=1024- OK en batch sur 4 noeuds
+			 mem_used : 3*145+125=560 OK conforme prediction ( et < 4*192=768)
+			 duree 1 pas de l'ordre de 20s (sans écriture et avec 1 seule itération)
+
+			 ATTENTION : lancer les calcul sur /scratchscratch sinon pb quota sur home
+
+1voxel/zone vs a unique zone :	NO DIFFERENCE SUR LE TEMPS -> prefer 1 zone / voxel (compatible with restarted simulations)
+------------------------------
+		NX=256, 1 node 28proc (4proc dd)
+		1voxel/zone 	: 233s
+		a zone unique	: 235s
+		
+
+-------------------------------------------------------------------------------------------------------------
+
+COUPLING MM/AMITEX USER GUIDE
+#############################
+
+
+amitex input are in 	./bin_amitex
+amitex output are in	./bin_amitex/results
+mM inputs are in	./in (this name can not be modified)
+mM output are in	./out (this name can not be modified)
+
+Specific coupling parameters are :
+	Cai radius filter in in/DCM/DCM_ContCu (control parameter)
+	Elastic parameters within mM are those of AMITEX. 
+	For anisotropic behavior : 
+		only fine grids : no need to define an 'isotropic' behavior for short distance stresses in mMM
+		not yet possible to have anisotropy (long distance) and local isotropic correction
+
+The Box size is given in mM file by 
+	NewConf
+	BVD.XX
+	DCM_Cs
+	=> see New_conf_README
+
+The grid size in mM is given by the (burgers vector x Echelle) exemple pour CFC (b=110), d = norm(b)xEchelle/(norm (vect_elem_mM=(202)))= norm(b)xEchelle/2rac2
+								       pour CS  (b=100), d = norm(b)xEchelle/(norm (vect_elem_mM=(002)))= norm(b)xEchelle/2
+
+The Cai filter for local correction in mM is fixed in mM : norm(b) x Echelle / 2 
+
+
+
+ATTENTION -ATTENTION - RESTART (à modifier : faire passer KISAUVE à mM a partir de Index 1 et 5)
+algo_nacv_user : 
+         <P_real Index="1" Value="100"/>                 <!--    value put in algo_user%p_real(1) periodicity to write the restart file -->
+         <P_real Index="5" Value="2"/>                   <!--    value put in algo_user%p_real(5) ratio between amitex time step and DD time step -->
+
+Dans DCM_ContCu
+on doit imposer 
+	KISAUVE = 100x2 !!!!
+
+
+
+1 - HOW TO RUN A SIMULATION :
+=============================
+./script.sh  			uses Nproc=10 for AMITEX and NX=32 for the resolution
+NX=256 Namitex=24 ./script.sh 	uses Nproc=24 for AMITEX and NX=256 for the resolution
+
+WARNING : the number of proc devoted to mM is 4 in algo_noacv_user(_restart).xml
+
+
+	NX="32"
+	amitex="/home/lgelebart/amitex_fftp/libAmitex/src/user_ddd_mm2/amitex_fftp"
+	MATE="materiaux/mat_elasiso_eigs_1.xml"
+	CHAR="chargements/char_traction.xml"
+	ALGO="algorithmes/algo_noacv_user.xml"
+
+	mpirun -np $Namitex $amitex -NX $NX -NY $NX -NZ $NX -m $MATE -c $CHAR -a $ALGO -s resultats_restart/res
+
+
+2 - INPUT - AMITEX side : 
+=========================
+2-a : Material
+--------------
+mat_elasiso_eigs_1.xml : use de elasiso_eigs behavior (elastic behavior with eigenstrain), 
+			 internal variables are the 6 eigenstrain components 
+                              in Voigt notation (factor 2 on shear components), 
+			      with order 11,22,33,12,13,23 
+
+mat_elasiso_eigs_1_restart.xml : 
+			same as mat_elasiso_eigs_1.xml but read internal variable (eigenstrains) in binary files  
+			for restart			
+2-b : Algorithm
+----------------
+algo_noacv_user.xml and algo_noacv_user_restart.xml :
+ 
+	Adjust the parameters :
+		restart file saving frequency (generate .bin files, read in 
+		restart or not
+		periodicity to write additional vtk files (periodic output not (yet?) avilable in AMITEX interface)
+		debug key
+		ratio between amitex time step and DD time step -> CRITERE DE CHOIX?????
+		number of procs n used by DD code (spawn to n procs used by DD code)
+		key for CPU time calculation: 1 yes , 0 or other non
+		complete name of the executable micromegas (mdcp)		
+			
+		-> see comments in the file
+
+
+2-c : Loading
+-------------
+classical amitex loading.xml file
+
+2-c : Geometry
+-------------
+Using -NX -NY and -NZ option when launchin amitex_fftp, the geometry consists of a unique material and 1 zone per voxel.
+
+This is required for restarted simulations but not in the general case.
+
+As there is no difference in computation time (see TEST above):
+
+	-> prefer the 1 zone per voxel description
+	
+
+3 - INPUT - MM side
+=====================
+files in in/ : -> to run mM alone (without coupling)
+	       -> no used here. Only New_conf is used in DCM
+
+	New_conf   : initial dislocation segment configuration - see New_conf_README for explanations
+
+files in in/DCM :
+	input.dcm : list of 3 required files (exemple below)
+	DCM_Cs 	   : material file for Cubic (Simple)  - see DCM_Cs_README for explanations
+		norm of the Burger vector
+	DCM_ContCu : control parameter
+	New_conf   : located in ./in (see above)
+	
+in/CRISTALLOGRAPHIE :
+	crystal structure given in DCM_Cs : in DCM_Cs, 'CS' is associated to BVD.CS
+			could also use 'ROTATION_CS' (a verifier ???)
+	
+	BVD.XX : list of slip systems
+
+	ROTATION_XX : ???
+
+
+4 - OUTPUT - AMITEX side
+=========================
+
+classical amitex_fftp
+	std, .log
+	.vtk
+
+Eigenstrain in .bin files for restart => No _old.bin files like mM, TO BE IMPLEMENTED if necessary???????
+
+
+5 - OUTPUT - mM side
+=====================
+See README for a description of the files generated during the simulation
+
+out/debug : log files
+
+SEG_save SEG_surface apparaissent dans in : utilité??? périodicité???
+
+
+6 - POST-TREATMENT MM
+=====================
+
+NOT HERE, dislocation is immobile
+

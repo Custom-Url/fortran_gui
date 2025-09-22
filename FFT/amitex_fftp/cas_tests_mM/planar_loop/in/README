@@ -1,0 +1,38 @@
+This is the directory where all the input files of the simulation mM are located!
+
+To run a standard DD simulation, one need to define  three input files identified thanks to "input.dd"
+--> the material variables file                   (e.g. Cu)
+--> the control parameters file                   (e.g. ContCu)
+--> the intial dislocation configuration file     (e.g. SegCu)
+
+Few exemples of such files, corresponding to different types of materials or simulation experiments, are provided
+in the directories :
+
+mM_Materials_files  -> exemples of materials files
+mM_Control_files    -> exemples of control files
+mM_Segments_files   -> exemples of segments files
+
+--------
+
+Additional exemples of input files are given in
+
+mM_Data_Files:
+- eulerangle_dat    -> the file with data used to impose lattice rotation in aggregate simulations
+- f2p_dat           -> the file with data used to convert the mM film output in paraview data files
+- linetension_dat   -> the file with data used to run simulations with anisotropic line tension calculation
+...
+
+
+mM_Def_files:
+- b_domains_def     -> the file with data used to run simulated volumes with free or non penetrable boundaries
+- confinit_def      -> the file with data used to generate initial configuration
+                        initial configurations are made with the option "./mm --initconf"
+                        this option generate an input segment file   mM/in/New_conf
+- crack_def         -> the file with data used to run the simulation with a crack field load
+- FE_Sig_def        -> the file with data used to run the simulation with an heterogeneous stress field taken
+                        for instance from an FEM calculation
+- matrotation_def   -> the file with data used to rotate the simulation lattice with a given rotation matrix
+- nucl_def          -> the file with data used to run simulation with the nucleation local rule
+- particules_def    -> the file with data used to defined a distribution of particles in the simulated volume
+- tensapp_def       -> the file with the definition of a complex applied stress tensor
+...

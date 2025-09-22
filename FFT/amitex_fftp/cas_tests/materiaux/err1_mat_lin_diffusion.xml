@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Materials>
+
+<!-- REFERENCE MATERIAL -->
+<Reference_MaterialD K0="14"/>
+
+<!-- MATERIAL 1 -->
+
+<Material numM="1" LibK="/home/gelebart/amitex_fftp/libAmitex/src/materiauxK/tutu.so" LawK="Fourier_iso"> <!--ERREUR dans le fichier .so -->
+                <CoeffK Index="1" Type="Constant_Zone" File="materiaux/coefficients/coeffK.txt" Format="ASCII"/>
+</Material>
+
+</Materials>
+

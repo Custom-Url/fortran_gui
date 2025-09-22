@@ -1,0 +1,71 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<Materials>
+
+
+<Reference_Material Lambda0="5e3" Mu0="20e3" />  
+
+
+
+<Material numM="1" Lib="FFT/beha/libUmatAmitex.so" Law="elasanisoT">
+    <Coeff Index="1" Type="Constant" Value="16.667e3" /> 
+    <Coeff Index="2" Type="Constant" Value="4.167e3" />  
+    <Coeff Index="3" Type="Constant" Value="4.167e3" />  
+    <Coeff Index="4" Type="Constant" Value="16.667e3" /> 
+    <Coeff Index="5" Type="Constant" Value="4.167e3" />  
+    <Coeff Index="6" Type="Constant" Value="16.667e3" /> 
+    <Coeff Index="7" Type="Constant" Value="6.25e3" />   
+    <Coeff Index="8" Type="Constant" Value="6.25e3" />   
+    <Coeff Index="9" Type="Constant" Value="6.25e3" />   
+
+    <Coeff Index="10" Type="Constant" Value="0.1e-6" />    
+    <Coeff Index="11" Type="Constant" Value="22e-6" />    
+    <Coeff Index="12" Type="Constant" Value="22e-6" />    
+
+    <Coeff Index="13" Type="Constant" Value="0." />        
+    <Coeff Index="14" Type="Constant" Value="0." />        
+    <Coeff Index="15" Type="Constant" Value="1." />        
+
+    <Coeff Index="16" Type="Constant" Value="0." />        
+    <Coeff Index="17" Type="Constant" Value="1." />        
+    <Coeff Index="18" Type="Constant" Value="0." />        
+
+    <Coeff Index="19" Type="Constant" Value="0." />        
+    <Coeff Index="20" Type="Constant" Value="0.5e-3" />     
+    <Coeff Index="21" Type="Constant" Value="1" />      
+
+    
+    <IntVar Index="1" Type="Constant" Value="0." /> 
+    <IntVar Index="2" Type="Constant" Value="0." /> 
+</Material>
+
+
+<Material numM="2" Lib="FFT/beha/libUmatAmitex.so" Law="elasisoPF">
+    <Coeff Index="1" Type="Constant" Value="4.795e3" /> 
+    <Coeff Index="2" Type="Constant" Value="1.353e3" /> 
+    <Coeff Index="3" Type="Constant" Value="48.5e-6" /> 
+
+    <Coeff Index="4" Type="Constant" Value="0." />        
+    <Coeff Index="5" Type="Constant" Value="0.5e-3" />     
+    <Coeff Index="6" Type="Constant" Value="1.1e-2" />    
+
+    
+    <IntVar Index="1" Type="Constant" Value="0." /> 
+    <IntVar Index="2" Type="Constant" Value="0." /> 
+</Material>
+
+
+<Material numM="3" Lib="FFT/beha/libUmatAmitex.so" Law="elasisoPF">
+    <Coeff Index="1" Type="Constant" Value="0" /> 
+    <Coeff Index="2" Type="Constant" Value="0" /> 
+    <Coeff Index="3" Type="Constant" Value="0" /> 
+
+    <Coeff Index="4" Type="Constant" Value="0.0" />   
+    <Coeff Index="5" Type="Constant" Value="0.5e-3" /> 
+    <Coeff Index="6" Type="Constant" Value="1.1e-2" />   
+
+    
+    <IntVar Index="1" Type="Constant" Value="0." /> 
+    <IntVar Index="2" Type="Constant" Value="0." /> 
+</Material>
+
+</Materials>

@@ -1,0 +1,32 @@
+Effects with initDamage (parametre P_string(2)="true")
+======================================================
+LG - 12/07/2019
+
+WITH    initDamage : use script_Miehe3.sh  (and algo_Miehe3.xml)
+WITHOUT initDamage : use script_Miehe3b.sh (and algo_Miehe3b.xml)
+
+
+1 - On the total number of PF iteration with initDamage or without, for the different tests
+	WITH 	WITHOUT
+	22565 	55503
+	18566 	62570
+	38806 	121353
+	32220 	99196
+	3107 	8076
+	5905 	28601
+	37748 	80522
+	23420 	42806
+
+2 - On the curves
+	* Most of the curves are very very close WITH or WITHOUT initDamage
+
+	* In general, curves ar "smoother" WITH initDamage
+
+	* Differences observed on :
+		shear_crack_xy : increase of damage at the end of the test
+		bimat : damage occurs a bit earlier
+		
+		In both cases, the curves looks 'better' (smoother) WITH initDamage
+
+
+		

@@ -1,0 +1,23 @@
+Pour créer le site web (utilisation sphynx + package python 'alabaster') 
+-----------------------
+Installer python et pip
+Installer sphinx (pip install sphinx)
+Sous windows, donner acces (PATH) au repertoire pythonxx et pythonxx/Scripts
+Lancer spinx-quickstart (repondre yes a la question autodoc)
+pour generer une premier Makefile
+
+Pour lancer la doc automatique
+	make clean
+	make html
+	
+
+Cette fonctionalite est egalement disponible sous windows dans une 
+fenetre de commande (cmd.exe) grace au fichier Make.bat 
+	
+Sous cywin, l'installation (sphinx avec le setup_x86.exe) genere une 
+errreur lors du 'make html'
+
+Pour créer la doc doxygen
+--------------------------
+	taper dans src : doxygen
+	utlise le fichier de config 'Doxyfile' sous src

@@ -1,0 +1,62 @@
+"USER" PROCEDURES USED IN THE STANDARD ALGORITHM : TO BE ADAPTED FROM the example user_Kochman2
+================================================================================================
+
+
+IMPORTANT
+---------
+
+   Start from the reference directory amitex_fftp/libAmitex/user_Kochman2
+
+   An example using the corresponding executable is given in amitex_fftp/cas_tests_PF
+
+   Developments can be made in any user_directory.  
+
+
+MAIN IDEAS
+----------
+
+   The introduction a new coupling (new physics, new code etc...) with the standard algorithm is done through :
+      - the introduction of new variables : 
+            init_user_variables() called before the begining of the "standard" algorithm (amitex_fftp.f90)
+      - two functions called before and after one step (unpas) of a mechanical resolution (resolution_mod.f90):
+            before_unpas_user(load_n,load_incr, ind_tps)
+            after_unpas_user(load_n,load_incr, ind_tps)
+
+   In amitex_user_mod.f90 : 
+      - declare the new variables
+      - implement their initialization : init_user_variables()
+      - implement all the procedures used by  before_unpas_user  and  after_unpas_user 
+
+   In standard_user_mod.f90 :
+      - implement the core of the coupling : before_unpas_user  and  after_unpas_user
+
+   These user procedures are executed in the standard algorithm if the algorithm.xml 
+   file contains <User Algo="standard"> (see amitex_fftp/cas_tests_PF/algorithm/algo_martensite_Kochmann2016_2.xml)
+   Example :
+      <User Algo="standard">                        
+         <P_real Index="1" Value="1."/>             -> user interface to introduce "real" parameters  
+         <P_real Index="2" Value="1.e-4"/>                          in user_param%p_real
+         <P_string Index="1" Value="TotO0!"/>       -> user interface to introduce "string" parameters 
+         <P_string Index="2" Value="grrr"/>                         in user_param%p_string
+      </User>
+   
+
+HOWTO : start from user_Kochman2 
+---------------------------------
+
+Create your own user_directory
+
+      1 / Copy amitex_user_mod.f90, standard_user_mod.f90, Makefile (and README) 
+               FROM   amitex_fftp/libAmitex/user_Kochman2  IN   your own user_directory
+
+In your own user_directory
+
+      2 / Adjust the Makefile
+               Fill the correct paths lDecomp, lFox, lAmitex
+
+      3 / Modify amitex_user_mod.f90 and standard_user_mod.f90 to implement your own model
+
+      4 / To compile and create a new executable file : make
+
+      5 / To clean :   make clean
+

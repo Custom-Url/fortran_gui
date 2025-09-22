@@ -1,0 +1,14 @@
+&CMD
+fic_numM="microstructures/multilayers/2layersM.vtk"
+fic_numZ="microstructures/multilayers/2layersZ.vtk"
+fic_mat="materiaux/mat_2mat_2zone_xml.xml"
+fic_char="chargements/char_traction_1.xml"
+fic_algo="algorithmes/algo_default.xml" 
+
+fic_vtk="../resultats/tmp/res" ! basename for output files
+/
+!nx,ny,nz,dx,dy,dz, coeff2print, varint2print
+
+
+$MPIRUNalias4 $AMITEX -nm microstructures/multilayers/2layersM.vtk -nz microstructures/multilayers/2layersZ.vtk -m materiaux/mat_2mat_2zone_xml.xml -c chargements/char_traction_1.xml -a algorithmes/algo_default.xml -s ../resultats/$TEST/$TEST
+

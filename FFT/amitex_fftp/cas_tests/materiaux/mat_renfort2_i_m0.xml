@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Materials>
+
+<!-- MATERIAL PROPERTIES USED FOR TORSION OF CYLINDER BEAM WITH CUBIC INCLUSION -->
+
+<!-- REFERENCE MATERIAL -->
+<Reference_Material Lambda0="2.884615384615384" Mu0="1.923076923076923"/>
+
+<!-- MATERIAL 1 : surrounding void material -->
+<Material numM="1" Lib="" Law="elasiso">
+               <Coeff Index="1" Type="Constant" Value="0e3" />
+               <Coeff Index="2" Type="Constant" Value="0e3"/>
+</Material>
+
+
+<!-- MATERIAL 2 : matrix and inclusion -->
+<Material numM="2" Lib="" Law="elasiso">
+               <Coeff Index="1" Type="Constant_Zone">
+                  <Zone numZ="1" Value="0.576923076923077e1"/>   <!-- matrix -->
+                  <Zone numZ="2" Value="0."/> <!-- inclusion --> 
+               </Coeff>
+               <Coeff Index="2" Type="Constant_Zone">
+                  <Zone numZ="1" Value="0.384615384615385e1"/>   <!-- matrix -->
+                  <Zone numZ="2" Value="0."/> <!-- inclusion -->
+               </Coeff>
+</Material>
+
+
+
+
+
+</Materials>

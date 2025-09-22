@@ -1,0 +1,28 @@
+#!/bin/bash
+
+rm bin_amitex/amitex.* 2>/dev/null
+
+rm bin_amitex/results/*.bin 2>/dev/null
+rm bin_amitex/results/*.vtk 2>/dev/null
+rm bin_amitex/results/*.log 2>/dev/null
+rm bin_amitex/results/*.xml 2>/dev/null
+rm bin_amitex/results/*.std 2>/dev/null
+rm bin_amitex/results/*.mstd 2>/dev/null
+rm bin_amitex/results/*.zstd 2>/dev/null
+
+rm out/*.pvd 2>/dev/null
+rm out/*.txt 2>/dev/null
+rm out/*.bin 2>/dev/null
+rm out/*.bin.old 2>/dev/null
+rm out/*.CFC 2>/dev/null
+rm out/*.dat 2>/dev/null
+rm out/debug/*.txt 2>/dev/null
+rm out/debug/debug* 2>/dev/null
+rm out/vtk/*.vtp 2>/dev/null
+rm out/vertexlist 2>/dev/null
+rm out/*vtk 2>/dev/null
+
+rm in/SEG_save 2>/dev/null
+rm in/SEG_surface 2>/dev/null
+
+

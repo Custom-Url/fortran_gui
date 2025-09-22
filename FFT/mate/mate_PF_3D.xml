@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Materials>
+
+<!-- REFERENCE MATERIAL -->
+<Reference_Material Lambda0="5e3" Mu0="20e3"/>  <!--tobemodified,LBDA0,MU0-->
+
+
+<!-- MATERIAL 1: FIBRE 0degree -->
+<Material numM="1" Lib="beha/libUmatAmitex.so" Law="elasanisoT" >
+    <Coeff Index="1" Type="Constant" Value="232.31e3"/> <!--C11 [MPa]-->
+    <Coeff Index="2" Type="Constant" Value="3.2684e3"/> <!--C12 [MPa]-->
+    <Coeff Index="3" Type="Constant" Value="3.2684e3"/> <!--C13 [MPa]-->
+    <Coeff Index="4" Type="Constant" Value="13.588e3"/> <!--C22 [MPa]-->
+    <Coeff Index="5" Type="Constant" Value="2.7543e3"/> <!--C23 [MPa]-->
+    <Coeff Index="6" Type="Constant" Value="13.588e3"/> <!--C33 [MPa]-->
+    <Coeff Index="7" Type="Constant" Value="11.3e3"/> <!--C44 [MPa]-->
+    <Coeff Index="8" Type="Constant" Value="11.3e3"/> <!--C55 [MPa]-->
+    <Coeff Index="9" Type="Constant" Value="4.45e3"/> <!--C66 [MPa]-->
+
+    <Coeff Index="10" Type="Constant" Value="0.1e-6"/>    <!--CTE_11, tobemodified,swFIB-->
+    <Coeff Index="11" Type="Constant" Value="22e-6"/>    <!--CTE_22, tobemodified,swFIB-->
+    <Coeff Index="12" Type="Constant" Value="22e-6"/>    <!--CTE_33, tobemodified,swFIB-->
+
+    <Coeff Index="13" Type="Constant" Value="0."/>        <!--e1_1, tobemodified,e11FIB-->
+    <Coeff Index="14" Type="Constant" Value="0."/>        <!--e1_2, tobemodified,e12FIB-->
+    <Coeff Index="15" Type="Constant" Value="1."/>        <!--e1_3, tobemodified,e13FIB-->
+
+    <Coeff Index="16" Type="Constant" Value="0."/>        <!--e2_1, tobemodified,e21FIB-->
+    <Coeff Index="17" Type="Constant" Value="1."/>        <!--e2_2, tobemodified,e22FIB-->
+    <Coeff Index="18" Type="Constant" Value="0."/>        <!--e2_3, tobemodified,e23FIB-->
+
+    <Coeff Index="19" Type="Constant" Value="0."/>        <!-- visc -->
+    <Coeff Index="20" Type="Constant" Value="75e-6"/>        <!-- lc  -->
+    <Coeff Index="21" Type="Constant" Value="0.3e-3"/>        <!-- gc -->
+
+    <!--internal variables-->
+    <IntVar Index="1" Type="Constant" Value="0."/> <!-- damage d -->
+    <IntVar Index="2" Type="Constant" Value="0."/> <!-- history field psiP -->
+    </Material>
+
+
+<!-- MATERIAL 2: MATRIX: E=5.07GPa, nu=0.35 -->
+<Material numM="2" Lib="beha/libUmatAmitex.so" Law="elasisoPF" >
+    <Coeff Index="1" Type="Constant" Value="4.3815e3"/> <!--lambda [MPa],tobemodified,LBDAmat-->
+    <Coeff Index="2" Type="Constant" Value="1.8778e3"/>  <!--mu [MPa],tobemodified,MUmat -->
+    <Coeff Index="3" Type="Constant" Value="48.5e-6"/> <!--CTE, tobemodified,swMAT-->
+
+    <Coeff Index="4" Type="Constant" Value="0."/>        <!-- visc -->
+    <Coeff Index="5" Type="Constant" Value="75e-6"/>        <!-- lc  -->
+    <Coeff Index="6" Type="Constant" Value="0.3e-3"/>        <!-- gc -->
+
+    <!--internal variable: -->
+    <IntVar Index="1" Type="Constant" Value="0."/> <!-- damage d -->
+    <IntVar Index="2" Type="Constant" Value="0."/> <!-- history field psiP -->
+</Material>
+
+
+
+</Materials>

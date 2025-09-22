@@ -1,0 +1,30 @@
+#!/bin/bash
+#SBATCH --job-name=amitex
+#SBATCH --output=%x.o%j
+#SBATCH --ntasks=40
+##SBATCH --ntasks=80
+#SBATCH --exclusive
+#SBATCH --time=00:10:00
+#SBATCH --partition=cpu_short
+
+module purge
+
+# compilateur utilisé
+FC=ifort
+
+if [[ $FC = "ifort" ]]
+then 
+ # cas intel 
+    module load fftw/3.3.8/intel-19.0.3.199-intel-mpi
+    module load intel/19.0.3/gcc-4.8.5
+elif [[ $FC = "gfortran" ]]
+then
+  # cas gnu 810 
+else
+    echo Fortran compiler not set
+    exit 1
+fi
+
+  cd /gpfs/users/gelebartl/amitex_fftp/validation
+
+ ./script_tests.sh

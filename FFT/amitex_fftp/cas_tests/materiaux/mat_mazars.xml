@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Materials>
+
+<!-- REFERENCE MATERIAL -->
+<Reference_Material Lambda0="2.0952e+10" Mu0="1.5014e+10"/>
+
+<!-- MATERIAL 1 -->
+<Material numM="1" Lib="/home/yc2634/projects/AMITEX/amitex_fftp/cas_tests/comportements/mazars/src/libUmatBehaviour.so" Law="umatmazars" >
+                <Coeff Index="1" Type="Constant" Value="1.e+10"/>
+                <Coeff Index="2" Type="Constant" Value="0.2"/>
+                <Coeff Index="3" Type="Constant" Value="0."/>
+                <Coeff Index="4" Type="Constant" Value="0."/>
+                <Coeff Index="5" Type="Constant" Value="1.15"/>
+                <Coeff Index="6" Type="Constant" Value="0.8"/>
+                <Coeff Index="7" Type="Constant" Value="1391.3"/>
+                <Coeff Index="8" Type="Constant" Value="10000"/>
+                <Coeff Index="9" Type="Constant" Value="0.7"/>
+                <Coeff Index="10" Type="Constant" Value="9.375e-5"/>
+
+                <IntVar Index="1" Type="Constant" Value="0."/>
+                <IntVar Index="2" Type="Constant" Value="0."/>
+                <IntVar Index="3" Type="Constant" Value="0."/>
+</Material>
+
+<!-- MATERIAL 2 -->
+<Material numM="2" Lib="/home/yc2634/projects/AMITEX/amitex_fftp/cas_tests/comportements/mazars/src/libUmatBehaviour.so" Law="umatmazars" >
+                <Coeff Index="1" Type="Constant" Value="3.2e+10"/>
+                <Coeff Index="2" Type="Constant" Value="0.2"/>
+                <Coeff Index="3" Type="Constant" Value="0."/>
+                <Coeff Index="4" Type="Constant" Value="0."/>
+                <Coeff Index="5" Type="Constant" Value="1.15"/>
+                <Coeff Index="6" Type="Constant" Value="0.8"/>
+                <Coeff Index="7" Type="Constant" Value="1391.3"/>
+                <Coeff Index="8" Type="Constant" Value="10000"/>
+                <Coeff Index="9" Type="Constant" Value="0.7"/>
+                <Coeff Index="10" Type="Constant" Value="9.375e-5"/>
+
+                <IntVar Index="1" Type="Constant" Value="0."/>
+                <IntVar Index="2" Type="Constant" Value="0."/>
+                <IntVar Index="3" Type="Constant" Value="0."/>
+</Material>
+
+
+</Materials>
+

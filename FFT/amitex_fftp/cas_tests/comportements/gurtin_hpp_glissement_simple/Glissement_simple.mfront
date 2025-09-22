@@ -1,0 +1,53 @@
+// Fichier d'initialisation du tenseur d'orientation a inclure dans un fichier
+// implementant une loi de comportement de plasticite cristalline pour etudier
+// un cristal avec uniquement un systeme de glissement actif
+// Le systeme de glissement a pour direction de glissement M = Y = [010]
+//                  et comme normale au plan de glissement N = Z = [001]
+
+@LocalVariable Tensor mu; // Tenseur d'orientation 
+
+@InitLocalVariables<Append>{
+
+  tvector<3,real> ns(real(0)); 
+  tvector<3,real> ms(real(0)); 
+  tensor<3,real> temp;
+
+  // direction de glissement
+  ms[0]  =  0.0;
+  ms[1]  =  1.0;
+  ms[2]  =  0.0;
+  // normale a la direction de glissement 
+  ns[0]  =  0.0;
+  ns[1]  =  0.0;
+  ns[2]  =  1.0;
+
+    temp[0]=ns[0]*ms[0];
+    temp[1]=ns[1]*ms[1];
+    temp[2]=ns[2]*ms[2];
+    temp[3]=ns[1]*ms[0];
+    temp[4]=ns[0]*ms[1];
+    temp[5]=ns[2]*ms[0];
+    temp[6]=ns[0]*ms[2];
+    temp[7]=ns[2]*ms[1];
+    temp[8]=ns[1]*ms[2];
+    mu = temp;
+}
+
+
+   
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

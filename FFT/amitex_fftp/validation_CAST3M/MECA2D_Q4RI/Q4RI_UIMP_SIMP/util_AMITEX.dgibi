@@ -1,0 +1,3 @@
+UTIL PROC 'AMITEX.proc';
+*UTIL NOTI '/usr/local/AMITEX/AMITEX_proc/AMITEX.noti'
+fin;

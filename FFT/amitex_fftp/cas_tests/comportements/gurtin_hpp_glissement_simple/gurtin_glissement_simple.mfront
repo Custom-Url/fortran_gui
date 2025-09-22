@@ -1,0 +1,280 @@
+// Template d'une loi de plasticite cristalline simple 
+// avec adoucissiement exponentiel et ecrouissage lineaire
+// sur chaque systeme de glissement. Tous les systemes de 
+// glissement sont independants
+//
+// Grandes Deformation, Formalisme de Mandel :
+// Decomposition Multiplicative du Gradient de Transformation
+//
+//  Modele NON LOCAL :  Modele de Gurtin en petites deformations
+//     Formalisme grandes transformations pour avoir acces
+//     au gradient de transformation F mais les calculs ne 
+//     prennent pas en compte le changement de geometrie
+//     et utilisent les deformations linearisees. 
+//
+// Un script bash remplace les expressions en majuscules
+// dans le fichier pour l'adapter a un type de cristal 
+// particulier et compiler la loi 
+
+
+@Parser		ImplicitFiniteStrain;
+@Behaviour	Glissement_simple_Gurtin_ss; 
+@Algorithm      NewtonRaphson;//_NumericalJacobian;
+@Author 	Aldo Marano;
+@Date 		24 Novembre 2017;
+
+@ModellingHypothesis Tridimensional;
+@OrthotropicBehaviour;
+@RequireStiffnessTensor;
+@MaximumIncrementValuePerIteration 1.e-4;
+@UMATUseTimeSubStepping[umat] false;
+//~ SubStepping incompatible avec AMITEX -> TODO
+//~ @UMATUseTimeSubStepping[umat] true;
+//~ @UMATMaximumSubStepping 1000;
+
+@Theta 1.0;
+@Epsilon 1.e-10 ;  
+@IterMax 1000 ;
+                  
+@Includes{
+#include"TFEL/Math/t2tot2.hxx"
+#include"TFEL/Math/st2tost2.hxx"
+#include"TFEL/Math/General/CubicRoots.hxx"
+
+}
+
+// Material coefficients
+@MaterialProperty real n;       // norton law exponent
+@MaterialProperty real K;       // norton law coefficient
+@MaterialProperty real tau0;    // initial critical resolved shear stress 
+@MaterialProperty real tauF;    // final critical resolved shear stress
+@MaterialProperty real gamma_0; // softening speed coefficient
+@MaterialProperty real H;       // Linear Hardening rate 
+@MaterialProperty real m;       // hardening exponent
+@MaterialProperty real lambda;  // non local characteristic length
+@MaterialProperty real pi0;     // non local characteristic stress
+
+// Variables 
+
+@IntegrationVariable StrainStensor eel;                  // Elastic strain
+@StateVariable       real gamma[1];              // plastic slip for slip system
+@AuxiliaryStateVariable Tensor Hp;                       // Plastic displacement gradient tensor
+@AuxiliaryStateVariable real   P;                        // cumulated effective plastic strain 
+@AuxiliaryStateVariable real   thetaL;                   // lattice rotation angle
+@AuxiliaryStateVariable Tensor   Bstress;                // micro stress tensor = -curl(curl(Hp))) 
+                                                         // --> calculation by AMITEX, used for backstress calculation
+@AuxiliaryStateVariable real     curv;                   // lattice curvature = norm(curl(Hp)))  
+                                                         // --> calculation by AMITEX, not used here
+  
+// Local variables 
+@LocalVariable Tensor dHp;    // plastic displacement gradient increment
+@LocalVariable Tensor  He;    // elastic displacement gradient 
+@LocalVariable Tensor  dF;    //  transformation gradient increment
+@LocalVariable StrainStensor  epsp;              // plastic deformation
+@LocalVariable Tensor   Bstress_tmp;                  // micro stress tensor
+@LocalVariable Tensor   Hp_tmp;                  // micro stress tensor
+
+@Import "Glissement_simple.mfront" ;   // Slip systems definition (mu initialization)
+
+
+// Tangent operator calculation (coherent tangent operator) 
+// NOT IMPLEMENTED YET
+
+
+@InitLocalVariables<Append>{
+  //~ std::cout << "DEBUT UMAT  : "  << std::endl ;
+  //~ std::cout << "F0  UMAT : " << F0 << std::endl ;
+  //~ std::cout << "F1  UMAT : " << F1 << std::endl ;
+  /* Bstress et Hp arrivent depuis Amitex 
+   * avec l'ordonnancement AMITEX
+   * des composantes à repasser dans 
+   * l'ordonnancement Mfront
+   * Bstress_tmp est dans le formalisme Mfront mais Bstress reste dans 
+   * le formalisme Amitex
+   */
+  Bstress_tmp = Bstress;
+  Bstress_tmp(4) = Bstress(6);
+  Bstress_tmp(5) = Bstress(4);
+  Bstress_tmp(6) = Bstress(7);
+  Bstress_tmp(7) = Bstress(5);
+  
+  Hp_tmp = Hp; 
+  Hp(4) = Hp_tmp(6);
+  Hp(5) = Hp_tmp(4);
+  Hp(6) = Hp_tmp(7);
+  Hp(7) = Hp_tmp(5);
+    
+  //~ std::cout << "S : " << Bstress_tmp << std::endl ;
+  //~ std::cout << "S : " << Bstress << std::endl ;
+  const auto Id = stensor<3u,real>::Id();
+  
+  He = F0 - Id - Hp;  // He = gradU(0) - Hp
+  eel = 0.5*syme((transpose(He) + (He)));
+  //~ std::cout << "Hp  : " << Hp << std::endl ;
+  //~ std::cout << "He  : " << He << std::endl ;
+  //~ std::cout << "eel  : " << eel << std::endl ;
+  dF = F1 - F0;
+}
+
+// Stress computation
+@ComputeStress{
+  // second piola-kirchhoff stress tensor (Pi)
+  sig = D*eel;
+}
+
+// Integrator 
+@Integrator{
+  
+  // Loop over all slip systems
+  for(unsigned short i=0;i!=1;++i){
+
+	  // Resolved shear stress calculation 
+      // |tau - khi| = tauc wt khi = lambda*curl(curl(Hp))
+      // here Bstress_tmp = -curl(curl(Hp)) : + Bstress == -khi 
+	  const stress  tau  = transpose(mu) | (sig + (lambda*lambda*pi0)*Bstress_tmp) ;
+	  const real    sgn  = (tau>0) ? 1 : -1.;
+	  // actual plastic slip at t+dt 
+	  const strain gamma_ = gamma + dgamma;
+	  // critical resolved shear   
+	  const stress tauC = (tau0 - tauF)*exp(-abs(gamma_)/gamma_0) + tauF + H*pow(abs(gamma_),m);
+	  const stress Dtau  = max(abs(tau) - tauC,0.);
+
+	  // Viscoplastic strain increment : Norton law
+	  const real vp  = dt*sgn*pow(Dtau/K,n);
+
+	  // PLASTIC SLIP EVOLUTION EQUATION for system i 
+	  fgamma  -=  vp; 
+  }
+  // end loop over all slip systems
+  
+  // inverse of plastic transformation increment gradient approximation
+  // implicit (Forward Euler) approximation
+  dHp = Tensor(0.);  
+  for(unsigned short i=0;i!=1;++i){
+    dHp += dgamma*mu;
+  }  
+  
+  // ELASTIC STRAIN EVOLUTION EQUATION    
+  feel += 0.5*syme((transpose(dHp) + dHp)) -0.5*syme((transpose(dF) + dF )) ;
+  
+  //=============================================================
+  // JACOBIAN MATRIX CALCULATION
+  // dFeel_deel = Id
+
+  // Loop over all slip systems
+  for(unsigned short i=0;i!=1;++i){
+	// Resolved shear stress calculation 
+	  const stress  tau  = transpose(mu) | (sig + (lambda*lambda*pi0)*Bstress_tmp) ;
+	  const real    sgn  = (tau>0) ? 1 : -1.;
+	  // actual plastic slip at t+dt 
+	  const strain gamma_ = gamma + dgamma;
+	  // critical resolved shear   
+	  const stress tauC = (tau0 - tauF)*exp(-abs(gamma_)/gamma_0) + tauF + H*pow(abs(gamma_),m);
+	  const stress Dtau  = max(abs(tau) - tauC,0.);
+
+	  // dFe_ddgamma_i 
+  	  dfeel_ddgamma = syme(mu);
+
+	  // dFgamma_ddFe
+	  const real dphi = dt*(n/K)*pow(Dtau/K,n-1);
+  	  dfgamma_ddeel = -dphi*(D*syme(mu));
+
+	  // dFgamma_ddgamma
+	  const real sgn2 = (gamma_>0) ? 1 : -1.;
+	  const real dphi2 = sgn*sgn2*dphi;
+      const real dhard = (gamma_ == 0) ?  0 : m*H*pow(abs(gamma_),m-1); // derivee du terme d'ecrouissage (non defini si gamma_ == 0 --> =0 dans ce cas, écrit ici sans le signe de gamma en facteur)
+	  dfgamma_ddgamma = 1 - dphi2*(dhard - ((tau0 - tauF)/gamma_0)*exp(-abs(gamma_)/gamma_0)) ;
+
+	for(unsigned short j=0;j!=1;++j){
+		if (i!=j){
+			dfgamma_ddgamma  = 0;
+		}
+	} 
+
+  } 
+  
+} 
+// end Integrator 
+
+@ComputeFinalStress{
+
+  // Cauchy Stress
+  
+  //~ std::cout << "eel  : " << eel << std::endl ;
+  sig = D*eel;
+  //~ std::cout << "sig  : " << sig << std::endl ;
+
+  // Effective Plastic strain
+  dHp = Tensor(0.);  
+  for(unsigned short i=0;i!=1;++i){
+    dHp += dgamma*mu;
+  //~ std::cout << "mu " << i << " : " <<  mu << std::endl ;
+  }  
+
+  // Plastic transformation gradient
+  Hp += dHp;
+  
+  real p_temp = (transpose(dHp)|dHp);  
+  P += sqrt( p_temp);	
+  //~ std::cout << "He  fin : " << He << std::endl ;
+
+  // Lattice rotation calculation
+  // HERE He = Fe (He + Id) = He + Id = H - Hp + I = F - Hp
+  He = F1 - Hp;
+  Stensor C=syme(transpose(He)*He);
+  tmatrix<3u,3u,real> m2;
+  tvector<3u,real>    vp2;
+  std::tie(vp2,m2)=C.computeEigenVectors();
+
+  Tensor Diag = Tensor::Id();
+  Diag[0] = sqrt(vp2[0]);
+  Diag[1] = sqrt(vp2[1]);
+  Diag[2] = sqrt(vp2[2]);
+
+  Tensor Vect = Tensor::Id();
+  Vect[0] = m2[0];
+  Vect[1] = m2[4];
+  Vect[2] = m2[8];
+  Vect[3] = m2[1];
+  Vect[4] = m2[3];
+  Vect[5] = m2[2];
+  Vect[6] = m2[6];
+  Vect[7] = m2[5];
+  Vect[8] = m2[7];
+
+  Tensor U=Vect*Diag*invert(Vect);
+  Tensor  R=He*invert(U);
+  real theta_temp = acos( (trace(R)-1.)/2. ); 
+
+  bool test = std::isnan(theta_temp);
+  if ( test ){
+			theta_temp = 0.;
+                        //std::cout << "theta L NaN : mise à 0." << std::endl ;
+		}
+  thetaL = theta_temp;
+
+  bool test2 = std::isinf(theta_temp);
+  if ( test2 ){
+			thetaL = 0.;
+                        //std::cout << "theta L inf : mise à 0." << std::endl ;
+		}
+  thetaL = theta_temp;
+  
+  
+  /* Hp arrive 
+   * avec l'ordonnancement Mfront
+   * des composantes à repasser dans 
+   * l'ordonnancement Amitex
+   */
+  
+  Hp_tmp = Hp; 
+  Hp(6) = Hp_tmp(4);
+  Hp(4) = Hp_tmp(5);
+  Hp(7) = Hp_tmp(6);
+  Hp(5) = Hp_tmp(7);
+  
+  //~ std::cout << "Hp  fin : " << Hp << std::endl ;
+  //~ std::cout << "eel  fin : " << eel << std::endl ;
+  //~ std::cout << "sigma fin   : " <<  sig  << std::endl ;
+  //~ std::cout << "FIN UMAT  : "  << std::endl ;
+}

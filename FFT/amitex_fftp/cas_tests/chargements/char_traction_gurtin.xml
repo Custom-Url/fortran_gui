@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- DESCRIPTION DU TEMPLATE : 
+    Fichier chargement pour realiser une simulation de 
+    compression ou tracton uniaxiale avec une modelisation 
+    sous l'hypothese des petites perturbations,pilotee en deformation.
+    
+    Direction de Traction/Compression : axe Z
+
+    Adapte a une simulation de mono ou poly cristal :
+    Les donnees moyennes par zones peuvent etre demandees
+    uniquement pour un materiau  (cristal) 
+    Pour ne pas sortir de .zstd, commenter les balsies correspondantes
+
+    Toutes les mots ecrits en majuscules sont les champs a remplacer
+    a l'aide d'un script pour adapter le template au chargement 
+    precis que l'on souhaite realiser. 
+    (utiliser la fonction sed pour remplacer ces expressions) -->
+<Loading_Output>
+
+  <!-- SORTIES NON STANDARD DEMANDEES -->
+  <Output>
+    <vtk_StressStrain Strain = "1" Stress = "1"/>
+    <vtk_IntVarList numM="1"> 
+	11
+    </vtk_IntVarList> 
+  </Output>
+
+  <!-- Traction/Compression -->
+<Loading Tag="1">
+    <Time_Discretization Discretization="Linear" Nincr="100" Tfinal="100" />
+    <Output_vtkList>
+      100
+    </Output_vtkList>
+    <xx Driving="Stress" Evolution="Constant"  />
+    <yy Driving="Stress" Evolution="Constant"  />
+    <zz Driving="Strain" Evolution="Linear" Value="0.01" />
+    <xy Driving="Stress" Evolution="Constant"  />
+    <xz Driving="Stress" Evolution="Constant"  />
+    <yz Driving="Stress" Evolution="Constant"  />
+</Loading>
+
+
+</Loading_Output>

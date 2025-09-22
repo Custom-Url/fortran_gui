@@ -1,0 +1,4 @@
+# Ignorer les sorties des scripts
+*.e*
+*.o*
+*.log

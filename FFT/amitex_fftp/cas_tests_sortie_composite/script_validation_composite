@@ -1,0 +1,26 @@
+#!/bin/bash
+
+
+module purge
+module load gcc/4.8.2
+module load openmpi/1.8/gnu-482
+module load tfel/3.0.0-gcc482
+
+
+
+./script_laminate
+./script_reuss
+./script_voigt
+./script_voigt_6.6.0-gcc482
+./script_laminate_6.6.0-gcc482
+./script_reuss_6.6.0-gcc482
+
+
+
+
+
+
+
+
+
+

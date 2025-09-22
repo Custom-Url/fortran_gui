@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Materials>
+
+<!-- REFERENCE MATERIAL -->
+<Reference_Material Lambda0="2.e5" Mu0="1e5"/>
+
+<!-- MATERIAL 1 -->
+<!--<Material numM="1" Lib="/home/lgelebart/amitex_fftp/libAmitex/src/materiaux/libUmatAmitex.so" Law="elasaniso" >-->
+<Material numM="1" Lib="" Law="elasaniso" >
+
+                <Coeff Index="1" Type="Constant" Value="166100"/>
+                <Coeff Index="2" Type="Constant" Value="119900"/>
+                <Coeff Index="3" Type="Constant" Value="119900"/>
+                <Coeff Index="4" Type="Constant" Value="166100"/>
+                <Coeff Index="5" Type="Constant" Value="119900"/>
+                <Coeff Index="6" Type="Constant" Value="166100"/>
+                <Coeff Index="7" Type="Constant" Value="75600"/>
+                <Coeff Index="8" Type="Constant" Value="75600"/>
+                <Coeff Index="9" Type="Constant" Value="75600"/>
+
+<!--cas isotrope
+                <Coeff Index="1" Type="Constant" Value="1.34615E+05"/>
+                <Coeff Index="2" Type="Constant" Value="57692."/>
+                <Coeff Index="3" Type="Constant" Value="57692."/>
+                <Coeff Index="4" Type="Constant" Value="1.34615E+05"/>
+                <Coeff Index="5" Type="Constant" Value="57692."/>
+                <Coeff Index="6" Type="Constant" Value="1.34615E+05"/>
+                <Coeff Index="7" Type="Constant" Value="38462."/>
+                <Coeff Index="8" Type="Constant" Value="38462."/>
+                <Coeff Index="9" Type="Constant" Value="38462."/>
+-->
+
+                <Coeff Index="10" Type="Constant" Value="1."/>
+                <Coeff Index="11" Type="Constant" Value="0."/>
+                <Coeff Index="12" Type="Constant" Value="0."/>
+
+                <Coeff Index="13" Type="Constant" Value="0."/>
+                <Coeff Index="14" Type="Constant" Value="1."/>
+                <Coeff Index="15" Type="Constant" Value="0."/>
+</Material>
+
+<!-- MATERIAL 2 -->
+<!--<Material numM="2" Lib="/home/lgelebart/amitex_fftp/libAmitex/src/materiaux/libUmatAmitex.so" Law="elasaniso">-->
+<Material numM="2" Lib="" Law="elasaniso">
+
+                <Coeff Index="1" Type="Constant" Value="166100"/>
+                <Coeff Index="2" Type="Constant" Value="119900"/>
+                <Coeff Index="3" Type="Constant" Value="119900"/>
+                <Coeff Index="4" Type="Constant" Value="166100"/>
+                <Coeff Index="5" Type="Constant" Value="119900"/>
+                <Coeff Index="6" Type="Constant" Value="166100"/>
+                <Coeff Index="7" Type="Constant" Value="75600"/>
+                <Coeff Index="8" Type="Constant" Value="75600"/>
+                <Coeff Index="9" Type="Constant" Value="75600"/>
+
+<!-- cas isotrope
+                <Coeff Index="1" Type="Constant" Value="1.34615E+05"/>
+                <Coeff Index="2" Type="Constant" Value="57692."/>
+                <Coeff Index="3" Type="Constant" Value="57692."/>
+                <Coeff Index="4" Type="Constant" Value="1.34615E+05"/>
+                <Coeff Index="5" Type="Constant" Value="57692."/>
+                <Coeff Index="6" Type="Constant" Value="1.34615E+05"/>
+                <Coeff Index="7" Type="Constant" Value="38462."/>
+                <Coeff Index="8" Type="Constant" Value="38462."/>
+                <Coeff Index="9" Type="Constant" Value="38462."/>
+-->
+
+                <Coeff Index="10" Type="Constant" Value="0.70710678118654752440084436210485"/>
+                <Coeff Index="11" Type="Constant" Value="0.70710678118654752440084436210485"/>
+                <Coeff Index="12" Type="Constant" Value="0."/>
+
+                <Coeff Index="13" Type="Constant" Value="-0.70710678118654752440084436210485"/>
+                <Coeff Index="14" Type="Constant" Value="0.70710678118654752440084436210485"/>
+                <Coeff Index="15" Type="Constant" Value="0."/>
+</Material>
+
+
+</Materials>
+

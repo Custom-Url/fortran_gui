@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Materials>
+<!--  Loi de plasticite cristalline pour cristal n'ayant qu'un seul systeme de glissement
+       Direction de glissement [010] normale au plan de glissement [001]
+         ecoulement plastique : loi de Norton 
+         adoucissement exponentiel sur chaque systeme de glissement
+         ecrouissage puissance sur chaque systeme de glissement
+         systemes de glissement indépendants 
+
+	Hypothese des petites perturbations
+
+       Loi developpee et compilee a l'aide de Mfront -->
+
+<!-- Parametres materiaux : 
+         modules d'elasticite : Choisis rond par souci de simplicite
+         Loi de Norton        : fixes pour obtenir une faible viscosite (peu de dependance au temps)
+                                mais permettre une convergence relativement aisee (n grand et K petit 
+                                rendent la convergence difficile a la transition elastique plastique 
+         -->
+
+<!-- Coefficients du materiau de reference :
+     On reprend le module de cisaillement de l'elasticite orthotrope
+     Lambda est calcule a partir de E et G  -->
+<Reference_Material Lambda0="57692" Mu0="38462"/> 
+
+<!-- Cristal "matrice" -->
+<Material numM="1" Lib="/home/yc2634/projects/AMITEX/amitex_fftp/cas_tests/comportements/gurtin_hpp_glissement_simple/src/libUmatBehaviour.so" Law="umatglissement_simple_gurtin_ss">
+
+	<!-- Elasticite isotrope : 2 coeffs (E,nu) mais 9 a rentrer => elasticite defini à l'aide un tenseur orthotrope dans Mfront -->
+
+               <Coeff Index="1" Type="Constant" Value="100000."/>   		 <!-- E : Young (Mfront E1) -->
+               <Coeff Index="2" Type="Constant" Value="100000."/>    		 <!-- E : Young (Mfront E2) --> 
+               <Coeff Index="3" Type="Constant" Value="100000."/>    		 <!-- E : Young (Mfront E3) -->
+               <Coeff Index="4" Type="Constant" Value="0.3"/>	      		 <!-- nu : Poisson (Mfront nu13) -->	
+               <Coeff Index="5" Type="Constant" Value="0.3"/>         		 <!-- nu : Poisson (Mfront nu23) -->
+               <Coeff Index="6" Type="Constant" Value="0.3"/>         		 <!-- nu : Poisson (Mfront nu13) -->
+               <Coeff Index="7" Type="Constant" Value="38462."/>	 	     <!-- G : Module de cisaillement (Mfront G12) -->
+               <Coeff Index="8" Type="Constant" Value="38462."/> 		     <!-- G : Module de cisaillement (Mfront G23) -->
+               <Coeff Index="9" Type="Constant" Value="38462."/>	 	    <!-- G : Module de cisaillement (Mfront G13) -->	
+
+	<!-- Orientation du cristal dans le repere global : N1 = [100] coeff(10-12), N2 = [010] coeff(13-15) -->
+        <!-- TEMPLATE : Orientations a ecrire a l'aide d'un script -->
+
+               <Coeff Index="10" Type="Constant" Value="1.0"/>
+               <Coeff Index="11" Type="Constant" Value="0.0"/>
+               <Coeff Index="12" Type="Constant" Value="0.0"/>
+
+               <Coeff Index="13" Type="Constant" Value="0.0"/>
+               <Coeff Index="14" Type="Constant" Value="0.70710678"/>
+               <Coeff Index="15" Type="Constant" Value="0.70710678"/>
+
+
+	<!--Modules de dilatation thermique et masse volumique (definis par Mfront, mais non utilises par la loi) -->
+
+               <Coeff Index="16" Type="Constant" Value="1."/>
+               <Coeff Index="17" Type="Constant" Value="1."/>
+               <Coeff Index="18" Type="Constant" Value="1."/>
+               <Coeff Index="19" Type="Constant" Value="1."/>
+
+	<!-- Coefficients de la loi de Norton : n,K -->
+	
+               <Coeff Index="20" Type="Constant" Value="15."/>   	    <!-- n : exposant de Norton -->
+               <Coeff Index="21" Type="Constant" Value="10."/>			<!-- K : coefficient de Norton -->
+
+	<!-- Coefficients d'adoucissement et d'ecrouissage : 
+                    adoucissement : loi exponentielle decroissante (coeffs : valeur finale et amarano caracteristique) 
+                    ecrouissage : loi puissance (coeffs : Module d'ecrouissage et exposant de la loi puissance) -->
+
+               <Coeff Index="22" Type="Constant_Zone">                  <!-- tauCI   : cission critique initiale  -->
+                     <!-- valeur pour le crystal  -->
+                     <Zone numZ="1" Value="100." />
+                     <!-- valeur pour le defaut central -->
+                     <Zone numZ="2" Value="99.9" />
+               </Coeff>		
+               <Coeff Index="23" Type="Constant_Zone">                  <!-- tauCF   : cission critique finale  -->
+                     <!-- valeur pour le crystal  -->                   <!-- le 28/07/2020 : on supprime l'adoucissement -->
+                     <Zone numZ="1" Value="100." />
+                     <!-- valeur our le defaut central -->
+                     <Zone numZ="2" Value="99.9" />
+               </Coeff>	
+               <Coeff Index="24" Type="Constant" Value="0.01"/>		<!-- gamma_0 : caracteristique pendant lequel se deroule l'adoucissement 
+                                                                                                       fixe a 0.01 pour le moment (permet un adoucissement rapide) 
+                                                                                                       => valeur sans signification physique -->
+               <Coeff Index="25" Type="Constant" Value="0."/>	        <!-- H       : Module d'ecrouissage -->
+               <Coeff Index="26" Type="Constant" Value="1"/>		    <!-- M       : Exposant du terme d'ecrouissage -->
+               <Coeff Index="27" Type="Constant" Value="0.1"/>       <!-- Lambda  : Taille caractéristique -->
+               <Coeff Index="28" Type="Constant" Value="100."/>		    <!-- pi0     : contrainte caratcteristique     -->
+
+
+	<!--Variables internes -->
+
+	    <!--  glissement plastique cumule sur le systeme de glissement gamma -->
+
+	        <IntVar Index="1" Type="Constant" Value="0."/>
+
+	    <!-- Partie plastique du gradient du déplacement Hp -->
+
+	        <IntVar Index="2" Type="Constant" Value="0."/>
+	        <IntVar Index="3" Type="Constant" Value="0."/>
+	        <IntVar Index="4" Type="Constant" Value="0."/>
+	        <IntVar Index="5" Type="Constant" Value="0."/>
+	        <IntVar Index="6" Type="Constant" Value="0."/>
+	        <IntVar Index="7" Type="Constant" Value="0."/>
+	        <IntVar Index="8" Type="Constant" Value="0."/>
+	        <IntVar Index="9" Type="Constant" Value="0."/>
+	        <IntVar Index="10" Type="Constant" Value="0."/>
+
+        <!-- Deformation plastique équivalente P et rotation du reseau theta -->
+
+	        <IntVar Index="11" Type="Constant" Value="0."/>             <!-- P  -->
+	        <IntVar Index="12" Type="Constant" Value="0."/>             <!-- theta : angle de la rotation du reseau cristallin  -->
+
+     	<!-- Tenseur des micro contraintes  VARIABLE NON LOCALE curl(curl(Hp))-->
+
+	        <IntVar Index="13" Type="Constant" Value="0."/>
+	        <IntVar Index="14" Type="Constant" Value="0."/>
+	        <IntVar Index="15" Type="Constant" Value="0."/>
+	        <IntVar Index="16" Type="Constant" Value="0."/>
+	        <IntVar Index="17" Type="Constant" Value="0."/>
+	        <IntVar Index="18" Type="Constant" Value="0."/>
+	        <IntVar Index="19" Type="Constant" Value="0."/>
+	        <IntVar Index="20" Type="Constant" Value="0."/>
+	        <IntVar Index="21" Type="Constant" Value="0."/>
+
+    	<!-- Courbure du reseau VARIABLE NON LOCALE norm(curl(Hp))-->
+
+	        <IntVar Index="22" Type="Constant" Value="0."/>
+
+    	<!--Indices des Variables internes  + Coefficients pour MODELES NON LOCAUX -->
+		<IndexVarNloc   NLocMod_num="1"> 2 3 4 5 6 7 8 9 10 </IndexVarNloc>
+		<IndexCoeffNloc NLocMod_num="1"> 10 11 12 13 14 15  </IndexCoeffNloc> <!-- vecteurs de la base cristalline pour changement de repere cristal <-> macro -->
+
+</Material>
+
+<!-- NON-LOCAL MODELING -->
+<Non_local_modeling NLocMod_num="1" Modelname= "user_nloc1" Nnloc="9" Ngnloc="10" Ncoeff_nloc="6" >    
+       <numM Nmat="1"> 1 </numM>
+</Non_local_modeling>
+
+
+</Materials>
+

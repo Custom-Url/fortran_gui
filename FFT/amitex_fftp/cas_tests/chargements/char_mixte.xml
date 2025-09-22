@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Loading_Output>
+
+<!-- OUPUT QUANTITIES -->
+<Output>
+    <vtk_StressStrain Strain = "1" Stress = "1"/>
+    <!--<vtk_IntVarList numM="1"> -->
+    <!--</vtk_IntVarList> -->
+    <!--<vtk_IntVarList numM="2"> -->
+    <!--</vtk_IntVarList> -->
+</Output>
+
+<!-- SUCCESSIVE LOADINGS AND OUTPUT TIMES -->
+<Loading Tag="1">
+    <Time_Discretization Discretization="User" Nincr="1" />
+    <Time_List>32832</Time_List>
+    <Output_vtkList>
+      1
+    </Output_vtkList>
+    <xx Driving="Strain" Evolution="Linear" Value="-0.0005"/>
+    <yy Driving="Stress" Evolution="Linear" Value="1.0e10" />
+    <zz Driving="Stress" Evolution="Linear" Value="1e10" />
+    <xy Driving="Stress" Evolution="Linear" Value="1e10" />
+    <xz Driving="Stress" Evolution="Linear" Value="1e10" />
+    <yz Driving="Strain" Evolution="Linear" Value="-0.000015" />
+</Loading>
+
+<Loading Tag="2">
+    <Time_Discretization Discretization="User" Nincr="1" />
+    <Time_List>33832</Time_List>
+    <Output_vtkList>
+      1
+    </Output_vtkList>
+    <xx Driving="Stress" Evolution="Constant" />
+    <yy Driving="Stress" Evolution="Constant" />
+    <zz Driving="Stress" Evolution="Constant" />
+    <xy Driving="Stress" Evolution="Constant" />
+    <xz Driving="Strain" Evolution="Constant" />
+    <yz Driving="Stress" Evolution="Constant" />
+    <!-- <xx Driving="Strain" Evolution="Linear" Value="-0.0005"/>
+    <yy Driving="Stress" Evolution="Linear" Value="2.0e10" />
+    <zz Driving="Stress" Evolution="Linear" Value="2e10" />
+    <xy Driving="Stress" Evolution="Linear" Value="2e10" />
+    <xz Driving="Stress" Evolution="Linear" Value="2e10" />
+    <yz Driving="Stress" Evolution="Linear" Value="2e10" />-->
+</Loading>
+
+<!--<Loading Tag="2">
+   <Time_Discretization Discretization="Linear" Nincr="400" Tfinal="100"/>
+     <Output_vtk List="400"/> 
+    <xx Driving="Strain" Evolution="Constant" />
+    <yy Driving="Strain" Evolution="Constant" />
+    <zz Driving="Strain" Evolution="Constant" />
+    <xy Driving="Strain" Evolution="Constant" />
+    <xz Driving="Strain" Evolution="Constant" />
+    <yz Driving="Strain" Evolution="Constant" />
+</Loading>-->
+
+
+</Loading_Output>

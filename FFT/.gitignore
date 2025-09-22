@@ -1,0 +1,50 @@
+# === Precompiled files ===
+*.pyc
+*.pyo
+*.pyd
+
+# === Editor/IDE files ===
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
+*.log
+*.bak
+
+# === MPI and job logs ===
+core.*
+*.err
+*.out
+*.e[0-9]*
+*.o[0-9]*
+
+# === CMake build directory ===
+build/
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+
+# === VTK and other output data ===
+*.vtk
+*.vtu
+*.pvtu
+*.xdmf
+*.h5
+*.hdf5
+*.dat
+*.res
+*.txt
+
+
+# === User custom simulation inputs/outputs ===
+run/
+output/
+logs/
+temp/
+
+# === libs/files ===
+PEDS/
+resu/
+amitex_fftp.tar*

@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Materials>
+
+<!-- REFERENCE MATERIAL -->
+  <Reference_Material Lambda0="108750" Mu0="72500"/>  <!--MPa-->
+
+<!-- MATERIAL 1: void -->
+  <Material numM="1" Lib="behavior/libUmatAmitex.so" Law="elasisoPF" >
+    <Coeff Index="1" Type="Constant" Value="0"/>
+    <Coeff Index="2" Type="Constant" Value="0"/>
+    <Coeff Index="3" Type="Constant" Value="0"/>      <!--viscous parameter [MPa*s] -->
+    <Coeff Index="4" Type="Constant" Value="0.3"/>   <!--characteristic length, lc [mm] -->
+    <Coeff Index="5" Type="Constant" Value="1"/>  <!--fracture energy, gc [N/mm]-->
+
+    <!--define the initial values of internal variables-->
+    <IntVar Index="1" Type="Constant" Value="0."/> <!--damage variable -->
+    <IntVar Index="2" Type="Constant" Value="0."/> <!--history variable (output umat)-->
+    <IntVar Index="3" Type="Constant" Value="0."/> <!--history variable (max value)-->
+
+    <!--Indices of non local variables nloc for the Non local model -->
+
+    <IndexVarNloc   NLocMod_num="1"> 1 2   </IndexVarNloc>
+    <IndexCoeffNloc NLocMod_num="1"> 3 4 5 </IndexCoeffNloc>
+
+  </Material>
+
+
+<!-- MATERIAL 2: E=37.7 kN/mm2, nu=0.2, gc=10e-3 kN/mm cf, Moes2011 & Molnar2017 -->
+  <Material numM="2" Lib="behavior/libUmatAmitex.so" Law="elasisoPF" >
+    <Coeff Index="1" Type="Constant" Value="21.7500e3"/> <!--MPa-->
+    <Coeff Index="2" Type="Constant" Value="14.5000e3"/>  <!--MPa-->
+    <Coeff Index="3" Type="Constant" Value="0"/>      <!--viscous parameter [MPa*s] -->
+    <Coeff Index="4" Type="Constant" Value="0.3"/>   <!--characteristic length, lc [mm] -->
+    <Coeff Index="5" Type="Constant" Value="1"/>  <!--fracture energy, gc [N/mm]-->
+
+    <!--define the initial values of internal variables-->
+    <IntVar Index="1" Type="Constant" Value="0."/> <!--damage variable-->
+    <IntVar Index="2" Type="Constant" Value="0."/> <!--history variable (output umat)-->
+    <IntVar Index="3" Type="Constant" Value="0."/> <!--history variable (max value)-->
+
+    <!--Indices of non local variables nloc for the Non local model -->
+    <IndexVarNloc   NLocMod_num="1"> 1 2   </IndexVarNloc>
+    <IndexCoeffNloc NLocMod_num="1"> 3 4 5 </IndexCoeffNloc>
+
+  </Material>
+
+<!-- MATERIAL 3: E=377 kN/mm2, nu=0.2, gc=10e-2 kN/mm cf, Moes2011 & Molnar2017  -->
+  <Material numM="3" Lib="behavior/libUmatAmitex.so" Law="elasisoPF" >
+    <Coeff Index="1" Type="Constant" Value="217.5000e3"/> <!--MPa-->
+    <Coeff Index="2" Type="Constant" Value="145.0000e3"/>  <!--MPa-->
+    <Coeff Index="3" Type="Constant" Value="0"/>      <!--viscous parameter [MPa*s] -->
+    <Coeff Index="4" Type="Constant" Value="0.3"/>   <!--characteristic length, lc [mm] -->
+    <Coeff Index="5" Type="Constant" Value="10"/>  <!--fracture energy, gc [N/mm]-->
+
+    <!--define the initial values of internal variables-->
+    <IntVar Index="1" Type="Constant" Value="0."/> <!--damage variable-->
+    <IntVar Index="2" Type="Constant" Value="0."/> <!--history variable (output umat)-->
+    <IntVar Index="3" Type="Constant" Value="0."/> <!--history variable (max value)-->
+
+    <!--Indices of non local variables nloc for the Non local model -->
+    <IndexVarNloc   NLocMod_num="1"> 1 2   </IndexVarNloc>
+    <IndexCoeffNloc NLocMod_num="1"> 3 4 5 </IndexCoeffNloc>
+
+  </Material>
+
+<!-- NON-LOCAL MODELING -->
+  <Non_local_modeling NLocMod_num="1" Modelname= "user_nloc1" Nnloc="2" Ngnloc="1" Ncoeff_nloc="3" >    
+       <numM Nmat="3"> 1 2 3 </numM>
+  </Non_local_modeling>
+
+
+</Materials>
+
+
+
+
+
+
+

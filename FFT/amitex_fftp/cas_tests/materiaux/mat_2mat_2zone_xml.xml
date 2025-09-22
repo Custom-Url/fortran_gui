@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Materials>
+
+<!-- MATERIAL PROPERTIES FOR 2 MATE - 2 ZONE -->
+
+<!-- REFERENCE MATERIAL -->
+<Reference_Material Lambda0="250e6" Mu0="250e6"/>
+
+<!-- MATERIAL 1  -->
+<Material numM="1" Lib="" Law="elasiso">
+               <Coeff Index="1" Type="Constant_Zone">
+                  <Zone numZ="1" Value="100.e6"/>   
+                  <Zone numZ="2" Value="200.e6"/> 
+               </Coeff>
+               <Coeff Index="2" Type="Constant_Zone">
+                  <Zone numZ="1" Value="100.e6"/>   
+                  <Zone numZ="2" Value="200.e6"/> 
+               </Coeff>
+</Material>
+
+
+<!-- MATERIAL 2  -->
+<Material numM="2" Lib="" Law="elasiso">
+               <Coeff Index="1" Type="Constant_Zone">
+                  <Zone numZ="1" Value="300e6"/>   
+                  <Zone numZ="2" Value="400e6"/> 
+               </Coeff>
+               <Coeff Index="2" Type="Constant_Zone">
+                  <Zone numZ="1" Value="300e6"/>  
+                  <Zone numZ="2" Value="400e6"/> 
+               </Coeff>
+</Material>
+
+
+
+
+
+</Materials>

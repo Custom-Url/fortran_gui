@@ -1,0 +1,17 @@
+
+meca2d_Q4ri_fvolN.dgibi : 
+-------------------------
+	mise en place du calcul Q4RI avec deux forces Nodales opposees sur la diagonale
+
+	=> TRES FORTES OSCILLATIONS
+
+amitex :
+--------
+	mise en place du calcul a 
+		deformation imposee nulle
+		materiau homogene
+	dans un premier temps, on rentre "en dur" dans amitex le champ de force Volumique Nodal
+
+	calcul eprouvette CT tourne (mais très délicat)	
+
+

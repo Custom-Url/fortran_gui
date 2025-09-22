@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Materials>
+
+<!-- REFERENCE MATERIAL -->
+<Reference_Material Lambda0="1" Mu0="1"/>
+
+<!-- MATERIAL 1 -->
+<Material numM="1" Lib="behavior/libUmatAmitex.so" Law="graingrowth_10grains_3">
+
+               <!-- No coefficients for mechanics, here the Law outputs STRESS=1. -->
+               
+               <!-- All the parameters below are for 'non-local' model (here phase field) -->
+               
+               <!-- "alpha", "kinetic" for grain 1..10 in user_graingrowth3/non_local_user_mod.f90 -->
+               <Coeff Index="1" Type="Constant" Value="2."/>
+               <Coeff Index="2" Type="Constant" Value="1."/>
+
+               <Coeff Index="3" Type="Constant" Value="2."/>
+               <Coeff Index="4" Type="Constant" Value="1."/>
+
+               <Coeff Index="5" Type="Constant" Value="2."/>
+               <Coeff Index="6" Type="Constant" Value="1."/>
+
+               <Coeff Index="7" Type="Constant" Value="2."/>
+               <Coeff Index="8" Type="Constant" Value="1."/>
+
+               <Coeff Index="9" Type="Constant" Value="2."/>
+               <Coeff Index="10" Type="Constant" Value="1."/>
+
+               <Coeff Index="11" Type="Constant" Value="2."/>
+               <Coeff Index="12" Type="Constant" Value="1."/>
+
+               <Coeff Index="13" Type="Constant" Value="2."/>
+               <Coeff Index="14" Type="Constant" Value="1."/>
+
+               <Coeff Index="15" Type="Constant" Value="2."/>
+               <Coeff Index="16" Type="Constant" Value="1."/>
+
+               <Coeff Index="17" Type="Constant" Value="2."/>
+               <Coeff Index="18" Type="Constant" Value="1."/>
+
+               <Coeff Index="19" Type="Constant" Value="2."/>
+               <Coeff Index="20" Type="Constant" Value="1."/>
+
+
+               <!-- (Nloc variables) driving force df/dEta relative to phase field variable 1..10 except interface --> 
+               <IntVar Index="1" Type="Constant" Value="0."/>
+               <IntVar Index="2" Type="Constant" Value="0."/>
+               <IntVar Index="3" Type="Constant" Value="0."/>
+               <IntVar Index="4" Type="Constant" Value="0."/>
+               <IntVar Index="5" Type="Constant" Value="0."/>
+               <IntVar Index="6" Type="Constant" Value="0."/>
+               <IntVar Index="7" Type="Constant" Value="0."/>
+               <IntVar Index="8" Type="Constant" Value="0."/>
+               <IntVar Index="9" Type="Constant" Value="0."/>
+               <IntVar Index="10" Type="Constant" Value="0."/>
+
+               <!-- (GNloc variables) phase field variable 1..10 --> 
+               <IntVar Index="11" Type="Constant_Zone " File="microstructures/graingrowth_10grains_eta01_initial_0.ascii" Format="ASCII"/>
+               <IntVar Index="12" Type="Constant_Zone " File="microstructures/graingrowth_10grains_eta02_initial_0.ascii" Format="ASCII"/>
+               <IntVar Index="13" Type="Constant_Zone " File="microstructures/graingrowth_10grains_eta03_initial_0.ascii" Format="ASCII"/>
+               <IntVar Index="14" Type="Constant_Zone " File="microstructures/graingrowth_10grains_eta04_initial_0.ascii" Format="ASCII"/>
+               <IntVar Index="15" Type="Constant_Zone " File="microstructures/graingrowth_10grains_eta05_initial_0.ascii" Format="ASCII"/>
+               <IntVar Index="16" Type="Constant_Zone " File="microstructures/graingrowth_10grains_eta06_initial_0.ascii" Format="ASCII"/>
+               <IntVar Index="17" Type="Constant_Zone " File="microstructures/graingrowth_10grains_eta07_initial_0.ascii" Format="ASCII"/>
+               <IntVar Index="18" Type="Constant_Zone " File="microstructures/graingrowth_10grains_eta08_initial_0.ascii" Format="ASCII"/>
+               <IntVar Index="19" Type="Constant_Zone " File="microstructures/graingrowth_10grains_eta09_initial_0.ascii" Format="ASCII"/>
+               <IntVar Index="20" Type="Constant_Zone " File="microstructures/graingrowth_10grains_eta10_initial_0.ascii" Format="ASCII"/>
+               <!-- NOTE : using "vtk" file format, instead of ascii, is possible (and better for vizualization) -->
+
+
+               <!--Indices of non local variables nloc and coefficients for the Non local model -->
+               <IndexCoeffNloc NLocMod_num="1"> 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20  </IndexCoeffNloc>
+               <IndexVarNloc   NLocMod_num="1"> 1 2 3 4 5 6 7 8 9 10  </IndexVarNloc>
+
+</Material>
+
+
+
+<!-- NON-LOCAL MODELING -->
+       <!-- Each Non-local model (NlocMod_num) : --> 
+       <!--                  takes internal variables (nloc) as input        -->
+       <!--                  gives back internal variables (gnloc) as output -->
+                <!-- Nnloc : number of input internal variables (nloc),                                               -->
+                <!--         their index are given in material.xml, see <IndexVarNloc NlocMod_num="1"/>               -->
+                
+                <!-- Ngnloc : number of output internal variables (gnloc),                                            -->
+                <!--         their index are the last Ngnloc indices of the internal vector (IntVar in material.xml)  -->
+               
+      <!-- here, the non-local model is implemented in user_nloc1 (i.e. user_nloc_before1, user_nloc_after1 and init_user_nloc_variables1) -->
+      <!-- it uses 10 variable as input () and 10 as output () and 20 coeff -->
+      <!-- it is based on Nmat=1 material with numM = 1 -->
+
+
+<Non_local_modeling NLocMod_num="1" Modelname= "user_nloc1" Nnloc="10" Ngnloc="10" Ncoeff_nloc="20" >    
+       <numM Nmat="1"> 1 </numM>
+</Non_local_modeling>
+
+
+</Materials>
+

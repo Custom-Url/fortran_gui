@@ -1,0 +1,28 @@
+#!/bin/bash
+#MSUB -r castest                   # Request name
+#MSUB -n 28                    # Number of tasks to use
+#MSUB -T 1799                    # Elapsed time limit in seconds (max 1800 sur noeud std)
+#MSUB -o castest.%I.o              # Standard output. %I is the job id
+#MSUB -e castest.%I.e              # Error output. %I is the job id
+#MSUB -q broadwell		   # Choosing standard nodes
+#MSUB -Q test		   # Choising queue test
+
+set -x
+
+
+
+# choix intelmpi
+#source ~/env_amitex_fftp-impi.sh
+#source ~/env_amitex_fftp-impi19.sh
+
+# choix par defaut
+source ~/env_amitex_fftp-default.sh
+
+
+module list
+
+  cd /u/q/dg765/amitex_fftp/validation
+
+./script_tests.sh
+
+

@@ -1,0 +1,17 @@
+OBJECTIF : COMPARER LES SOLUTION CAST3M Q4RI ET AMITEX_FFTP
+===========================================================
+
+1 - Mise en place du calcul CAST3M Q4RI (meca2d_Q4ri.dgibi) : OK
+
+2 - Mise en place calcul AMITEX_FFTP : OK
+
+Les champs obtenus sont identiques
+
+------------------------------------------------------------
+Q4RI_FVOL : CALCUL A FORCES VOLUMIQUES IMPOSEES SUR DEUX ELEMENTS
+copie de meca2d_Q4ri
+
+
+
+
+

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Algorithm_Parameters>
+    <Algorithm Type="Basic_Scheme">                     <!-- "Default" (Basic_Scheme) ou "Basic_Scheme" -->
+        <Convergence_Criterion Value="Default"/>        <!-- "Default" (1e-4) ou valeur réelle positive <1e-3 -->
+        <Convergence_Acceleration Value="true"/>        <!-- "True" ou "False" -->
+    </Algorithm>
+
+    <Mechanics>    
+        <Filter Type="no_filter"/>                            <!-- "Default" (hexa) ou "no_filter" ou "hexa" ou "octa" -->
+        <Small_Perturbations Value="true"/>                 <!-- "True" ou "False" --> 
+    </Mechanics>
+    <User Algo="standard">                                              <!-- Set of parameters for a user-defined algorithm :             -->
+         <P_real Index="1" Value="1."/>                 <!--    values put in algo_user%p_real(i) and algo_user%p_string(:) -->
+         <P_real Index="2" Value="1.e-4"/>              <!-- not used in the present algorith -->
+         <P_string Index="1" Value="TotO0!"/>
+         <P_string Index="2" Value="grrr"/>
+    </User>
+
+</Algorithm_Parameters>
+

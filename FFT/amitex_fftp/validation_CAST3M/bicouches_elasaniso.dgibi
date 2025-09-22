@@ -1,0 +1,301 @@
+*23456789*23456789*23456789*23456789*23456789*23456789*23456789*23456789
+*=======================================================================
+'OPTION' 'DIME' 3 'MODELISER' TRID;
+'OPTION' 'ELEM' CU20;
+
+* ICI, NG= 2 ET UNIQUEMENT 2
+NG = 2; 
+NEL = 1;
+NZ = NG * NEL;
+
+TYPE0='ELANISO';
+NFICH0 = CHAINE TYPE0 '_' NG '_' NEL '.txt';
+
+*DEFORMATION_MAX
+*EXXMAX=0.1;
+
+*
+* PROPRIETES MATERIAU CUIVRE ANISOTROPE 
+* Rq :on rentre directement les termes de 
+*     cisaillement en notation Voigt
+S110  = 0.;
+S210  = 0.;
+S310  = 0.;
+S410  = 0.;
+S510  = 0.;
+S610  = 0.;
+S220  = 0.;
+S320  = 0.;
+S420  = 0.;
+S520  = 0.;
+S620  = 0.;
+S330  = 0.;
+S430  = 0.;
+S530  = 0.;
+S630  = 0.;
+S440  = 0.;
+S540  = 0.;
+S640  = 0.;
+S550  = 0.;
+S650  = 0.;
+S660  = 0.;
+S110  = 166100.;
+S210  = 119900.;
+S310  = 119900.;
+S220  = 166100.;
+S320  = 119900.;
+S330  = 166100.;
+S440  = 75600.;
+S550  = 75600.;
+S660  = 75600.;
+*
+* isotrope
+*E = 100000.; NU0 = 0.3;
+*L = (E * NU0) / ((1 + NU0) * (1. - (2. * NU0)));
+*M = E / (2 * (1. + NU0)); 
+*S110  = L + (2. * M);
+*S210  = L;
+*S310  = L;
+*S220  = L + (2. * M);
+*S320  = L;
+*S330  = L + (2. * M);
+*S440  = M;
+*S550  = M;
+*S660  = M;
+*opti donn 5;
+*
+* ORIENTATIONS
+*
+CAS0=3;
+
+
+* 1_ 2 orientations identiques
+SI (CAS0 EGA 1);
+V1X = 1. ET 1.;
+V1Y = 0. ET 0.;
+V1Z = 0. ET 0.;
+V2X = 0. ET 0.;
+V2Y = 1. ET 1.;
+V2Z = 0. ET 0.;
+FINSI;
+* 2_ 2 orientations tournees de 90°
+SI (CAS0 EGA 2);
+V1X = 1. ET 0.;
+V1Y = 0. ET 1.;
+V1Z = 0. ET 0.;
+V2X = 0. ET 1.;
+V2Y = 1. ET 0.;
+V2Z = 0. ET 0.;
+FINSI;
+* 3_ 1 orientation tournee de 45
+SI (CAS0 EGA 3);
+RAC2S2 = (2 ** 0.5) / 2. ;
+V1X = 1. ET RAC2S2;
+V1Y = 0. ET RAC2S2;
+V1Z = 0. ET 0.;
+V2X = 0. ET (0. - RAC2S2);
+V2Y = 1. ET RAC2S2;
+V2Z = 0. ET 0.;
+FINSI;
+
+
+
+
+*=================================================================
+
+
+
+*                                           creation des maillages 
+*=================================================================
+O1 = 0. 0. 0. ;
+X1 = (1.) 0. 0. ;
+Y1 = 0. (1.) 0. ;
+Z1 = 0. 0. (1.) ;
+VOL0 = ((O1 'DROI' 1 X1) 'TRAN' 1 Y1) 'VOLU' 'TRAN' NG Z1 ;
+VOL1 = ((O1 'DROI' NEL X1) 'TRAN' NEL Y1) 'VOLU' 'TRAN' NZ Z1 ;
+*trac (vol0 coul rouge) CACH;
+*trac (vol1 coul vert) CACH;
+*opti donn 5;
+*                                             creation des modeles 
+*=================================================================
+MOD0 = VOL0 MODE MECANIQUE ELASTIQUE ANISOTROPE;
+MOD1 = VOL1 MODE MECANIQUE ELASTIQUE ANISOTROPE;
+*                                              lecture des donnees 
+*=================================================================
+
+*                 repartition des donnees sur le maillage grossier
+*=================================================================
+V1X0 = MANU 'CHML' MOD0 REPA 'V1X' V1X NOEUD;
+V1Y0 = MANU 'CHML' MOD0 REPA 'V1Y' V1Y NOEUD;
+V1Z0 = MANU 'CHML' MOD0 REPA 'V1Z' V1Z NOEUD;
+V2X0 = MANU 'CHML' MOD0 REPA 'V2X' V2X NOEUD;
+V2Y0 = MANU 'CHML' MOD0 REPA 'V2Y' V2Y NOEUD;
+V2Z0 = MANU 'CHML' MOD0 REPA 'V2Z' V2Z NOEUD;
+
+
+*                                   projection sur le maillage fin
+*=================================================================
+V1X1 = PROI MOD1 V1X0 'STRESSES'; 
+V1Y1 = PROI MOD1 V1Y0 'STRESSES'; 
+V1Z1 = PROI MOD1 V1Z0 'STRESSES'; 
+V2X1 = PROI MOD1 V2X0 'STRESSES'; 
+V2Y1 = PROI MOD1 V2Y0 'STRESSES'; 
+V2Z1 = PROI MOD1 V2Z0 'STRESSES'; 
+V1X1 = CHAN TYPE V1X1 CARACTERISTIQUES;
+V1Y1 = CHAN TYPE V1Y1 CARACTERISTIQUES;
+V1Z1 = CHAN TYPE V1Z1 CARACTERISTIQUES;
+V2X1 = CHAN TYPE V2X1 CARACTERISTIQUES;
+V2Y1 = CHAN TYPE V2Y1 CARACTERISTIQUES;
+V2Z1 = CHAN TYPE V2Z1 CARACTERISTIQUES;
+
+*trac V2Z1 MOD1;
+
+
+*                              Affectation des proprietes materiau
+*=================================================================
+S11 = MANU CHML MOD1 D11 S110 
+    TYPE 'CARACTERISTIQUES' RIGIDITE;
+S21 = MANU CHML MOD1 D21 S210
+    TYPE 'CARACTERISTIQUES' RIGIDITE;
+S31 = MANU CHML MOD1 D31 S310 
+    TYPE 'CARACTERISTIQUES' RIGIDITE;
+S41 = MANU CHML MOD1 D41 S410 
+    TYPE 'CARACTERISTIQUES' RIGIDITE;
+S51 = MANU CHML MOD1 D51 S510 
+    TYPE 'CARACTERISTIQUES' RIGIDITE;
+S61 = MANU CHML MOD1 D61 S610
+    TYPE 'CARACTERISTIQUES' RIGIDITE;
+S22 = MANU CHML MOD1 D22 S220 
+    TYPE 'CARACTERISTIQUES' RIGIDITE;
+S32 = MANU CHML MOD1 D32 S320
+    TYPE 'CARACTERISTIQUES' RIGIDITE;
+S42 = MANU CHML MOD1 D42 S420 
+    TYPE 'CARACTERISTIQUES' RIGIDITE;
+S52 = MANU CHML MOD1 D52 S520 
+    TYPE 'CARACTERISTIQUES' RIGIDITE;
+S62 = MANU CHML MOD1 D62 S620 
+    TYPE 'CARACTERISTIQUES' RIGIDITE;  
+S33 = MANU CHML MOD1 D33 S330 
+    TYPE 'CARACTERISTIQUES' RIGIDITE;
+S43 = MANU CHML MOD1 D43 S430
+    TYPE 'CARACTERISTIQUES' RIGIDITE;
+S53 = MANU CHML MOD1 D53 S530 
+    TYPE 'CARACTERISTIQUES' RIGIDITE;
+S63 = MANU CHML MOD1 D63 S630 
+    TYPE 'CARACTERISTIQUES' RIGIDITE;
+S44 = MANU CHML MOD1 D44 S440 
+    TYPE 'CARACTERISTIQUES' RIGIDITE;
+S54 = MANU CHML MOD1 D54 S540
+    TYPE 'CARACTERISTIQUES' RIGIDITE;
+S64 = MANU CHML MOD1 D64 S640 
+    TYPE 'CARACTERISTIQUES' RIGIDITE;
+S55 = MANU CHML MOD1 D55 S550
+    TYPE 'CARACTERISTIQUES' RIGIDITE;
+S65 = MANU CHML MOD1 D65 S650 
+    TYPE 'CARACTERISTIQUES' RIGIDITE;
+S66 = MANU CHML MOD1 D66 S660 
+    TYPE 'CARACTERISTIQUES' RIGIDITE;
+
+MAT1 = S11 ET S21 ET S31 ET S41 ET S51 ET S61 
+ET S22 ET S32 ET S42 ET S52 ET S62 
+ET S33 ET S43 ET S53 ET S63
+ET S44 ET S54 ET S64 ET S55 ET S65 ET S66
+ET V1X1 ET V1Y1 ET V1Z1 ET V2X1 ET V2Y1 ET V2Z1;
+
+RIG0 = RIGI MOD1 MAT1;
+
+*                             Chargement et conditions aux limites
+*=================================================================
+TAB1 = TABLE;
+TAB1 . 1 = 0. - 0.0005;
+TAB1 . 2 = 0.00015;
+TAB1 . 3 = 0.00015;
+TAB1 . 4 = 0.0001;
+TAB1 . 5 = 0.0002;
+TAB1 . 6 = 0.0003;
+RIG1 F1 = @CLPD VOL1 TAB1;
+
+*                                                    appel RESOU
+*=================================================================
+RIGT0 = RIG0 ET RIG1;
+DEP0 = RESOU RIGT0 F1;
+
+
+*                                                     POST-TRAITEMENT
+*====================================================================
+VV = MESU VOL1;
+
+E1 = EPSI MOD1 MAT1 (DEP0) 'LINE';
+S1 = SIGM MOD1 MAT1 (DEP0) 'LINE';
+
+SXX = ('INTG'  ('EXCO' s1 smxx) MOD1)'/' (VV) ;
+SYY = ('INTG'  ('EXCO' s1 smyy) MOD1)'/' (VV) ;
+SZZ = ('INTG'  ('EXCO' s1 smzz) MOD1)'/' (VV) ;
+SXY = ('INTG'  ('EXCO' s1 smxy) MOD1)'/' (VV) ;
+SYZ = ('INTG'  ('EXCO' s1 smyz) MOD1)'/' (VV) ;
+SXZ = ('INTG'  ('EXCO' s1 smxz) MOD1)'/' (VV) ;
+
+EXX = ('INTG'  ('EXCO' E1 epxx) MOD1)'/' (VV) ;
+EYY = ('INTG'  ('EXCO' E1 epyy) MOD1)'/' (VV) ;
+EZZ = ('INTG'  ('EXCO' E1 epzz) MOD1)'/' (VV) ;
+EXY = 0.5*('INTG'  ('EXCO' E1 gaxy) MOD1)'/' (VV) ;
+EYZ = 0.5*('INTG'  ('EXCO' E1 gayz) MOD1)'/' (VV) ;
+EXZ = 0.5*('INTG'  ('EXCO' E1 gaxz) MOD1)'/' (VV) ;
+
+
+
+'MESSAGE' 'SXX' SXX ;
+'MESSAGE' 'SYY' SYY ;
+'MESSAGE' 'SZZ' SZZ ;
+'MESSAGE' 'SXY' SXY ;
+'MESSAGE' 'SXZ' SXZ ;
+'MESSAGE' 'SYZ' SYZ ;
+'MESSAGE' ' ';
+'MESSAGE' 'EXX' EXX ;
+'MESSAGE' 'EYY' EYY ;
+'MESSAGE' 'EZZ' EZZ ;
+'MESSAGE' 'EXY' EXY ;
+'MESSAGE' 'EXZ' EXZ ;
+'MESSAGE' 'EYZ' EYZ ;
+
+
+*   
+*                                                      SORTIE FICHIER
+*====================================================================
+ii = VALE IMPR;
+OPTI ECHO 0;
+OPTI IMPR 30 IMPR NFICH0;
+MESS EXX EYY EZZ EXY EXZ EYZ;
+MESS SXX SYY SZZ SXY SXZ SYZ; 
+OPTI IMPR ii;
+OPTI ECHO 1;
+
+
+FIN;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

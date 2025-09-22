@@ -1,4 +1,7 @@
 miniconda.sh
 __pycache__/
 env/
+resu/
+FFT/micr/code_python/mesh
+FFT/micr/code_python/mesh_3D
 

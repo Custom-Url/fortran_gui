@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Loading_Output>
+
+<!-- OUPUT QUANTITIES -->
+<Output>
+    <vtk_StressStrain Strain = "1" Stress = "1"/>
+   <!--
+    <Zone numM="1">
+            <VarIntList>  1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24</VarIntList>
+    </Zone>
+    -->
+</Output>
+
+
+<!-- SUCCESSIVE LOADINGS AND OUTPUT TIMES -->
+<Loading Tag="1">
+    <Time_Discretization Discretization="Linear" Nincr="100" Tfinal="100"/> <!--  1Oe-4 en vitesse (un truc réaliste) et pas de chargement (pour permettre une convergence) autour de 10e-4 eps aussi -->
+    <!--
+    <Output_zone Number ="10"/>
+    -->
+    <!--
+    <Output_vtkList>
+      200
+    </Output_vtkList> 
+    -->
+
+<!--
+    <xx Driving="Stress" Evolution="Linear" Value="0."/>
+    <yy Driving="Stress" Evolution="Linear" Value="0." />
+    <zz Driving="Strain" Evolution="Linear" Value="0.01" />
+    <xy Driving="Strain" Evolution="Linear" Value="0." />
+    <xz Driving="Strain" Evolution="Linear" Value="0." />
+    <yz Driving="Strain" Evolution="Linear" Value="0." />
+    <yx Driving="Stress" Evolution="Linear" Value="0." />
+    <zx Driving="Stress" Evolution="Linear" Value="0." />
+    <zy Driving="Stress" Evolution="Linear" Value="0." />
+-->    
+
+    <xx Driving="Stress" Evolution="Linear" Value="0." DirStress="0."/>
+    <yy Driving="Stress" Evolution="Linear" Value="0." DirStress="0."/>
+    <zz Driving="Strain" Evolution="Linear" Value="0.01" DirStress="1."/>
+    <xy Driving="Stress" Evolution="Linear" Value="0" DirStress="0."/>
+    <xz Driving="Stress" Evolution="Linear" Value="0" DirStress="0."/>
+    <yz Driving="Stress" Evolution="Linear" Value="0" DirStress="0."/>
+    <yx Driving="Stress" Evolution="Linear" Value="0" DirStress="0."/>
+    <zx Driving="Stress" Evolution="Linear" Value="0" DirStress="0."/>
+    <zy Driving="Stress" Evolution="Linear" Value="0" DirStress="0."/>
+    <DirStress Type="cauchy" />
+
+
+
+</Loading>
+
+</Loading_Output>

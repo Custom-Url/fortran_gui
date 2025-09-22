@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Materials>
+
+<!-- REFERENCE MATERIAL -->
+<Reference_Material Lambda0="115384" Mu0="76923"/> <!-- (min(lambda)+max(lambda))/2  and (min(mu)+max(mu))/2 -->
+
+<!-- MATERIAL 1-->
+<!-- Adjust the correct path -->
+<Material numM="1" Lib="Behaviour/amitex/src/libUmatBehaviour.so" Law="umatfcccharpagnev2" >
+
+<!-- coel = 'MOTS' 'YG1' 'YG2' 'YG3' 'NU12' 'NU23' 'NU13' 'G12' 'G23' 'G13'
+'V1X' 'V1Y' 'V1Z' 'V2X' 'V2Y' 'V2Z' 'RHO' 'ALP1' 'ALP2' 'ALP3' 'GAMM'
+'N' 'G0' 'B' 'RHO0' 'K' 'YC' 'MU';
+-->
+                <Coeff Index="1" Type="Constant" Value="200000"/>
+                <Coeff Index="2" Type="Constant" Value="200000"/>
+                <Coeff Index="3" Type="Constant" Value="200000"/>
+                <Coeff Index="4" Type="Constant" Value="0.3"/>
+                <Coeff Index="5" Type="Constant" Value="0.3"/>
+                <Coeff Index="6" Type="Constant" Value="0.3"/>
+                <Coeff Index="7" Type="Constant" Value="76923."/>
+                <Coeff Index="8" Type="Constant" Value="76923."/>
+                <Coeff Index="9" Type="Constant" Value="76923."/>
+                              
+                <Coeff Index="20" Type="Constant" Value="0.001"/>    		 <!-- GAMM = gamma0 [s-1] -->
+                <Coeff Index="21" Type="Constant" Value="20"/>   			 <!-- N -->
+                <Coeff Index="22" Type="Constant" Value="400"/> 			 <!-- G0 [Mpa]-->
+                <Coeff Index="23" Type="Constant" Value="0.257e-6"/>  		 <!-- B [mm] -->
+                <Coeff Index="24" Type="Constant" Value="0.090735e-6"/>  	 <!-- RHO0 = rho0*b^2 avec rho = 1.5e6 [mm-2]-->
+                <Coeff Index="25" Type="Constant" Value="10"/>    			 <!-- K -->
+                <Coeff Index="26" Type="Constant" Value="2.57e-6"/>   		 <!-- YC [mm]-->
+                <Coeff Index="27" Type="Constant" Value="76923."/>    		 <!-- MU [Mpa] -->
+                
+<!-- Varient par zones (grain), donc défini par fichier ascii 1-3 = V1   4:6 = V2 7:10 = pas utilisé par Amitex-->
+                
+			    <Coeff Index="10" Type="Constant_Zone" File="/home/lgelebart/amitex_fftp/cas_tests/materiaux/vec_orient_ISOfdo_21^3/X1.txt" Format="ASCII"/> <!-- V1 -->
+                <Coeff Index="11" Type="Constant_Zone" File="/home/lgelebart/amitex_fftp/cas_tests/materiaux/vec_orient_ISOfdo_21^3/X2.txt" Format="ASCII"/>
+                <Coeff Index="12" Type="Constant_Zone" File="/home/lgelebart/amitex_fftp/cas_tests/materiaux/vec_orient_ISOfdo_21^3/X3.txt" Format="ASCII"/>
+                
+                <Coeff Index="13" Type="Constant_Zone" File="/home/lgelebart/amitex_fftp/cas_tests/materiaux/vec_orient_ISOfdo_21^3/Y1.txt" Format="ASCII"/> <!-- V2 -->
+                <Coeff Index="14" Type="Constant_Zone" File="/home/lgelebart/amitex_fftp/cas_tests/materiaux/vec_orient_ISOfdo_21^3/Y2.txt" Format="ASCII"/>
+                <Coeff Index="15" Type="Constant_Zone" File="/home/lgelebart/amitex_fftp/cas_tests/materiaux/vec_orient_ISOfdo_21^3/Y3.txt" Format="ASCII"/>
+                
+                <Coeff Index="16" Type="Constant" Value="1."/> <!-- inutilise dans AMITEX -->
+                <Coeff Index="17" Type="Constant" Value="1."/>
+                <Coeff Index="18" Type="Constant" Value="1."/>
+                <Coeff Index="19" Type="Constant" Value="1."/> 
+   
+ 
+<!--Pour comparer au calcul sur un point de Gauss
+				<Coeff Index="10" Type="Constant" Value="1."/> 
+                <Coeff Index="11" Type="Constant" Value="0."/>
+                <Coeff Index="12" Type="Constant" Value="0."/>
+                
+                <Coeff Index="13" Type="Constant" Value="0."/> 
+                <Coeff Index="14" Type="Constant" Value="1."/>
+                <Coeff Index="15" Type="Constant" Value="0."/>
+                
+                <Coeff Index="16" Type="Constant" Value="1."/> 
+                <Coeff Index="17" Type="Constant" Value="1."/>
+                <Coeff Index="18" Type="Constant" Value="1."/>
+                <Coeff Index="19" Type="Constant" Value="1."/>          
+ -->  
+
+
+<!--  statev = 'MOTS' 'RHO0' 'RHO1' 'RHO2' 'RHO3' 'RHO4' 'RHO5' 'RHO6'
+'RHO7' 'RHO8' 'RH9' 'RH10' 'RH11' 'G0' 'G1' 'G2' 'G3' 'G4' 'G5' 'G6'
+'G7' 'G8' 'G9' 'G10' 'G11' 'FEXX' 'FEYY' 'FEZZ' 'FEXY' 'FEYX' 'FEXZ'
+'FEZX' 'FEYZ' 'FEZY';
+-->
+<!-- Même initialisation partout, donc valeur partager pour toute zones -->
+
+                <IntVar Index="1" Type="Constant" Value="0."/> <!-- 12 rho per slide system (careful, it's rho-rho0 = 0 at t=0)  -->
+                <IntVar Index="2" Type="Constant" Value="0."/>
+                <IntVar Index="3" Type="Constant" Value="0."/>
+                <IntVar Index="4" Type="Constant" Value="0."/>
+                <IntVar Index="5" Type="Constant" Value="0."/>
+                <IntVar Index="6" Type="Constant" Value="0."/>
+                <IntVar Index="7" Type="Constant" Value="0."/>  
+                <IntVar Index="8" Type="Constant" Value="0."/>
+                <IntVar Index="9" Type="Constant" Value="0."/>
+                <IntVar Index="10" Type="Constant" Value="0."/>
+                <IntVar Index="11" Type="Constant" Value="0."/>
+                <IntVar Index="12" Type="Constant" Value="0."/>
+                
+                <IntVar Index="13" Type="Constant" Value="0."/>  <!-- 12 gamma per slide systems -->
+                <IntVar Index="14" Type="Constant" Value="0."/> 
+                <IntVar Index="15" Type="Constant" Value="0."/>
+                <IntVar Index="16" Type="Constant" Value="0."/>
+                <IntVar Index="17" Type="Constant" Value="0."/>
+                <IntVar Index="18" Type="Constant" Value="0."/>
+                <IntVar Index="19" Type="Constant" Value="0."/>
+                <IntVar Index="20" Type="Constant" Value="0."/>  
+                <IntVar Index="21" Type="Constant" Value="0."/>
+                <IntVar Index="22" Type="Constant" Value="0."/>
+                <IntVar Index="23" Type="Constant" Value="0."/>
+                <IntVar Index="24" Type="Constant" Value="0."/>
+                
+                <IntVar Index="25" Type="Constant" Value="1."/> <!-- 9 Fe coefficient = I+gradU -->
+                <IntVar Index="26" Type="Constant" Value="1."/>
+                <IntVar Index="27" Type="Constant" Value="1."/>
+                <IntVar Index="28" Type="Constant" Value="0."/>
+                <IntVar Index="29" Type="Constant" Value="0."/> 
+                <IntVar Index="30" Type="Constant" Value="0."/> 
+                <IntVar Index="31" Type="Constant" Value="0."/>
+                <IntVar Index="32" Type="Constant" Value="0."/>
+                <IntVar Index="33" Type="Constant" Value="0."/>
+
+</Material>
+
+
+</Materials>

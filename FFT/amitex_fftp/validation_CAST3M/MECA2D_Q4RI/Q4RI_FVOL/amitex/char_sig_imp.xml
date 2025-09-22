@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Loading_Output>
+
+<!-- OUPUT QUANTITIES -->
+<Output>
+    <vtk_StressStrain Strain = "1" Stress = "1"/>
+    <!--<vtk_IntVarList numM="1"> -->
+    <!--</vtk_IntVarList> -->
+    <!--<vtk_IntVarList numM="2"> -->
+    <!--</vtk_IntVarList> -->
+</Output>
+
+<!-- SUCCESSIVE LOADINGS AND OUTPUT TIMES -->
+<Loading Tag="1">
+    <Time_Discretization Discretization="Linear" Tfinal="1" Nincr="1" />
+    <Output_vtkList>
+      1
+    </Output_vtkList>
+
+    <!-- Contrainte moyenne associee a une contrainte de 100MPa 
+         dans matrice avec disque (R=0.3)poreux (0MPa)  -->
+    <xx Driving="Stress" Evolution="Linear" Value="71.63e6"/> 
+    <yy Driving="Stress" Evolution="Linear" Value="0" />
+    <zz Driving="Stress" Evolution="Linear" Value="0" />
+    <xy Driving="Stress" Evolution="Linear" Value="0" />
+    <xz Driving="Stress" Evolution="Linear" Value="0" />
+    <yz Driving="Stress" Evolution="Linear" Value="0" />
+</Loading>
+
+
+</Loading_Output>

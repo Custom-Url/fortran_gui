@@ -1,0 +1,21 @@
+PROCEDURE TO ADD A NEW TEST (NON-REGRESSION)
+============================================
+
+mkdir (amitex)/resultats/new_test
+mkdir (amitex)/resultats/new_test/reference 
+
+modify the simulation script : script_test.sh
+
+launch the simulation
+
+copy 
+	(amitex)/resultats/new_test/new_test.log 
+	(amitex)/resultats/new_test/new_test.std 
+in
+	(amitex)/resultats/new_test/reference
+
+
+re-launch the simulation and check that the new test
+is taken into account in tests.log
+
+

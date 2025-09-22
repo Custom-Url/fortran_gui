@@ -1,0 +1,8 @@
+script_biscale.sh : exemple avec un couplage ultra-simple
+	-> on applique le chargement de la simu "maitre" sur la simu "esclave"
+	Ainsi, en donnant a la simu "esclave" les mêmes carac que la simu "maitre", 
+	-> on doit effectuer 2 fois la même simu !
+	=> OK (en linéaire et NL)
+	
+script_ame.sh : mise en place d'un couplage "réaliste"
+                      

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Materials>
+
+<!-- REFERENCE MATERIAL -->
+<Reference_Material Lambda0="5.7692e10" Mu0="3.8462e10"/>
+
+<!-- MATERIAL 1 -->
+<!--<Material numM="1" Lib="/home/lgelebart/amitex_fftp/libAmitex/src/materiaux/libUmatAmitex.so" Law="paramextelasiso">-->
+<Material numM="1" Lib="" Law="paramextelasiso">
+               <Coeff Index="1" Type="Constant_Zone">
+		 <!-- value of the coefficient lambda for zone 1 -->
+                 <Zone numZ="1" Value="5.7692e10" />
+		 <!-- value of the coefficient lambda for zone 2 -->
+		 <Zone numZ="2" Value="5.7692e10" />
+	       </Coeff>
+               <Coeff Index="2" Type="Constant_Zone">
+		 <!-- value of the coefficient mu for zone 1 -->
+                 <Zone numZ="1" Value="3.8462e10" />
+		 <!-- value of the coefficient mu for zone 2 -->
+		 <Zone numZ="2" Value="3.8462e10" />
+	       </Coeff>
+	       <!-- values of the thermal dilatation coefficients -->
+               <Coeff Index="3" Type="Constant_Zone">
+		 <Zone numZ="1" Value="0."/>
+		 <Zone numZ="2" Value="1."/>
+	       </Coeff>
+	       <!-- value of the reference temperature -->
+               <Coeff Index="4" Type="Constant" Value="0"/>
+</Material>
+
+
+</Materials>
+

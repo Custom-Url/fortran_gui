@@ -1,0 +1,47 @@
+#!/bin/bash
+#PBS -S /bin/bash
+#PBS -N amitex 
+#PBS -l select=1:ncpus=28:mpiprocs=28
+##PBS -l nodes=marquises23:ppn=28
+# nombre de nœuds, nombre de processus par nœuds
+# temps maximal de l’execution (h:m:s)
+##PBS -l walltime=0:30:0 
+#PBS -q qtest
+##PBS -q qstd
+module purge
+
+# compilateur utilisé
+FC=gfortran
+
+if [[ $FC = "ifort" ]]
+then  
+  # cas intel 15
+    module load intel/15.0.0.090
+    module load impi/5.0.1.035
+#    module load openmpi/3.1.0/intel-15.0.0.090
+    # tfel utile pour le cas tests gurtin
+    module load gcc/8.1.0
+    module load tfel/3.2.1/gcc-8.1.0  
+
+elif [[ $FC = "gfortran" ]]
+then
+  # cas gnu 810 
+    module load gcc/8.1.0
+    module load openmpi/3.1.0/gcc-8.1.0
+    # tfel utile pour le cas tests gurtin
+    #module load tfel/3.1.2/gcc-4.8.5  
+    module load tfel/3.2.1/gcc-8.1.0  
+
+  # cas gnu 485 (base centos)
+    # module load openmpi/3.1.0/gcc-4.8.5
+    # module load tfel/3.1.2/gcc-4.8.5
+else
+    echo Fortran compiler not set
+    exit 1
+fi
+
+  cd /home/lgelebart/amitex_fftp/cas_tests_mM/planar_loop/bin_amitex
+
+ NX=256 Namitex=24 ./script.sh
+# NX=1024 Namitex=80 ./script.sh
+# NX=1024 Namitex=80 ./script_restart.sh

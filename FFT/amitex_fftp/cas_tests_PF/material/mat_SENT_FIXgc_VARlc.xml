@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Materials>
+
+<!-- REFERENCE MATERIAL -->
+  <Reference_Material Lambda0="60.58e9" Mu0="40.39e9"/>
+
+<!-- MATERIAL 1: void -->
+  <Material numM="1" Lib="behavior/libUmatAmitex.so" Law="elasisoPF" >
+    <Coeff Index="1" Type="Constant" Value="0"/>
+    <Coeff Index="2" Type="Constant" Value="0"/>
+    <Coeff Index="3" Type="Constant" Value="0"/>      <!--viscous parameter [Pa*s] -->
+    <Coeff Index="4" Type="Constant" Value="0.02e-3"/>   <!--characteristic length, lc [m] -->
+    <Coeff Index="5" Type="Constant" Value="2.7e3"/>  <!--fracture energy, gc [N/m]-->
+
+    <!--define the initial values of internal variables-->
+    <IntVar Index="1" Type="Constant" Value="0."/> <!--damage variable-->
+    <IntVar Index="2" Type="Constant" Value="0."/> <!--history variable-->
+
+  </Material>
+
+
+<!-- MATERIAL 2: cf, Miehe2010&Nguyen2015 -->
+  <Material numM="2" Lib="behavior/libUmatAmitex.so" Law="elasisoPF" >
+    <Coeff Index="1" Type="Constant" Value="121.15e9"/>
+    <Coeff Index="2" Type="Constant" Value="80.77e9"/> 
+    <Coeff Index="3" Type="Constant" Value="0"/>      <!--viscous parameter [Pa*s] -->
+    <Coeff Index="4" Type="Constant" Value="0.02e-3"/>   <!--characteristic length, lc [m] -->
+    <Coeff Index="5" Type="Constant" Value="2.7e3"/>  <!--fracture energy, gc [N/m]-->
+
+    <!--define the initial values of internal variables-->
+    <IntVar Index="1" Type="Constant" Value="0."/> <!--damage variable-->
+    <IntVar Index="2" Type="Constant" Value="0."/> <!--history variable-->
+
+  </Material>
+
+<!-- MATERIAL 3: cf, Miehe2010&Nguyen2015 -->
+  <Material numM="3" Lib="behavior/libUmatAmitex.so" Law="elasisoPF" >
+    <Coeff Index="1" Type="Constant" Value="121.15e9"/>
+    <Coeff Index="2" Type="Constant" Value="80.77e9"/> 
+    <Coeff Index="3" Type="Constant" Value="0"/>      <!--viscous parameter [Pa*s] -->
+    <Coeff Index="4" Type="Constant" Value="0.04e-3"/>   <!--characteristic length, lc [m] -->
+    <Coeff Index="5" Type="Constant" Value="2.7e3"/>  <!--fracture energy, gc [N/m]-->
+
+    <!--define the initial values of internal variables-->
+    <IntVar Index="1" Type="Constant" Value="0."/> <!--damage variable-->
+    <IntVar Index="2" Type="Constant" Value="0."/> <!--history variable-->
+
+  </Material>
+
+
+</Materials>
+
+
+
+
+
+
+
