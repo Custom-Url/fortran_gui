@@ -1,12 +1,17 @@
 import sys
+import threading
 import json
 import os
 from PyQt6.QtWidgets import (
-    QApplication, QMainWindow, QFileDialog, QMenu, QTextEdit, QMessageBox, QTabWidget, QWidget, QVBoxLayout, QLabel, QPushButton, QListWidget, QComboBox, QGroupBox, QFormLayout, QLineEdit
+    QApplication, QMainWindow, QFileDialog, QMenu, QTextEdit, QMessageBox, QTabWidget, QWidget, QVBoxLayout, QLabel, QPushButton, QListWidget, QComboBox, QGroupBox, QFormLayout, QLineEdit, QPlainTextEdit
 )
 from PyQt6.QtGui import QAction
-
+from PyQt6.QtCore import QTimer
+import execute
 import material_manager as mm
+
+import warnings
+warnings.filterwarnings("ignore", category=DeprecationWarning)
 
 class FileManagerApp(QMainWindow):
     def __init__(self):
@@ -117,12 +122,34 @@ class FileManagerApp(QMainWindow):
         tab = QWidget()
         layout = QVBoxLayout()
 
-        layout.addWidget(QLabel("Output log"))
-        layout.addWidget(QTextEdit())
+        self.status_label = QLabel("Status: Idle")
+        layout.addWidget(self.status_label)
+        self.run_button = QPushButton("Run AMITEX")
+        self.pause_button = QPushButton("Pause")
+        self.stop_button = QPushButton("Stop AMITEX")
 
-        btn_open_mat = QPushButton("Execute")
-        btn_open_mat.clicked.connect(self.open_material_file)
-        layout.addWidget(btn_open_mat)
+        layout.addWidget(self.run_button)
+        layout.addWidget(self.pause_button)
+        layout.addWidget(self.stop_button)
+
+        self.log_box = QPlainTextEdit()
+        self.log_box.setReadOnly(True)
+        layout.addWidget(self.log_box)
+
+        # Inital State
+        self.pause_button.setEnabled(False)
+        self.stop_button.setEnabled(False)
+        self.pause_state = False
+
+        self.run_button.clicked.connect(self.on_run)
+        self.pause_button.clicked.connect(self.on_pause_resume)
+        self.stop_button.clicked.connect(self.on_stop)
+
+        self.timer = QTimer()
+        self.timer.timeout.connect(self.update_log)
+        self.timer.start(200)  # poll every 200ms
+
+        self.worker_thread = None
 
         tab.setLayout(layout)
         return tab
@@ -199,7 +226,7 @@ class FileManagerApp(QMainWindow):
         return []
 
     # -------------------------
-    # GUI Helper Functions
+    # Material Functions
     # -------------------------
     def refresh_materials(self):
         """Reload all dropdowns from material_manager"""
@@ -260,6 +287,57 @@ class FileManagerApp(QMainWindow):
         mm.delete_material(name_to_delete)
         QMessageBox.information(None, "Material Deleted", f"Material '{name_to_delete}' deleted.")
         self.refresh_materials()
+
+    # -------------------------
+    # AMITEX Controls
+    # -------------------------
+    def on_run(self):
+        if self.worker_thread and self.worker_thread.is_alive():
+            return
+        self.status_label.setText("Status: Running")
+        self.run_button.setEnabled(False)
+        self.pause_button.setEnabled(True)
+        self.stop_button.setEnabled(True)
+        self.pause_state = False
+        self.pause_button.setText("Pause")
+        self.worker_thread = threading.Thread(target=execute.run_amitex_loop, daemon=True)
+        self.worker_thread.start()
+
+    def on_pause_resume(self):
+        if self.worker_thread is None or not self.worker_thread.is_alive():
+            return
+
+        if not self.pause_state:
+            execute.pause_amitex()
+            self.pause_button.setText("Resume")
+            self.status_label.setText("Status: Paused")
+            self.pause_state = True
+        else:
+            execute.resume_amitex()
+            self.pause_button.setText("Pause")
+            self.status_label.setText("Status: Running")
+            self.pause_state = False
+
+
+    # Stop simulation
+    def on_stop(self):
+        execute.stop_amitex()
+        self.status_label.setText("Status: Stopped")
+        self.run_button.setEnabled(True)
+        self.pause_button.setEnabled(False)
+        self.pause_button.setText("Pause")
+        self.stop_button.setEnabled(False)
+        self.pause_state = False
+    def update_log(self):
+        q = execute.get_log_queue()
+        while True:
+            try:
+                msg = q.get_nowait()
+            except:
+                break
+            self.log_box.appendPlainText(msg)
+            self.log_box.verticalScrollBar().setValue(self.log_box.verticalScrollBar().maximum())
+
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
