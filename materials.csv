@@ -1,2 +1,3 @@
-Name,Type,Lambda,Mu,E1,E2,E3,Nu12,Nu13,Nu23,G12,G13,G23
-Matrix Test,Isotropic,12,19,,,,,,,,,
+Name,Type,E_T,G_TT,E_L,G_LT,V_LT
+Iso Test,Isotropic,1,12,,,
+AnIso Test,Transversely Isotropic,1,12,123,1234,12345

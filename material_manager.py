@@ -9,10 +9,8 @@ MATERIALS_FILE = "materials.csv"
 
 FIELDNAMES = [
     "Name", "Type",
-    "Lambda", "Mu",           # isotropic
-    "E1", "E2", "E3",         # anisotropic
-    "Nu12", "Nu13", "Nu23",
-    "G12", "G13", "G23"
+    "E_T", "G_TT",           # isotropic
+    "E_L", "G_LT", "V_LT"    # transverse isotropic
 ]
 
 
@@ -89,7 +87,7 @@ class MaterialManager(QDialog):
 
         # Type selector
         self.type_combo = QComboBox()
-        self.type_combo.addItems(["Isotropic", "Anisotropic"])
+        self.type_combo.addItems(["Isotropic", "Transversely Isotropic"])
         self.type_combo.currentTextChanged.connect(self.toggle_fields)
         self.layout.addWidget(QLabel("Material Type:"))
         self.layout.addWidget(self.type_combo)
@@ -98,24 +96,31 @@ class MaterialManager(QDialog):
         self.fields = {}
         form_layout = QFormLayout()
 
-        # Isotropic fields
         self.fields["Name"] = QLineEdit()
-        self.fields["Lambda"] = QLineEdit()
-        self.fields["Mu"] = QLineEdit()
+        self.fields["E_T"] = QLineEdit()
+        self.fields["G_TT"] = QLineEdit()
+        self.fields["E_L"] = QLineEdit()
+        self.fields["G_LT"] = QLineEdit()
+        self.fields["V_LT"] = QLineEdit()
+
         form_layout.addRow("Name:", self.fields["Name"])
-        form_layout.addRow("Lambda:", self.fields["Lambda"])
-        form_layout.addRow("Mu:", self.fields["Mu"])
-
-        # Anisotropic fields
-        for key, label in [
-            ("E1", "E1"), ("E2", "E2"), ("E3", "E3"),
-            ("Nu12", "ν12"), ("Nu13", "ν13"), ("Nu23", "ν23"),
-            ("G12", "G12"), ("G13", "G13"), ("G23", "G23")
-        ]:
-            self.fields[key] = QLineEdit()
-            form_layout.addRow(label + ":", self.fields[key])
-
+        form_layout.addRow("Young's Modulus (Tranverse Plane):", self.fields["E_T"])
+        form_layout.addRow("Shear Modulus (Tranverse Plane):", self.fields["G_TT"])
+        form_layout.addRow("Young's Modulus (Longitudinal):", self.fields["E_L"])
+        form_layout.addRow("Shear Modulus (Longitudinal-Tranverse):", self.fields["G_LT"])
+        form_layout.addRow("Poissons Ratio:", self.fields["V_LT"])
         self.layout.addLayout(form_layout)
+
+        # Connect signals
+        self.fields["E_T"].textChanged.connect(self.autofill_iso)
+        self.fields["G_TT"].textChanged.connect(self.autofill_iso)
+
+        # Initialize
+        self.update_fields(self.type_box.currentText())
+
+        layout = QVBoxLayout()
+        layout.addLayout(form_layout)
+        self.setLayout(layout)
 
         # Buttons
         self.btn_create = QPushButton("Create New Material")
@@ -154,13 +159,35 @@ class MaterialManager(QDialog):
         is_isotropic = (self.type_combo.currentText() == "Isotropic")
 
         # Grey out anisotropic fields if isotropic
-        for key in ["E1", "E2", "E3", "Nu12", "Nu13", "Nu23", "G12", "G13", "G23"]:
+        for key in ["E_L", "G_LT", "V_LT"]:
             self.fields[key].setDisabled(is_isotropic)
 
-        # Grey out isotropic fields if anisotropic
-        for key in ["Lambda", "Mu"]:
-            self.fields[key].setDisabled(not is_isotropic)
+    def update_fields(self, text):
+        """Enable/disable depending on isotropy"""
+        is_iso = (text == "Isotropic")
+        self.fields["E_L"].setDisabled(is_iso)
+        self.fields["G_LT"].setDisabled(is_iso)
+        self.fields["V_LT"].setDisabled(is_iso)
 
+        if is_iso:
+            self.autofill_iso()
+
+    def autofill_iso(self):
+        """Autofill isotropic fields when disabled"""
+        if self.type_box.currentText() != "Isotropic":
+            return
+
+        try:
+            E = float(self.fields["E_T"].text())
+            G = float(self.fields["G_TT"].text())
+            if E > 0 and G > 0:
+                nu = E / (2 * G) - 1
+                self.fields["E_L"].setText(f"{E:.4g}")
+                self.fields["G_LT"].setText(f"{G:.4g}")
+                self.fields["V_LT"].setText(f"{nu:.4g}")
+        except ValueError:
+            # ignore if inputs not valid yet
+            pass
     def load_selected_material(self):
         name = self.material_combo.currentText()
         if name == "Select material...":
@@ -172,7 +199,7 @@ class MaterialManager(QDialog):
         if mat:
             self.fields["Name"].setText(mat["Name"])
             self.type_combo.setCurrentText(mat["Type"])
-            for key in ["Lambda", "Mu", "E1", "E2", "E3", "Nu12", "Nu13", "Nu23", "G12", "G13", "G23"]:
+            for key in ["E_T", "G_TT", "E_L", "G_LT", "V_LT"]:
                 self.fields[key].setText(mat.get(key, ""))
 
     def collect_field_data(self):
