@@ -61,6 +61,18 @@ class FileManagerApp(QMainWindow):
         tab = QWidget()
         layout = QVBoxLayout()
 
+        field_labels = {
+            "Name": "Name",
+            "Type": "Material Law",
+            "E_T": "Young's Modulus (Transverse)",
+            "G_TT": "Shear Modulus (Transverse Plane)",
+            "E_L": "Young's Modulus (Longitudinal)",
+            "G_LT": "Shear Modulus (Longitudinal–Transverse)",
+            "V_LT": "Poisson's Ratio (ν_LT)",
+        }
+
+        field_names = list(field_labels.keys())
+
         def create_material_section(title):
             group = QGroupBox(title)
             group_layout = QVBoxLayout()
@@ -68,20 +80,19 @@ class FileManagerApp(QMainWindow):
             combo = QComboBox()
             group_layout.addWidget(combo)
 
+            fields = {}
             form_layout = QFormLayout()
-            name_field = QLineEdit()
-            name_field.setReadOnly(True)
-            lambda_field = QLineEdit()
-            lambda_field.setReadOnly(True)
-            mu_field = QLineEdit()
-            mu_field.setReadOnly(True)
-            form_layout.addRow("Name:", name_field)
-            form_layout.addRow("Lambda:", lambda_field)
-            form_layout.addRow("Mu:", mu_field)
-            group_layout.addLayout(form_layout)
 
+            for fname in field_names[1:]:
+                field = QLineEdit()
+                field.setReadOnly(True)
+                fields[fname] = field
+                form_layout.addRow(field_labels[fname], field)
+
+            group_layout.addLayout(form_layout)
             group.setLayout(group_layout)
-            return group, combo, {"name": name_field, "lambda": lambda_field, "mu": mu_field}
+
+            return group, combo, fields
 
         # Build 3 sections
         self.material_sections = []
@@ -253,10 +264,9 @@ class FileManagerApp(QMainWindow):
 
         mat = mm.get_material(name)
         if mat:
-            fields["name"].setText(mat["Name"])
-            fields["lambda"].setText(mat["Lambda"])
-            fields["mu"].setText(mat["Mu"])
-
+            for key, field in fields.items():
+                value = mat.get(key, "")
+                field.setText(str(value))
 
     def gui_create_material(self, fields):
         new_data = {
