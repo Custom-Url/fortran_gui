@@ -109,18 +109,12 @@ class MaterialManager(QDialog):
         form_layout.addRow("Young's Modulus (Longitudinal):", self.fields["E_L"])
         form_layout.addRow("Shear Modulus (Longitudinal-Tranverse):", self.fields["G_LT"])
         form_layout.addRow("Poissons Ratio:", self.fields["V_LT"])
+
         self.layout.addLayout(form_layout)
 
         # Connect signals
         self.fields["E_T"].textChanged.connect(self.autofill_iso)
         self.fields["G_TT"].textChanged.connect(self.autofill_iso)
-
-        # Initialize
-        self.update_fields(self.type_box.currentText())
-
-        layout = QVBoxLayout()
-        layout.addLayout(form_layout)
-        self.setLayout(layout)
 
         # Buttons
         self.btn_create = QPushButton("Create New Material")
@@ -139,9 +133,8 @@ class MaterialManager(QDialog):
         self.btn_delete.clicked.connect(self.delete_material_gui)
         self.btn_close.clicked.connect(self.close)
 
-        # Load initial materials into combo
         self.refresh_material_list()
-        self.toggle_fields()
+        self.update_fields(self.type_combo.currentText())
 
     # -----------------------------
     # GUI Logic
@@ -168,15 +161,13 @@ class MaterialManager(QDialog):
         self.fields["E_L"].setDisabled(is_iso)
         self.fields["G_LT"].setDisabled(is_iso)
         self.fields["V_LT"].setDisabled(is_iso)
-
         if is_iso:
             self.autofill_iso()
 
     def autofill_iso(self):
         """Autofill isotropic fields when disabled"""
-        if self.type_box.currentText() != "Isotropic":
+        if self.type_combo.currentText() != "Isotropic":
             return
-
         try:
             E = float(self.fields["E_T"].text())
             G = float(self.fields["G_TT"].text())
@@ -188,6 +179,7 @@ class MaterialManager(QDialog):
         except ValueError:
             # ignore if inputs not valid yet
             pass
+
     def load_selected_material(self):
         name = self.material_combo.currentText()
         if name == "Select material...":
